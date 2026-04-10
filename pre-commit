@@ -1,12 +1,22 @@
 #!/bin/sh
-# Pre-commit hook: block inline styles from entering the repo
+# Pre-commit hook: block inline styles from entering the repo.
+# Only scans source files (tsx/ts/jsx/js/html/vue/svelte/astro) so that
+# docs, markdown, and the hook itself can freely mention `style="`.
 
-if git diff --cached --name-only | xargs grep -l 'style="' 2>/dev/null; then
+FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(tsx|ts|jsx|js|html|vue|svelte|astro)$' || true)
+
+if [ -z "$FILES" ]; then
+  exit 0
+fi
+
+MATCHES=$(echo "$FILES" | xargs grep -l 'style="' 2>/dev/null || true)
+
+if [ -n "$MATCHES" ]; then
   echo ""
-  echo "❌ COMMIT BLOCKED: Inline styles detected."
+  echo "COMMIT BLOCKED: Inline styles detected."
   echo ""
   echo "The following files contain style=\"\" attributes:"
-  git diff --cached --name-only | xargs grep -ln 'style="' 2>/dev/null
+  echo "$MATCHES"
   echo ""
   echo "Use DaisyUI classes and Tailwind utilities instead."
   echo ""
