@@ -1,0 +1,16 @@
+#!/bin/sh
+# Pre-commit hook: block inline styles from entering the repo
+
+if git diff --cached --name-only | xargs grep -l 'style="' 2>/dev/null; then
+  echo ""
+  echo "❌ COMMIT BLOCKED: Inline styles detected."
+  echo ""
+  echo "The following files contain style=\"\" attributes:"
+  git diff --cached --name-only | xargs grep -ln 'style="' 2>/dev/null
+  echo ""
+  echo "Use DaisyUI classes and Tailwind utilities instead."
+  echo ""
+  exit 1
+fi
+
+exit 0
