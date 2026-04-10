@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Early Bird — Add Item</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        fontFamily: {
+          sans: ['"JetBrains Mono"', 'monospace'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+          serif: ['"JetBrains Mono"', 'monospace'],
+        },
+      },
+    }
+  </script>
+  <style>
+    html, body { font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace; }
+  </style>
+</head>
+<body class="min-h-screen bg-base-300">
+  <div class="max-w-md mx-auto min-h-screen bg-base-100 flex flex-col">
+
+    <!-- Top bar -->
+    <header class="px-4 pt-6 pb-3 flex items-center justify-between border-b border-base-300">
+      <button class="btn btn-sm btn-ghost text-xs uppercase tracking-wider">Cancel</button>
+      <div class="text-sm font-bold uppercase tracking-wider">Add Item</div>
+      <div class="w-14"></div>
+    </header>
+
+    <!-- Market context -->
+    <section class="px-4 py-3 bg-base-200 border-b border-base-300">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="text-[10px] uppercase tracking-widest text-base-content/60">Adding To</div>
+          <div class="font-bold text-sm">Downtown Modernism · Sat Apr 26</div>
+        </div>
+        <div class="badge badge-success badge-sm gap-1">
+          <span class="inline-block w-1.5 h-1.5 rounded-full bg-success-content"></span>
+          LIVE
+        </div>
+      </div>
+    </section>
+
+    <!-- Photos -->
+    <section class="px-4 py-5">
+      <div class="flex items-center justify-between mb-3">
+        <div class="text-xs uppercase tracking-widest text-base-content/60">Photos</div>
+        <div class="text-[10px] text-base-content/60">First photo = main · Drag to reorder</div>
+      </div>
+      <div class="grid grid-cols-3 gap-2">
+
+        <!-- Photo 1 (main) -->
+        <div class="aspect-square bg-base-200 rounded border-2 border-neutral relative flex items-center justify-center">
+          <div class="text-[9px] uppercase tracking-widest text-base-content/30">Photo</div>
+          <div class="badge badge-neutral badge-sm absolute top-1 left-1">MAIN</div>
+          <button class="btn btn-circle btn-xs btn-neutral absolute top-1 right-1">✕</button>
+        </div>
+
+        <!-- Photo 2 -->
+        <div class="aspect-square bg-base-200 rounded border border-base-300 relative flex items-center justify-center">
+          <div class="text-[9px] uppercase tracking-widest text-base-content/30">Photo</div>
+          <button class="btn btn-circle btn-xs btn-neutral absolute top-1 right-1">✕</button>
+        </div>
+
+        <!-- Photo 3 -->
+        <div class="aspect-square bg-base-200 rounded border border-base-300 relative flex items-center justify-center">
+          <div class="text-[9px] uppercase tracking-widest text-base-content/30">Photo</div>
+          <button class="btn btn-circle btn-xs btn-neutral absolute top-1 right-1">✕</button>
+        </div>
+
+        <!-- Photo 4 -->
+        <div class="aspect-square bg-base-200 rounded border border-base-300 relative flex items-center justify-center">
+          <div class="text-[9px] uppercase tracking-widest text-base-content/30">Photo</div>
+          <button class="btn btn-circle btn-xs btn-neutral absolute top-1 right-1">✕</button>
+        </div>
+
+        <!-- Add more -->
+        <button class="aspect-square bg-base-100 rounded border-2 border-dashed border-base-300 flex items-center justify-center text-base-content/60">
+          <div class="flex flex-col items-center gap-1">
+            <div class="text-2xl">+</div>
+            <div class="text-[9px] uppercase tracking-wider">Add</div>
+          </div>
+        </button>
+
+      </div>
+    </section>
+
+    <div class="divider mx-4 my-0"></div>
+
+    <!-- Title -->
+    <section class="px-4 py-4">
+      <label class="form-control w-full">
+        <div class="label">
+          <span class="label-text text-xs uppercase tracking-widest text-base-content/60">Title</span>
+          <span class="label-text-alt text-base-content/60">0 / 60</span>
+        </div>
+        <input type="text" placeholder="Walnut Credenza" class="input input-bordered w-full" />
+      </label>
+    </section>
+
+    <!-- Category -->
+    <section class="px-4 pb-4">
+      <label class="form-control w-full">
+        <div class="label">
+          <span class="label-text text-xs uppercase tracking-widest text-base-content/60">Category</span>
+        </div>
+        <select class="select select-bordered w-full">
+          <option disabled selected>Pick a category</option>
+          <option>Furniture</option>
+          <option>Lighting</option>
+          <option>Ceramics</option>
+          <option>Art &amp; Prints</option>
+          <option>Textiles</option>
+          <option>Vintage Clothing</option>
+          <option>Jewelry</option>
+          <option>Housewares</option>
+          <option>Books &amp; Ephemera</option>
+          <option>Other</option>
+        </select>
+      </label>
+    </section>
+
+    <!-- Description -->
+    <section class="px-4 pb-4">
+      <label class="form-control w-full">
+        <div class="label">
+          <span class="label-text text-xs uppercase tracking-widest text-base-content/60">Description</span>
+          <span class="label-text-alt text-base-content/60">0 / 500</span>
+        </div>
+        <textarea class="textarea textarea-bordered h-28" placeholder="Condition, era, dimensions, any notable features..."></textarea>
+      </label>
+    </section>
+
+    <!-- Price -->
+    <section class="px-4 pb-4">
+      <label class="form-control w-full">
+        <div class="label">
+          <span class="label-text text-xs uppercase tracking-widest text-base-content/60">Price</span>
+        </div>
+        <label class="input input-bordered flex items-center gap-2">
+          <span class="text-base-content/60 font-bold">$</span>
+          <input type="number" class="grow" placeholder="450" />
+        </label>
+      </label>
+      <div class="form-control mt-3">
+        <label class="label cursor-pointer gap-3 justify-start">
+          <input type="checkbox" class="checkbox checkbox-sm" />
+          <span class="label-text font-bold">Price Firm</span>
+          <span class="label-text text-xs text-base-content/60">· No haggling at booth</span>
+        </label>
+      </div>
+    </section>
+
+    <!-- Spacer -->
+    <div class="h-32"></div>
+
+    <!-- Sticky CTA -->
+    <div class="max-w-md mx-auto fixed bottom-16 left-0 right-0 bg-base-100 border-t border-base-300 px-4 py-4">
+      <button class="btn btn-neutral w-full">Post Item</button>
+      <p class="text-[10px] text-center text-base-content/60 mt-2 uppercase tracking-wider">Live instantly · Watchers get notified</p>
+    </div>
+
+    <!-- Bottom nav (dealer: 4 tabs) -->
+    <nav class="max-w-md mx-auto fixed bottom-0 left-0 right-0 bg-base-100 border-t border-base-300 flex">
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+        <span class="text-[10px] uppercase tracking-widest">Buy</span>
+      </a>
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+        <span class="text-[10px] uppercase tracking-widest">Watching</span>
+      </a>
+      <div class="w-px bg-base-300 my-2"></div>
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content font-bold border-t-2 border-neutral">
+        <span class="text-[10px] uppercase tracking-widest">Sell</span>
+      </a>
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+        <span class="text-[10px] uppercase tracking-widest">Account</span>
+      </a>
+    </nav>
+
+  </div>
+</body>
+</html>
