@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<!--
+  ============================================================
+  SCRATCH REVIEW TOOL — NOT PART OF THE EARLY BIRD APP
+  ============================================================
+
+  Purpose
+  -------
+  A throwaway harness used ONCE, during Phase 1 review, so the
+  user can annotate each of the 14 wireframes and export notes
+  into the Claude Code chat for discussion and revision.
+
+  Scope
+  -----
+  - Lives at public/review.html (outside public/wireframes/,
+    so the 14 wireframe files stay pure and spec-faithful).
+  - Does NOT touch src/app/, tailwind.config.js, the DB, API
+    routes, or anything in Phase 2/3/4 territory.
+  - Does NOT introduce any new app concepts, components, or
+    design decisions. It only loads existing wireframes in an
+    iframe and stores notes in localStorage.
+  - When Phase 1 is approved and revisions are done, delete
+    this file. It is not a feature of Early Bird.
+
+  The phase plan is the plan
+  --------------------------
+  Even though this tool exists, the build order in EB_DESIGN.md
+  still stands: Phase 1 (wireframes) → Phase 2 (backend) →
+  Phase 3 (wiring) → Phase 4 (polish). This tool is a Phase 1
+  review aid, nothing more. Do not let its existence expand
+  scope or invite Phase 2+ thinking into this session.
+  ============================================================
+-->
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Early Bird — Wireframe Review (Scratch Tool)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        fontFamily: {
+          sans: ['"JetBrains Mono"', 'monospace'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+          serif: ['"JetBrains Mono"', 'monospace'],
+        },
+      },
+    }
+  </script>
+  <style>
+    html, body { font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace; height: 100%; }
+  </style>
+</head>
+<body class="h-screen flex flex-col bg-base-100 text-base-content overflow-hidden">
+
+  <!-- Top bar -->
+  <header class="flex items-center gap-3 px-4 py-2 border-b border-base-300 bg-base-200 flex-shrink-0">
+    <div class="text-sm font-bold tracking-tight">EARLY BIRD</div>
+    <div class="text-[10px] uppercase tracking-widest text-base-content/60">Wireframe Review</div>
+    <div class="flex-1"></div>
+    <div id="progress" class="text-xs uppercase tracking-wider text-base-content/60">1 / 14</div>
+    <div id="annotated-count" class="text-xs uppercase tracking-wider text-base-content/40">0 annotated</div>
+    <div class="divider divider-horizontal mx-0"></div>
+    <button id="prev-btn" class="btn btn-sm btn-outline">◀ Prev</button>
+    <button id="next-btn" class="btn btn-sm btn-outline">Next ▶</button>
+    <button id="export-btn" class="btn btn-sm btn-neutral">Copy Notes</button>
+    <button id="clear-btn" class="btn btn-sm btn-ghost text-error">Clear</button>
+  </header>
+
+  <!-- Scratch-tool disclaimer banner -->
+  <div class="flex items-start gap-3 px-4 py-2 bg-warning/10 border-b border-warning/40 text-[11px] leading-relaxed flex-shrink-0">
+    <div class="badge badge-warning badge-sm font-bold uppercase tracking-widest">Scratch Tool</div>
+    <div class="text-base-content/70">
+      This page is a Phase 1 review aid only. It's not part of the Early Bird app, and it must not pull us off the phase plan in <span class="font-bold">EB_DESIGN.md</span> (Phase 1 wireframes → Phase 2 backend → Phase 3 wiring → Phase 4 polish). When revisions are done, this file gets deleted.
+    </div>
+  </div>
+
+  <!-- Main 3-column layout -->
+  <div class="flex flex-1 min-h-0">
+
+    <!-- Left: wireframe index -->
+    <aside class="w-56 flex flex-col border-r border-base-300 bg-base-100 flex-shrink-0">
+      <div class="px-3 py-2 text-[10px] uppercase tracking-widest text-base-content/60 border-b border-base-300 flex-shrink-0">
+        Wireframes (14)
+      </div>
+      <ul id="wireframe-list" class="menu menu-sm p-2 w-full overflow-y-auto flex-1"></ul>
+    </aside>
+
+    <!-- Center: iframe -->
+    <main class="flex-1 min-w-0 flex flex-col bg-base-300">
+      <div class="px-4 py-2 border-b border-base-300 flex items-center justify-between flex-shrink-0 bg-base-100">
+        <div class="flex items-center gap-2">
+          <div id="current-index-label" class="text-[10px] uppercase tracking-widest text-base-content/60">Screen 1</div>
+          <div id="current-name" class="text-xs font-bold uppercase tracking-wider">landing-buyer</div>
+        </div>
+        <a id="open-link" class="link link-hover text-xs" target="_blank" rel="noopener">Open in new tab ↗</a>
+      </div>
+      <iframe id="wireframe-frame" class="flex-1 w-full border-0 bg-base-300" src="wireframes/landing-buyer.html"></iframe>
+    </main>
+
+    <!-- Right: notes panel -->
+    <aside class="w-96 flex flex-col border-l border-base-300 bg-base-100 flex-shrink-0">
+      <div class="px-3 py-2 text-[10px] uppercase tracking-widest text-base-content/60 border-b border-base-300 flex items-center justify-between flex-shrink-0">
+        <span>Notes for <span id="notes-target" class="font-bold text-base-content/80">landing-buyer</span></span>
+        <span id="saved-indicator" class="text-base-content/40">Saved</span>
+      </div>
+      <textarea
+        id="notes-input"
+        class="textarea textarea-ghost rounded-none focus:outline-none flex-1 resize-none w-full text-xs leading-relaxed"
+        placeholder="What feels off about this screen? Anything missing? Wrong hierarchy? Notes persist as you navigate."
+      ></textarea>
+      <div class="px-3 py-2 border-t border-base-300 text-[10px] text-base-content/50 flex-shrink-0">
+        Persists to localStorage. Cmd/Ctrl + ← / → to navigate.
+      </div>
+    </aside>
+
+  </div>
+
+  <script>
+    const WIREFRAMES = [
+      'landing-buyer',
+      'landing-dealer',
+      'onboarding',
+      'buy-feed',
+      'watching',
+      'item-detail-buyer',
+      'item-detail-dealer-own',
+      'item-detail-dealer-browsing',
+      'sell-booth-setup',
+      'sell-booth-active',
+      'sell-add-item',
+      'sell-market-picker',
+      'account-buyer',
+      'account-dealer'
+    ];
+
+    const NOTES_KEY = 'eb_wireframe_notes_v1';
+    const INDEX_KEY = 'eb_wireframe_review_index_v1';
+
+    let notes = {};
+    try {
+      const raw = localStorage.getItem(NOTES_KEY);
+      const parsed = raw ? JSON.parse(raw) : {};
+      if (parsed && typeof parsed === 'object') notes = parsed;
+    } catch (e) {
+      notes = {};
+    }
+
+    let currentIndex = parseInt(localStorage.getItem(INDEX_KEY) || '0', 10);
+    if (isNaN(currentIndex) || currentIndex < 0 || currentIndex >= WIREFRAMES.length) currentIndex = 0;
+
+    const frame = document.getElementById('wireframe-frame');
+    const nameEl = document.getElementById('current-name');
+    const notesTarget = document.getElementById('notes-target');
+    const currentIndexLabel = document.getElementById('current-index-label');
+    const openLink = document.getElementById('open-link');
+    const progressEl = document.getElementById('progress');
+    const annotatedEl = document.getElementById('annotated-count');
+    const listEl = document.getElementById('wireframe-list');
+    const textarea = document.getElementById('notes-input');
+    const savedIndicator = document.getElementById('saved-indicator');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const exportBtn = document.getElementById('export-btn');
+    const clearBtn = document.getElementById('clear-btn');
+
+    function annotatedCount() {
+      return WIREFRAMES.filter(n => (notes[n] || '').trim().length > 0).length;
+    }
+
+    function saveCurrentNotes() {
+      const name = WIREFRAMES[currentIndex];
+      notes[name] = textarea.value;
+      try {
+        localStorage.setItem(NOTES_KEY, JSON.stringify(notes));
+      } catch (e) { /* quota: ignore */ }
+      savedIndicator.textContent = 'Saved';
+      annotatedEl.textContent = annotatedCount() + ' annotated';
+      renderList();
+    }
+
+    function renderList() {
+      listEl.innerHTML = '';
+      WIREFRAMES.forEach((name, i) => {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.className = 'text-xs py-2 flex items-center justify-between gap-2';
+        if (i === currentIndex) a.classList.add('active', 'font-bold');
+
+        const label = document.createElement('span');
+        label.className = 'truncate';
+        label.textContent = (i + 1).toString().padStart(2, '0') + '. ' + name;
+        a.appendChild(label);
+
+        const hasNotes = (notes[name] || '').trim().length > 0;
+        if (hasNotes) {
+          const dot = document.createElement('span');
+          dot.className = 'text-success text-base leading-none';
+          dot.textContent = '●';
+          a.appendChild(dot);
+        }
+
+        a.addEventListener('click', (e) => {
+          e.preventDefault();
+          goTo(i);
+        });
+        li.appendChild(a);
+        listEl.appendChild(li);
+      });
+    }
+
+    function goTo(i) {
+      saveCurrentNotes();
+      currentIndex = ((i % WIREFRAMES.length) + WIREFRAMES.length) % WIREFRAMES.length;
+      try {
+        localStorage.setItem(INDEX_KEY, String(currentIndex));
+      } catch (e) { /* ignore */ }
+
+      const name = WIREFRAMES[currentIndex];
+      const src = 'wireframes/' + name + '.html';
+      frame.src = src;
+      nameEl.textContent = name;
+      notesTarget.textContent = name;
+      currentIndexLabel.textContent = 'Screen ' + (currentIndex + 1);
+      openLink.href = src;
+      progressEl.textContent = (currentIndex + 1) + ' / ' + WIREFRAMES.length;
+      textarea.value = notes[name] || '';
+      annotatedEl.textContent = annotatedCount() + ' annotated';
+      renderList();
+      textarea.focus();
+    }
+
+    prevBtn.addEventListener('click', () => goTo(currentIndex - 1));
+    nextBtn.addEventListener('click', () => goTo(currentIndex + 1));
+
+    let saveTimer = null;
+    textarea.addEventListener('input', () => {
+      savedIndicator.textContent = 'Saving…';
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(saveCurrentNotes, 400);
+    });
+    textarea.addEventListener('blur', () => {
+      clearTimeout(saveTimer);
+      saveCurrentNotes();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      const inTextarea = document.activeElement === textarea;
+      if ((e.metaKey || e.ctrlKey) && e.key === 'ArrowRight') {
+        e.preventDefault();
+        goTo(currentIndex + 1);
+      } else if ((e.metaKey || e.ctrlKey) && e.key === 'ArrowLeft') {
+        e.preventDefault();
+        goTo(currentIndex - 1);
+      }
+    });
+
+    exportBtn.addEventListener('click', async () => {
+      saveCurrentNotes();
+      const lines = [
+        '# Early Bird — Phase 1 Wireframe Review Notes',
+        '',
+        'Exported from public/review.html (scratch tool, not part of app).',
+        '',
+      ];
+      WIREFRAMES.forEach((name, i) => {
+        const note = (notes[name] || '').trim();
+        lines.push('## ' + (i + 1).toString().padStart(2, '0') + '. ' + name);
+        lines.push(note.length ? note : '_(no notes)_');
+        lines.push('');
+      });
+      const text = lines.join('\n');
+      try {
+        await navigator.clipboard.writeText(text);
+        exportBtn.textContent = 'Copied ✓';
+      } catch (err) {
+        window.prompt('Copy your notes (clipboard blocked):', text);
+        exportBtn.textContent = 'Shown';
+      }
+      setTimeout(() => { exportBtn.textContent = 'Copy Notes'; }, 1800);
+    });
+
+    clearBtn.addEventListener('click', () => {
+      if (!confirm('Clear ALL notes across all 14 wireframes? This cannot be undone.')) return;
+      notes = {};
+      try {
+        localStorage.removeItem(NOTES_KEY);
+      } catch (e) { /* ignore */ }
+      textarea.value = '';
+      annotatedEl.textContent = '0 annotated';
+      renderList();
+    });
+
+    // Initial render
+    goTo(currentIndex);
+  </script>
+</body>
+</html>
