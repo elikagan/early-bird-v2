@@ -4,6 +4,8 @@
 
 This is the definitive reference for what Early Bird is, who it's for, how it works, and why. This document supersedes all previous plans, roadmaps, and partial specs.
 
+> **Currently in Phase 1 revision.** Wireframes are built and under review. Sessions must follow the "Phase 1 Revision Workflow" section further down (one screen per session, no batching). Read that section + `PHASE_1_REVIEW_NOTES.md` + the ONE target wireframe file — nothing else. The rules in that section override default behavior.
+
 ---
 
 ## The Idea
@@ -199,7 +201,7 @@ Before writing any application code:
 1. **Pre-commit hook** — a shell script that greps for `style="` and rejects the commit if found. Inline styles physically cannot enter the repo.
 2. **CLAUDE.md** — project rules file that Claude Code reads on every session. Contains: "Do not add inline styles. Do not change DaisyUI class names. Do not add HTML elements that aren't in the wireframe."
 
-### Phase 1: Wireframes (1 session)
+### Phase 1: Wireframes (1 session + revision pass)
 Build every screen as static HTML using only DaisyUI classes. No JavaScript. No server. No data fetching. One file per screen/state:
 
 - `landing-buyer.html`
@@ -221,6 +223,8 @@ Dummy data hardcoded. Review visually in a browser. These files become the **sou
 
 **Definition of done:** Every screen renders correctly in a mobile viewport with DaisyUI classes only. No `style=""` attributes anywhere. Screenshots reviewed and approved.
 
+**Current status:** Initial wireframes built. Review feedback captured in `PHASE_1_REVIEW_NOTES.md`. Revision pass follows the "Phase 1 Revision Workflow" section below — one screen per session.
+
 ### Phase 2: Backend (1 session)
 All API routes, data models, database setup. Pure logic, no UI.
 
@@ -241,7 +245,71 @@ Screen by screen, replace hardcoded dummy data with real data fetching. The inst
 ### Phase 4: Polish (1–2 sessions)
 Edge cases, loading states, error states, empty states, transitions, responsive tweaks. Still no inline styles — everything uses DaisyUI classes and Tailwind utilities.
 
-**Total estimate:** 5–8 Claude Code sessions.
+**Total estimate:** 5–8 Claude Code sessions, plus the Phase 1 revision pass below.
+
+---
+
+## Phase 1 Revision Workflow (Active)
+
+**Status:** Phase 1 wireframes were built. The user reviewed all 14 in the scratch review tool at `public/review.html` and filed notes in `PHASE_1_REVIEW_NOTES.md` at the repo root. An initial batch-revision attempt was rolled back: that attempt tried to process 13 screen revisions + 3 new screens + 1 deletion + EB_DESIGN fold-in + review tool update + QA sweep inside a single session, and the accumulated context errors produced output that didn't match the review notes on multiple screens. All 20 commits in that range were hard-reset out of `main`'s history.
+
+**The new rule:** one session handles exactly one checklist item below. No batching. No "while I'm here" edits to other screens. End the session the moment the single item is committed and pushed. The next checklist item gets a fresh Claude Code session with a clean context window.
+
+### Session protocol
+
+1. Read `CLAUDE.md` (global rules — no inline styles, etc.).
+2. Read this section of `EB_DESIGN.md` — not the whole file. The rest of `EB_DESIGN.md` is already reflected in the wireframe you're about to edit.
+3. Read `PHASE_1_REVIEW_NOTES.md` — only the subsection for the current checklist item. Do not scroll through the whole file.
+4. Read `public/wireframes/{current-screen}.html` — the one target file, nothing else.
+5. Apply the changes the notes ask for, one note at a time.
+6. Commit with a HEREDOC message. Title format: `Revise {screen}: {1-line summary}`. Body must list each addressed note by number (e.g., "addresses 01.1, 01.2, 01.3, 01.4"). Any note not addressed gets an explicit line explaining why.
+7. Push.
+8. Update the checklist below: flip the checkbox, add a one-line session log entry at the bottom.
+9. End the session. The next item is a separate session.
+
+**Things the session must NOT do:**
+- Read other wireframe files while revising the current one. Cross-screen context pollution was the root cause of the first batch's failure.
+- Batch multiple checklist items into one session.
+- Pre-plan revisions for other screens "while the context is fresh."
+- Touch `public/review.html` unless the current task explicitly changes the `WIREFRAMES` array (only the delete and create tasks do).
+- Rewrite `EB_DESIGN.md` beyond the specific section a review note explicitly asks to update.
+
+### Special cases
+
+- **"Remove this page"** (applies to `sell-market-picker`, notes 12.1–12.2): the session deletes the wireframe file, removes the entry from the `WIREFRAMES` array in `public/review.html`, updates the sidebar count (`Wireframes (N)`), updates the progress counter default (`1 / N`), updates the clear-all confirm copy, updates this checklist, commits, ends.
+- **"We need a new screen"** (notes 04.3 and 09.2 propose `home-buyer` and `home-dealer`): the session revising the source screen (`buy-feed`, `sell-booth-setup`) does NOT build the new screen in that session. The new screen is its own checklist item and gets its own dedicated session with its own clean context window.
+- **"Split into two states"** (note 06.4 splits `item-detail-buyer` into a clean buyer-view state and an inquiry-drawer state): the session handling the split creates both files in one commit because they are tightly coupled. This is the only permitted exception to the one-screen-per-session rule, and it is explicitly flagged in the checklist.
+- **"Update the plan"** (notes that ask for changes to `EB_DESIGN.md` — e.g., note 03.7 asks for a buyer-onboarding preferences note; note 09.4 asks for a payment-handles policy note): these are inline edits made in the same commit that revises the wireframe. Only touch the specific `EB_DESIGN.md` section the note explicitly references.
+
+### Checklist
+
+Existing screens (revise in place):
+- [ ] 01. landing-buyer
+- [ ] 02. landing-dealer
+- [ ] 03. onboarding (note 03.7 also asks for an `EB_DESIGN.md` update about buyer-onboarding preferences — handle inline)
+- [ ] 04. buy-feed (note 04.3 proposes new screen `home-buyer` — do NOT build it in this session; it is a separate checklist item below)
+- [ ] 05. watching
+- [ ] 06. item-detail-buyer → SPLIT into clean state + inquiry-drawer state (both files in one session — this is the only exception to the one-screen rule)
+- [ ] 07. item-detail-dealer-own
+- [ ] 08. item-detail-dealer-browsing
+- [ ] 09. sell-booth-setup (note 09.2 proposes new screen `home-dealer` — do NOT build it in this session; note 09.4 asks for an `EB_DESIGN.md` policy update about payment handles — handle inline)
+- [ ] 10. sell-booth-active
+- [ ] 11. sell-add-item
+- [ ] 13. account-buyer
+- [ ] 14. account-dealer
+
+Deletions:
+- [ ] 12. sell-market-picker (notes 12.1–12.2 explicitly remove this page)
+
+New screens (each is a dedicated session):
+- [ ] home-buyer (from note 04.3 — buyer's logged-in lobby with markets list, countdown, FAQ, drop-alert opt-in)
+- [ ] home-dealer (from note 09.2 — dealer's logged-in lobby with upcoming markets and set-up-booth CTA)
+
+Note: `item-detail-buyer-inquiry` is NOT a separate checklist item. It is the split-off state created within the `item-detail-buyer` session (row 06 above).
+
+### Session log
+
+_(empty — revisions have not started in this new workflow)_
 
 ---
 
