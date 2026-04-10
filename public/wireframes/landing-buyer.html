@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Early Bird — Sign In (Buyer)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        fontFamily: {
+          sans: ['"JetBrains Mono"', 'monospace'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+          serif: ['"JetBrains Mono"', 'monospace'],
+        },
+      },
+    }
+  </script>
+  <style>
+    html, body { font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace; }
+  </style>
+</head>
+<body class="min-h-screen bg-base-300">
+  <div class="max-w-md mx-auto min-h-screen bg-base-100 flex flex-col">
+
+    <!-- Header -->
+    <header class="px-6 pt-12 pb-6">
+      <div class="text-3xl font-bold tracking-tight">EARLY BIRD</div>
+      <div class="text-xs uppercase tracking-widest text-base-content/60 mt-1">LA Flea Markets</div>
+    </header>
+
+    <!-- Hero -->
+    <section class="px-6 pb-8">
+      <h1 class="text-2xl font-bold leading-tight">The best stuff.<br>Before the market opens.</h1>
+      <p class="text-sm text-base-content/70 mt-4 leading-relaxed">
+        Dealers post what they're bringing the night before. Browse from bed. Claim pieces before the alarm goes off.
+      </p>
+    </section>
+
+    <!-- Upcoming Markets -->
+    <section class="px-6 pb-8">
+      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-3">Upcoming Drops</div>
+      <div class="flex flex-col gap-3">
+
+        <!-- Market 1 -->
+        <div class="card card-compact bg-base-100 border border-base-300">
+          <div class="card-body">
+            <div class="flex justify-between items-start gap-2">
+              <div>
+                <div class="font-bold text-base">Downtown Modernism</div>
+                <div class="text-xs text-base-content/60 mt-0.5">Sat Apr 26 · Downtown LA</div>
+              </div>
+              <div class="badge badge-neutral badge-sm">86 dealers</div>
+            </div>
+            <div class="divider my-1"></div>
+            <div class="flex items-center justify-between">
+              <div class="text-xs uppercase text-base-content/60">Drops in</div>
+              <div class="font-bold text-sm tabular-nums">01D 14H 32M 09S</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Market 2 -->
+        <div class="card card-compact bg-base-100 border border-base-300">
+          <div class="card-body">
+            <div class="flex justify-between items-start gap-2">
+              <div>
+                <div class="font-bold text-base">PCC Flea Market</div>
+                <div class="text-xs text-base-content/60 mt-0.5">Sun May 4 · Pasadena City College</div>
+              </div>
+              <div class="badge badge-neutral badge-sm">64 dealers</div>
+            </div>
+            <div class="divider my-1"></div>
+            <div class="flex items-center justify-between">
+              <div class="text-xs uppercase text-base-content/60">Drops in</div>
+              <div class="font-bold text-sm tabular-nums">07D 14H 32M 09S</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Market 3 -->
+        <div class="card card-compact bg-base-100 border border-base-300">
+          <div class="card-body">
+            <div class="flex justify-between items-start gap-2">
+              <div>
+                <div class="font-bold text-base">Rose Bowl Flea</div>
+                <div class="text-xs text-base-content/60 mt-0.5">Sun May 11 · Pasadena</div>
+              </div>
+              <div class="badge badge-neutral badge-sm">210 dealers</div>
+            </div>
+            <div class="divider my-1"></div>
+            <div class="flex items-center justify-between">
+              <div class="text-xs uppercase text-base-content/60">Drops in</div>
+              <div class="font-bold text-sm tabular-nums">14D 08H 11M 44S</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Sign in form -->
+    <section class="px-6 pb-8">
+      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-3">Get Started</div>
+      <label class="form-control w-full">
+        <div class="label">
+          <span class="label-text text-xs uppercase tracking-wider">Phone Number</span>
+        </div>
+        <input type="tel" placeholder="(213) 555-0134" class="input input-bordered w-full" />
+      </label>
+      <button class="btn btn-neutral w-full mt-4">Send Magic Link</button>
+      <p class="text-xs text-base-content/60 mt-3 text-center">
+        We'll text you a link. No passwords. No codes.
+      </p>
+    </section>
+
+    <!-- Dealer link -->
+    <footer class="px-6 py-6 mt-auto border-t border-base-300">
+      <div class="text-xs text-center text-base-content/60">
+        Selling at a market? <a class="link link-hover font-bold">Dealer sign up</a>
+      </div>
+    </footer>
+
+  </div>
+</body>
+</html>
