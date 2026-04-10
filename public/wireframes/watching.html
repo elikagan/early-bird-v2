@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Early Bird — Watching</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        fontFamily: {
+          sans: ['"JetBrains Mono"', 'monospace'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+          serif: ['"JetBrains Mono"', 'monospace'],
+        },
+      },
+    }
+  </script>
+  <style>
+    html, body { font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace; }
+  </style>
+</head>
+<body class="min-h-screen bg-base-300">
+  <div class="max-w-md mx-auto min-h-screen bg-base-100 flex flex-col">
+
+    <!-- Header -->
+    <header class="px-4 pt-6 pb-4 border-b border-base-300">
+      <div class="flex items-center justify-between mb-3">
+        <div class="text-lg font-bold tracking-tight">EARLY BIRD</div>
+        <div class="avatar placeholder">
+          <div class="bg-neutral text-neutral-content w-8 rounded-full">
+            <span class="text-xs font-bold">JC</span>
+          </div>
+        </div>
+      </div>
+      <div class="text-xs uppercase tracking-widest text-base-content/60">Watching</div>
+      <h1 class="text-2xl font-bold leading-tight mt-1">8 items you care about</h1>
+    </header>
+
+    <!-- Items list -->
+    <main class="flex-1 pb-24">
+
+      <!-- Item 1 - Price drop + inquiry sent -->
+      <a class="flex items-start gap-3 px-4 py-4 border-b border-base-300">
+        <div class="w-20 h-20 bg-base-200 rounded flex-shrink-0 flex items-center justify-center text-[9px] uppercase tracking-widest text-base-content/30">Photo</div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-1">
+            <div class="badge badge-error badge-sm font-bold">PRICE DROP</div>
+            <span class="text-[10px] text-base-content/60 uppercase tracking-wider">2m ago</span>
+          </div>
+          <div class="text-sm font-bold leading-tight truncate">Brass Desk Lamp</div>
+          <div class="text-xs text-base-content/60 truncate">Deco Garage · Downtown Modernism</div>
+          <div class="flex items-center gap-2 mt-1.5">
+            <span class="font-bold text-sm">$180</span>
+            <span class="text-xs text-base-content/40 line-through">$250</span>
+          </div>
+          <div class="flex items-center gap-2 mt-2">
+            <span class="text-error text-xs">♥</span>
+            <span class="text-[10px] uppercase tracking-wider text-base-content/60">Inquiry Sent</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Item 2 - Favorited only -->
+      <a class="flex items-start gap-3 px-4 py-4 border-b border-base-300">
+        <div class="w-20 h-20 bg-base-200 rounded flex-shrink-0 flex items-center justify-center text-[9px] uppercase tracking-widest text-base-content/30">Photo</div>
+        <div class="flex-1 min-w-0">
+          <div class="text-[10px] text-base-content/60 uppercase tracking-wider mb-1">Saved 18m ago</div>
+          <div class="text-sm font-bold leading-tight truncate">Walnut Credenza</div>
+          <div class="text-xs text-base-content/60 truncate">Marco's Finds · Downtown Modernism</div>
+          <div class="flex items-center gap-2 mt-1.5">
+            <span class="font-bold text-sm">$450</span>
+          </div>
+          <div class="flex items-center gap-2 mt-2">
+            <span class="text-error text-xs">♥</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Item 3 - Inquiry sent -->
+      <a class="flex items-start gap-3 px-4 py-4 border-b border-base-300">
+        <div class="w-20 h-20 bg-base-200 rounded flex-shrink-0 flex items-center justify-center text-[9px] uppercase tracking-widest text-base-content/30">Photo</div>
+        <div class="flex-1 min-w-0">
+          <div class="text-[10px] text-base-content/60 uppercase tracking-wider mb-1">Asked 1h ago</div>
+          <div class="text-sm font-bold leading-tight truncate">Vintage Leather Armchair</div>
+          <div class="text-xs text-base-content/60 truncate">Avenue B · Downtown Modernism</div>
+          <div class="flex items-center gap-2 mt-1.5">
+            <span class="font-bold text-sm">$325</span>
+          </div>
+          <div class="flex items-center gap-2 mt-2">
+            <span class="text-[10px] uppercase tracking-wider text-base-content/60">Inquiry Sent</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Item 4 - Held -->
+      <a class="flex items-start gap-3 px-4 py-4 border-b border-base-300">
+        <div class="w-20 h-20 bg-base-200 rounded flex-shrink-0 flex items-center justify-center text-[9px] uppercase tracking-widest text-base-content/30">Photo</div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-1">
+            <div class="badge badge-warning badge-sm font-bold">HELD</div>
+          </div>
+          <div class="text-sm font-bold leading-tight truncate">Teak Nesting Tables</div>
+          <div class="text-xs text-base-content/60 truncate">Marco's Finds · Downtown Modernism</div>
+          <div class="flex items-center gap-2 mt-1.5">
+            <span class="font-bold text-sm">$220</span>
+          </div>
+          <div class="flex items-center gap-2 mt-2">
+            <span class="text-error text-xs">♥</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Item 5 - Favorited -->
+      <a class="flex items-start gap-3 px-4 py-4 border-b border-base-300">
+        <div class="w-20 h-20 bg-base-200 rounded flex-shrink-0 flex items-center justify-center text-[9px] uppercase tracking-widest text-base-content/30">Photo</div>
+        <div class="flex-1 min-w-0">
+          <div class="text-[10px] text-base-content/60 uppercase tracking-wider mb-1">Saved yesterday</div>
+          <div class="text-sm font-bold leading-tight truncate">Cobalt Studio Vase</div>
+          <div class="text-xs text-base-content/60 truncate">Lucille's Ceramics · Downtown Modernism</div>
+          <div class="flex items-center gap-2 mt-1.5">
+            <span class="font-bold text-sm">$85</span>
+          </div>
+          <div class="flex items-center gap-2 mt-2">
+            <span class="text-error text-xs">♥</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Item 6 - Sold (missed) -->
+      <a class="flex items-start gap-3 px-4 py-4 border-b border-base-300 opacity-60">
+        <div class="w-20 h-20 bg-base-200 rounded flex-shrink-0 flex items-center justify-center text-[9px] uppercase tracking-widest text-base-content/30">Photo</div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-1">
+            <div class="badge badge-neutral badge-sm font-bold">SOLD</div>
+          </div>
+          <div class="text-sm font-bold leading-tight truncate line-through">Enamel Kitchen Table</div>
+          <div class="text-xs text-base-content/60 truncate">Ruth's House · Downtown Modernism</div>
+          <div class="flex items-center gap-2 mt-1.5">
+            <span class="font-bold text-sm line-through">$140</span>
+          </div>
+          <div class="flex items-center gap-2 mt-2">
+            <span class="text-error text-xs">♥</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Item 7 - Different market -->
+      <a class="flex items-start gap-3 px-4 py-4 border-b border-base-300">
+        <div class="w-20 h-20 bg-base-200 rounded flex-shrink-0 flex items-center justify-center text-[9px] uppercase tracking-widest text-base-content/30">Photo</div>
+        <div class="flex-1 min-w-0">
+          <div class="text-[10px] text-base-content/60 uppercase tracking-wider mb-1">Saved 3 days ago</div>
+          <div class="text-sm font-bold leading-tight truncate">Folk Art Weather Vane</div>
+          <div class="text-xs text-base-content/60 truncate">Barn Owl Antiques · Rose Bowl · May 11</div>
+          <div class="flex items-center gap-2 mt-1.5">
+            <span class="font-bold text-sm">$340</span>
+          </div>
+          <div class="flex items-center gap-2 mt-2">
+            <span class="text-error text-xs">♥</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Item 8 - Price drop older -->
+      <a class="flex items-start gap-3 px-4 py-4 border-b border-base-300">
+        <div class="w-20 h-20 bg-base-200 rounded flex-shrink-0 flex items-center justify-center text-[9px] uppercase tracking-widest text-base-content/30">Photo</div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-1">
+            <div class="badge badge-error badge-sm font-bold">PRICE DROP</div>
+            <span class="text-[10px] text-base-content/60 uppercase tracking-wider">4h ago</span>
+          </div>
+          <div class="text-sm font-bold leading-tight truncate">Chrome Floor Lamp</div>
+          <div class="text-xs text-base-content/60 truncate">Deco Garage · Downtown Modernism</div>
+          <div class="flex items-center gap-2 mt-1.5">
+            <span class="font-bold text-sm">$275</span>
+            <span class="text-xs text-base-content/40 line-through">$340</span>
+          </div>
+          <div class="flex items-center gap-2 mt-2">
+            <span class="text-error text-xs">♥</span>
+          </div>
+        </div>
+      </a>
+
+    </main>
+
+    <!-- Bottom nav -->
+    <nav class="max-w-md mx-auto fixed bottom-0 left-0 right-0 bg-base-100 border-t border-base-300 flex">
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+        <span class="text-[10px] uppercase tracking-widest">Buy</span>
+      </a>
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content font-bold border-t-2 border-neutral">
+        <span class="text-[10px] uppercase tracking-widest">Watching</span>
+      </a>
+      <div class="w-px bg-base-300 my-2"></div>
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+        <span class="text-[10px] uppercase tracking-widest">Account</span>
+      </a>
+    </nav>
+
+  </div>
+</body>
+</html>
