@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Early Bird — Active Booth</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        fontFamily: {
+          sans: ['"JetBrains Mono"', 'monospace'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+          serif: ['"JetBrains Mono"', 'monospace'],
+        },
+      },
+    }
+  </script>
+  <style>
+    html, body { font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace; }
+  </style>
+</head>
+<body class="min-h-screen bg-base-300">
+  <div class="max-w-md mx-auto min-h-screen bg-base-100 flex flex-col">
+
+    <!-- Header -->
+    <header class="px-4 pt-6 pb-3 border-b border-base-300">
+      <div class="flex items-center justify-between mb-3">
+        <div class="text-lg font-bold tracking-tight">EARLY BIRD</div>
+        <div class="avatar placeholder">
+          <div class="bg-neutral text-neutral-content w-8 rounded-full">
+            <span class="text-xs font-bold">MF</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Market switcher -->
+      <button class="flex items-center justify-between w-full text-left">
+        <div>
+          <div class="text-sm font-bold">Downtown Modernism</div>
+          <div class="text-[10px] uppercase tracking-widest text-base-content/60">Booth 42 · Tap to switch market</div>
+        </div>
+        <div class="badge badge-success gap-1">
+          <span class="inline-block w-1.5 h-1.5 rounded-full bg-success-content"></span>
+          LIVE
+        </div>
+      </button>
+    </header>
+
+    <!-- Live stats -->
+    <section class="px-4 py-4 bg-base-200">
+      <div class="stats stats-horizontal w-full bg-base-100">
+        <div class="stat p-3">
+          <div class="stat-title text-[10px] uppercase tracking-wider">Listed</div>
+          <div class="stat-value text-xl">18</div>
+        </div>
+        <div class="stat p-3">
+          <div class="stat-title text-[10px] uppercase tracking-wider">Watchers</div>
+          <div class="stat-value text-xl">86</div>
+        </div>
+        <div class="stat p-3">
+          <div class="stat-title text-[10px] uppercase tracking-wider">Inquiries</div>
+          <div class="stat-value text-xl">14</div>
+        </div>
+      </div>
+      <div class="text-[10px] uppercase tracking-widest text-base-content/60 mt-2 text-center">Market is live · 127 buyers shopping</div>
+    </section>
+
+    <!-- Filter bar -->
+    <div class="px-4 py-3 border-b border-base-300 flex items-center gap-2">
+      <div role="tablist" class="tabs tabs-boxed bg-base-200">
+        <a role="tab" class="tab tab-active text-xs font-bold">ALL</a>
+        <a role="tab" class="tab text-xs font-bold">LIVE</a>
+        <a role="tab" class="tab text-xs font-bold">HELD</a>
+        <a role="tab" class="tab text-xs font-bold">SOLD</a>
+      </div>
+      <div class="flex-1"></div>
+      <button class="btn btn-sm btn-neutral">+ Add</button>
+    </div>
+
+    <!-- Items list -->
+    <main class="flex-1 pb-32">
+
+      <!-- Item 1 - Live with inquiries -->
+      <div class="flex items-start gap-3 px-4 py-4 border-b border-base-300">
+        <div class="w-16 h-16 bg-base-200 rounded flex-shrink-0 flex items-center justify-center text-[9px] uppercase tracking-widest text-base-content/30">Photo</div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-1">
+            <div class="badge badge-success badge-sm gap-1">
+              <span class="inline-block w-1 h-1 rounded-full bg-success-content"></span>
+              LIVE
+            </div>
+            <div class="badge badge-neutral badge-sm">3 asks</div>
+          </div>
+          <div class="text-sm font-bold leading-tight truncate">Walnut Credenza</div>
+          <div class="flex items-center gap-2 mt-1">
+            <span class="font-bold text-sm">$450</span>
+            <span class="text-[10px] text-base-content/60">· 12 watchers</span>
+          </div>
+          <div class="flex gap-2 mt-2">
+            <button class="btn btn-xs btn-outline">Edit</button>
+            <button class="btn btn-xs btn-outline">Drop Price</button>
+            <button class="btn btn-xs btn-outline">Hold</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item 2 - Held -->
+      <div class="flex items-start gap-3 px-4 py-4 border-b border-base-300">
+        <div class="w-16 h-16 bg-base-200 rounded flex-shrink-0 flex items-center justify-center text-[9px] uppercase tracking-widest text-base-content/30">Photo</div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-1">
+            <div class="badge badge-warning badge-sm font-bold">HELD</div>
+            <div class="badge badge-neutral badge-sm">1 ask</div>
+          </div>
+          <div class="text-sm font-bold leading-tight truncate">Teak Nesting Tables</div>
+          <div class="flex items-center gap-2 mt-1">
+            <span class="font-bold text-sm">$220</span>
+            <span class="text-[10px] text-base-content/60">· 4 watchers</span>
+          </div>
+          <div class="flex gap-2 mt-2">
+            <button class="btn btn-xs btn-outline">Edit</button>
+            <button class="btn btn-xs btn-outline">Release</button>
+            <button class="btn btn-xs btn-outline">Mark Sold</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item 3 - Sold -->
+      <div class="flex items-start gap-3 px-4 py-4 border-b border-base-300 opacity-60">
+        <div class="w-16 h-16 bg-base-200 rounded flex-shrink-0 flex items-center justify-center text-[9px] uppercase tracking-widest text-base-content/30">Photo</div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-1">
+            <div class="badge badge-neutral badge-sm font-bold">SOLD</div>
+          </div>
+          <div class="text-sm font-bold leading-tight truncate line-through">Enamel Kitchen Table</div>
+          <div class="flex items-center gap-2 mt-1">
+            <span class="font-bold text-sm line-through">$140</span>
+            <span class="text-[10px] text-base-content/60">· Sold to John C.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item 4 - Live, no activity -->
+      <div class="flex items-start gap-3 px-4 py-4 border-b border-base-300">
+        <div class="w-16 h-16 bg-base-200 rounded flex-shrink-0 flex items-center justify-center text-[9px] uppercase tracking-widest text-base-content/30">Photo</div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-1">
+            <div class="badge badge-success badge-sm gap-1">
+              <span class="inline-block w-1 h-1 rounded-full bg-success-content"></span>
+              LIVE
+            </div>
+          </div>
+          <div class="text-sm font-bold leading-tight truncate">Oak Rolltop Desk</div>
+          <div class="flex items-center gap-2 mt-1">
+            <span class="font-bold text-sm">$625</span>
+            <span class="text-[10px] text-base-content/60">· 2 watchers</span>
+          </div>
+          <div class="flex gap-2 mt-2">
+            <button class="btn btn-xs btn-outline">Edit</button>
+            <button class="btn btn-xs btn-outline">Drop Price</button>
+            <button class="btn btn-xs btn-outline">Hold</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item 5 - Live, price dropped -->
+      <div class="flex items-start gap-3 px-4 py-4 border-b border-base-300">
+        <div class="w-16 h-16 bg-base-200 rounded flex-shrink-0 flex items-center justify-center text-[9px] uppercase tracking-widest text-base-content/30">Photo</div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-1">
+            <div class="badge badge-success badge-sm gap-1">
+              <span class="inline-block w-1 h-1 rounded-full bg-success-content"></span>
+              LIVE
+            </div>
+            <div class="badge badge-error badge-sm font-bold">DROPPED</div>
+          </div>
+          <div class="text-sm font-bold leading-tight truncate">Pair of Cane Chairs</div>
+          <div class="flex items-center gap-2 mt-1">
+            <span class="font-bold text-sm">$180</span>
+            <span class="text-xs text-base-content/40 line-through">$240</span>
+          </div>
+          <div class="flex gap-2 mt-2">
+            <button class="btn btn-xs btn-outline">Edit</button>
+            <button class="btn btn-xs btn-outline">Hold</button>
+            <button class="btn btn-xs btn-outline">Mark Sold</button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- FAB add item -->
+    <button class="max-w-md mx-auto fixed bottom-20 right-4 left-auto btn btn-circle btn-lg btn-neutral shadow-lg z-10">+</button>
+
+    <!-- Bottom nav (dealer: 4 tabs) -->
+    <nav class="max-w-md mx-auto fixed bottom-0 left-0 right-0 bg-base-100 border-t border-base-300 flex">
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+        <span class="text-[10px] uppercase tracking-widest">Buy</span>
+      </a>
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+        <span class="text-[10px] uppercase tracking-widest">Watching</span>
+      </a>
+      <div class="w-px bg-base-300 my-2"></div>
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content font-bold border-t-2 border-neutral">
+        <span class="text-[10px] uppercase tracking-widest">Sell</span>
+      </a>
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+        <span class="text-[10px] uppercase tracking-widest">Account</span>
+      </a>
+    </nav>
+
+  </div>
+</body>
+</html>
