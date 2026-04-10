@@ -28,17 +28,33 @@
   <div class="max-w-md mx-auto min-h-screen bg-base-100 flex flex-col">
 
     <!-- Header -->
-    <header class="px-6 pt-12 pb-6">
-      <div class="text-3xl font-bold tracking-tight">EARLY BIRD</div>
-      <div class="text-xs uppercase tracking-widest text-base-content/60 mt-1">LA Flea Markets</div>
+    <header class="px-6 pt-10 pb-5 flex justify-between items-start gap-4">
+      <div>
+        <div class="text-3xl font-bold tracking-tight">EARLY BIRD</div>
+        <div class="text-xs uppercase tracking-widest text-base-content/60 mt-1">LA Flea Markets</div>
+      </div>
+      <a class="link link-hover text-xs uppercase tracking-wider text-base-content/70 mt-2 whitespace-nowrap">Dealer? →</a>
     </header>
 
-    <!-- Hero -->
+    <!-- Hero + Sign In (above the fold) -->
     <section class="px-6 pb-8">
-      <h1 class="text-2xl font-bold leading-tight">The best stuff.<br>Before the market opens.</h1>
-      <p class="text-sm text-base-content/70 mt-4 leading-relaxed">
+      <h1 class="text-2xl font-bold leading-tight">Shop the drop.<br>Before the market opens.</h1>
+      <p class="text-sm text-base-content/70 mt-3 leading-relaxed">
         Dealers post what they're bringing the night before. Browse from bed. Claim pieces before the alarm goes off.
       </p>
+
+      <div class="mt-6">
+        <label class="form-control w-full">
+          <div class="label pb-1">
+            <span class="label-text text-xs uppercase tracking-wider">Your Phone Number</span>
+          </div>
+          <input type="tel" placeholder="(213) 555-0134" class="input input-bordered w-full" />
+        </label>
+        <button class="btn btn-neutral w-full mt-3">Send Magic Link</button>
+        <p class="text-xs text-base-content/60 mt-2 text-center">
+          We'll text you a link. No passwords. No codes.
+        </p>
+      </div>
     </section>
 
     <!-- Upcoming Markets -->
@@ -103,24 +119,64 @@
       </div>
     </section>
 
-    <!-- Sign in form -->
+    <!-- FAQ -->
     <section class="px-6 pb-8">
-      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-3">Get Started</div>
-      <label class="form-control w-full">
-        <div class="label">
-          <span class="label-text text-xs uppercase tracking-wider">Phone Number</span>
+      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-3">FAQ</div>
+      <div class="flex flex-col gap-3">
+
+        <div class="card card-compact bg-base-100 border border-base-300">
+          <div class="card-body">
+            <div class="font-bold text-sm">How does it work?</div>
+            <div class="text-xs text-base-content/70 leading-relaxed mt-1">
+              Dealers post what they're bringing the night before a market. You browse, favorite pieces, and tap "I'm Interested" to message the dealer directly. They hold it for you until pickup at the booth.
+            </div>
+          </div>
         </div>
-        <input type="tel" placeholder="(213) 555-0134" class="input input-bordered w-full" />
-      </label>
-      <button class="btn btn-neutral w-full mt-4">Send Magic Link</button>
-      <p class="text-xs text-base-content/60 mt-3 text-center">
-        We'll text you a link. No passwords. No codes.
+
+        <div class="card card-compact bg-base-100 border border-base-300">
+          <div class="card-body">
+            <div class="font-bold text-sm">Is it free?</div>
+            <div class="text-xs text-base-content/70 leading-relaxed mt-1">
+              Yes. Early Bird is free for buyers. We don't take a cut — you pay the dealer directly at the booth, however they prefer (cash, Venmo, Zelle, etc.).
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-compact bg-base-100 border border-base-300">
+          <div class="card-body">
+            <div class="font-bold text-sm">Do I still need to show up at 4am?</div>
+            <div class="text-xs text-base-content/70 leading-relaxed mt-1">
+              No. That's the point. Skip the flashlight scramble and show up when the market opens — your pieces will be waiting at the dealer's booth.
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-compact bg-base-100 border border-base-300">
+          <div class="card-body">
+            <div class="font-bold text-sm">What if I miss the drop?</div>
+            <div class="text-xs text-base-content/70 leading-relaxed mt-1">
+              Inventory stays visible for the whole market. Anything still available is yours to claim — and sold pieces stay visible too, so you can see what you missed and follow that dealer for their next drop.
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- About -->
+    <section class="px-6 pb-10">
+      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-3">About</div>
+      <p class="text-sm text-base-content/70 leading-relaxed">
+        Every weekend, thousands of people wake up before dawn to go treasure hunting at LA flea markets. The best stuff goes fast. If you're not there at 4am with a flashlight, you're too late.
+      </p>
+      <p class="text-sm text-base-content/70 leading-relaxed mt-3">
+        Early Bird moves the hunt to the night before. Dealers show what they're bringing. Buyers shop from bed. The early bird still gets the worm — but now "early" means the couch, not the cold.
       </p>
     </section>
 
     <!-- Dealer link -->
-    <footer class="px-6 py-6 mt-auto border-t border-base-300">
-      <div class="text-xs text-center text-base-content/60">
+    <footer class="px-6 py-8 mt-auto bg-base-200">
+      <div class="text-xs text-center text-base-content/70">
         Selling at a market? <a class="link link-hover font-bold">Dealer sign up</a>
       </div>
     </footer>
