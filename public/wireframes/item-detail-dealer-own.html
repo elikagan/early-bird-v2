@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Early Bird — Item Detail (Dealer Own)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        fontFamily: {
+          sans: ['"JetBrains Mono"', 'monospace'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+          serif: ['"JetBrains Mono"', 'monospace'],
+        },
+      },
+    }
+  </script>
+  <style>
+    html, body { font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace; }
+  </style>
+</head>
+<body class="min-h-screen bg-base-300">
+  <div class="max-w-md mx-auto min-h-screen bg-base-100 flex flex-col">
+
+    <!-- Top bar -->
+    <header class="px-4 pt-6 pb-3 flex items-center justify-between">
+      <button class="btn btn-sm btn-circle btn-ghost">←</button>
+      <div class="text-[10px] uppercase tracking-widest text-base-content/60">Dealer Own · State 2</div>
+      <button class="btn btn-sm btn-ghost text-xs uppercase tracking-wider">Edit</button>
+    </header>
+
+    <!-- Hero photo -->
+    <figure class="aspect-square bg-base-200 mx-4 rounded relative flex items-center justify-center">
+      <div class="text-xs uppercase tracking-widest text-base-content/30">Photo 1 of 5</div>
+      <div class="absolute top-2 left-2">
+        <div class="badge badge-success gap-1">
+          <span class="inline-block w-1.5 h-1.5 rounded-full bg-success-content"></span>
+          LIVE
+        </div>
+      </div>
+    </figure>
+
+    <!-- Thumbnails -->
+    <div class="px-4 pt-3 flex gap-2">
+      <div class="w-14 h-14 bg-base-200 rounded border-2 border-neutral"></div>
+      <div class="w-14 h-14 bg-base-200 rounded border border-base-300"></div>
+      <div class="w-14 h-14 bg-base-200 rounded border border-base-300"></div>
+      <div class="w-14 h-14 bg-base-200 rounded border border-base-300"></div>
+      <div class="w-14 h-14 bg-base-200 rounded border border-base-300"></div>
+    </div>
+
+    <!-- Status controls -->
+    <section class="px-4 pt-5 pb-4">
+      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-2">Status</div>
+      <div role="tablist" class="tabs tabs-boxed bg-base-200">
+        <a role="tab" class="tab tab-active font-bold">Live</a>
+        <a role="tab" class="tab">Hold</a>
+        <a role="tab" class="tab">Sold</a>
+      </div>
+    </section>
+
+    <div class="divider mx-4 my-0"></div>
+
+    <!-- Title + price -->
+    <section class="px-4 pt-4 pb-3">
+      <h1 class="text-2xl font-bold leading-tight">Walnut Credenza</h1>
+      <div class="flex items-baseline gap-3 mt-2">
+        <div class="text-3xl font-bold">$450</div>
+        <div class="badge badge-outline badge-sm">Price Firm</div>
+      </div>
+      <div class="text-xs text-base-content/60 mt-1 uppercase tracking-wider">Furniture · Mid-century</div>
+    </section>
+
+    <!-- Stats -->
+    <section class="px-4 pb-4">
+      <div class="stats stats-horizontal bg-base-200 w-full">
+        <div class="stat p-3">
+          <div class="stat-title text-[10px] uppercase tracking-wider">Views</div>
+          <div class="stat-value text-xl">84</div>
+        </div>
+        <div class="stat p-3">
+          <div class="stat-title text-[10px] uppercase tracking-wider">Watchers</div>
+          <div class="stat-value text-xl">12</div>
+        </div>
+        <div class="stat p-3">
+          <div class="stat-title text-[10px] uppercase tracking-wider">Inquiries</div>
+          <div class="stat-value text-xl">3</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Description -->
+    <section class="px-4 pb-4">
+      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-2">Description</div>
+      <p class="text-sm leading-relaxed text-base-content/80">
+        Low 4-drawer walnut credenza, circa 1962. Tapered legs, original brass pulls. Veneer has a few small chips on the top left corner (see photo 4). Interior clean, drawers glide smoothly. Measures 66" W × 18" D × 28" H. Local pickup only.
+      </p>
+    </section>
+
+    <div class="divider mx-4 my-0"></div>
+
+    <!-- Market context -->
+    <section class="px-4 py-4">
+      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-2">Listed In</div>
+      <div class="card card-compact bg-base-200">
+        <div class="card-body">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="font-bold text-sm">Downtown Modernism</div>
+              <div class="text-xs text-base-content/60">Sat Apr 26 · Booth 42</div>
+            </div>
+            <div class="badge badge-success badge-sm gap-1">
+              <span class="inline-block w-1.5 h-1.5 rounded-full bg-success-content"></span>
+              LIVE
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider mx-4 my-0"></div>
+
+    <!-- Inquiry log -->
+    <section class="px-4 py-4 pb-24">
+      <div class="flex items-center justify-between mb-3">
+        <div class="text-xs uppercase tracking-widest text-base-content/60">Inquiry Log</div>
+        <div class="badge badge-neutral badge-sm">3 inquiries</div>
+      </div>
+      <div class="text-[10px] text-base-content/60 mb-4 leading-relaxed">
+        These buyers texted you directly. Contact them to make the deal. Early Bird is not involved after this point.
+      </div>
+
+      <div class="flex flex-col gap-3">
+
+        <!-- Inquiry 1 -->
+        <div class="card card-compact bg-base-100 border border-base-300">
+          <div class="card-body">
+            <div class="flex items-start gap-3">
+              <div class="avatar placeholder">
+                <div class="bg-neutral text-neutral-content w-10 rounded-full">
+                  <span class="text-xs font-bold">JC</span>
+                </div>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between gap-2">
+                  <div class="font-bold text-sm">John C.</div>
+                  <div class="text-[10px] text-base-content/60 uppercase tracking-wider">12m ago</div>
+                </div>
+                <a class="link link-hover text-xs font-bold">(213) 555-0134</a>
+                <div class="text-xs text-base-content/80 mt-2 leading-relaxed">
+                  "Love the credenza — is the veneer chip visible from 3 feet? Coming at 6am."
+                </div>
+                <div class="flex gap-2 mt-3">
+                  <button class="btn btn-xs btn-outline">Call</button>
+                  <button class="btn btn-xs btn-outline">Text</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Inquiry 2 -->
+        <div class="card card-compact bg-base-100 border border-base-300">
+          <div class="card-body">
+            <div class="flex items-start gap-3">
+              <div class="avatar placeholder">
+                <div class="bg-neutral text-neutral-content w-10 rounded-full">
+                  <span class="text-xs font-bold">SR</span>
+                </div>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between gap-2">
+                  <div class="font-bold text-sm">Sarah R.</div>
+                  <div class="text-[10px] text-base-content/60 uppercase tracking-wider">1h ago</div>
+                </div>
+                <a class="link link-hover text-xs font-bold">(310) 555-0811</a>
+                <div class="text-xs text-base-content/80 mt-2 leading-relaxed">
+                  "Beautiful piece. Would you take $400 cash? Can pick up same day."
+                </div>
+                <div class="flex gap-2 mt-3">
+                  <button class="btn btn-xs btn-outline">Call</button>
+                  <button class="btn btn-xs btn-outline">Text</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Inquiry 3 -->
+        <div class="card card-compact bg-base-100 border border-base-300">
+          <div class="card-body">
+            <div class="flex items-start gap-3">
+              <div class="avatar placeholder">
+                <div class="bg-neutral text-neutral-content w-10 rounded-full">
+                  <span class="text-xs font-bold">DT</span>
+                </div>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between gap-2">
+                  <div class="font-bold text-sm">Danny T.</div>
+                  <div class="text-[10px] text-base-content/60 uppercase tracking-wider">3h ago</div>
+                </div>
+                <a class="link link-hover text-xs font-bold">(818) 555-2290</a>
+                <div class="text-xs text-base-content/80 mt-2 leading-relaxed">
+                  "Interior designer here. If still available Saturday morning I'm taking it. I'll be first in line."
+                </div>
+                <div class="flex gap-2 mt-3">
+                  <button class="btn btn-xs btn-outline">Call</button>
+                  <button class="btn btn-xs btn-outline">Text</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Bottom nav (dealer: 4 tabs) -->
+    <nav class="max-w-md mx-auto fixed bottom-0 left-0 right-0 bg-base-100 border-t border-base-300 flex">
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+        <span class="text-[10px] uppercase tracking-widest">Buy</span>
+      </a>
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+        <span class="text-[10px] uppercase tracking-widest">Watching</span>
+      </a>
+      <div class="w-px bg-base-300 my-2"></div>
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content font-bold border-t-2 border-neutral">
+        <span class="text-[10px] uppercase tracking-widest">Sell</span>
+      </a>
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+        <span class="text-[10px] uppercase tracking-widest">Account</span>
+      </a>
+    </nav>
+
+  </div>
+</body>
+</html>
