@@ -14,7 +14,7 @@ Every weekend across Los Angeles, thousands of people wake up before dawn to go 
 
 Dealers, meanwhile, load trucks the night before, drive out at 4am, set up tables in the cold, and hope the right buyers show up. They have no way to signal what they're bringing. Buyers have no way to know what's coming. The entire marketplace runs on luck and timing.
 
-**Early Bird fixes this.** The evening before a market, dealers post photos and prices of what they're bringing. Buyers browse from their couch, favorite the pieces they want, and reach out to dealers directly — before the market even opens.
+**Early Bird fixes this.** The evening before a market, dealers post photos and prices of what they're bringing. Buyers shop the drop from their couch, favorite the pieces they want, and reach out to dealers directly — before the crowd arrives.
 
 The name is literal: the early bird gets the worm. But now "early" means the night before, not 4am.
 
@@ -23,7 +23,7 @@ The name is literal: the early bird gets the worm. But now "early" means the nig
 ## Who It's For
 
 ### Buyers
-Design professionals, antique dealers, collectors, interior designers, DIY enthusiasts in LA. People who love flea markets but hate the uncertainty. They want to see what's available before committing to a 6am alarm. They browse on their phone, save things they like, and reach out to dealers directly.
+Design professionals, antique dealers, collectors, interior designers, DIY enthusiasts in LA. People who love flea markets but hate the uncertainty. They want to shop the drop before committing to a 6am alarm. They shop on their phone, save things they like, and reach out to dealers directly.
 
 A buyer only buys. They don't also sell. Their experience is: browse, favorite, inquire, buy.
 
@@ -93,7 +93,7 @@ Buy and Watching are grouped on the left (the buying experience). Sell and Accou
 
 **Landing (Dealer):** Dealer-specific value prop and sign-up. Same magic link flow.
 
-**Onboarding:** Avatar upload + display name. Context for what's happening ("Get set up to pre-buy").
+**Onboarding:** Selfie capture + display name + follow markets + notification preferences. Context for what's happening ("Get set up to shop the drop").
 
 ### Buy Tab (Feed)
 

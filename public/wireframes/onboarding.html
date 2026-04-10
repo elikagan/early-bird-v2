@@ -28,25 +28,21 @@
   <div class="max-w-md mx-auto min-h-screen bg-base-100 flex flex-col">
 
     <!-- Header -->
-    <header class="px-6 pt-10 pb-4 border-b border-base-300">
-      <div class="flex items-center justify-between">
-        <div class="text-xl font-bold tracking-tight">EARLY BIRD</div>
-        <div class="text-xs uppercase tracking-widest text-base-content/60">Step 1 of 1</div>
-      </div>
+    <header class="px-6 pt-10 pb-6">
+      <div class="text-xl font-bold tracking-tight">EARLY BIRD</div>
     </header>
 
     <!-- Intro -->
-    <section class="px-6 pt-8 pb-6">
-      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-2">Welcome</div>
-      <h1 class="text-2xl font-bold leading-tight">Get set up<br>to pre-buy.</h1>
+    <section class="px-6 pb-8">
+      <h1 class="text-2xl font-bold leading-tight">Get set up<br>to shop the drop.</h1>
       <p class="text-sm text-base-content/70 mt-4 leading-relaxed">
-        Dealers want to know who's reaching out. Your name and avatar show on every inquiry you send.
+        Set your profile and pick the markets you want to shop.
       </p>
     </section>
 
-    <!-- Avatar upload -->
-    <section class="px-6 pb-6">
-      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-3">Your Avatar</div>
+    <!-- Selfie -->
+    <section class="px-6 pb-8">
+      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-3">Selfie</div>
       <div class="flex items-center gap-4">
         <div class="avatar placeholder">
           <div class="bg-base-200 text-base-content/40 w-20 rounded-full border border-base-300">
@@ -54,48 +50,93 @@
           </div>
         </div>
         <div class="flex-1">
-          <button class="btn btn-sm btn-outline w-full">Upload Photo</button>
-          <p class="text-xs text-base-content/60 mt-2">JPG or PNG · 2MB max</p>
+          <button class="btn btn-sm btn-outline w-full">Take Selfie</button>
+          <p class="text-xs text-base-content/60 mt-2">So dealers can spot you at the booth.</p>
         </div>
       </div>
     </section>
 
     <!-- Display name -->
-    <section class="px-6 pb-6">
+    <section class="px-6 pb-8">
       <label class="form-control w-full">
         <div class="label">
           <span class="label-text text-xs uppercase tracking-widest text-base-content/60">Display Name</span>
         </div>
-        <input type="text" placeholder="John Chen" class="input input-bordered w-full" />
+        <input type="text" placeholder="John C." class="input input-bordered w-full" />
         <div class="label">
-          <span class="label-text-alt text-xs text-base-content/60">Dealers will see your first name and last initial.</span>
+          <span class="label-text-alt text-xs text-base-content/60">Whatever you type is what dealers see.</span>
         </div>
       </label>
     </section>
 
     <!-- Phone (readonly, already verified) -->
-    <section class="px-6 pb-6">
+    <section class="px-6 pb-8">
       <label class="form-control w-full">
         <div class="label">
           <span class="label-text text-xs uppercase tracking-widest text-base-content/60">Phone</span>
-          <span class="label-text-alt badge badge-sm badge-success">Verified</span>
+          <span class="label-text-alt badge badge-outline px-3 py-2">Verified</span>
         </div>
         <input type="tel" value="(213) 555-0134" readonly class="input input-bordered w-full" />
       </label>
     </section>
 
-    <!-- Notice -->
+    <!-- Follow markets -->
     <section class="px-6 pb-8">
-      <div class="alert bg-base-200 border border-base-300 text-xs">
-        <div>
-          <div class="font-bold uppercase tracking-wider mb-1">Heads up</div>
-          <div class="text-base-content/70 leading-relaxed">When you tap "I'm Interested" on an item, dealers get a text with your name, phone, and message. They call or text you directly. There's no in-app chat.</div>
-        </div>
+      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-3">Follow Markets</div>
+      <div class="space-y-2">
+        <label class="flex items-center gap-3 p-3 border border-base-300 rounded-md cursor-pointer">
+          <input type="checkbox" checked class="checkbox checkbox-sm" />
+          <span class="text-sm flex-1">Rose Bowl Flea Market</span>
+          <span class="text-xs text-base-content/60">2nd Sun</span>
+        </label>
+        <label class="flex items-center gap-3 p-3 border border-base-300 rounded-md cursor-pointer">
+          <input type="checkbox" checked class="checkbox checkbox-sm" />
+          <span class="text-sm flex-1">PCC Flea Market</span>
+          <span class="text-xs text-base-content/60">1st Sun</span>
+        </label>
+        <label class="flex items-center gap-3 p-3 border border-base-300 rounded-md cursor-pointer">
+          <input type="checkbox" class="checkbox checkbox-sm" />
+          <span class="text-sm flex-1">Long Beach Antique Market</span>
+          <span class="text-xs text-base-content/60">3rd Sun</span>
+        </label>
+        <label class="flex items-center gap-3 p-3 border border-base-300 rounded-md cursor-pointer">
+          <input type="checkbox" class="checkbox checkbox-sm" />
+          <span class="text-sm flex-1">Downtown Modernism</span>
+          <span class="text-xs text-base-content/60">Apr 26</span>
+        </label>
+      </div>
+    </section>
+
+    <!-- Notification preferences -->
+    <section class="px-6 pb-8">
+      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-3">Notifications</div>
+      <div class="space-y-2">
+        <label class="flex items-start gap-3 p-3 border border-base-300 rounded-md cursor-pointer">
+          <input type="checkbox" checked class="checkbox checkbox-sm mt-0.5" />
+          <div class="flex-1">
+            <div class="text-sm">Drop alerts</div>
+            <div class="text-xs text-base-content/60 mt-0.5">SMS when a followed market's drop goes live.</div>
+          </div>
+        </label>
+        <label class="flex items-start gap-3 p-3 border border-base-300 rounded-md cursor-pointer">
+          <input type="checkbox" checked class="checkbox checkbox-sm mt-0.5" />
+          <div class="flex-1">
+            <div class="text-sm">Price drops</div>
+            <div class="text-xs text-base-content/60 mt-0.5">SMS when an item you're watching drops price.</div>
+          </div>
+        </label>
+        <label class="flex items-start gap-3 p-3 border border-base-300 rounded-md cursor-pointer">
+          <input type="checkbox" class="checkbox checkbox-sm mt-0.5" />
+          <div class="flex-1">
+            <div class="text-sm">New markets</div>
+            <div class="text-xs text-base-content/60 mt-0.5">When a new flea market is added near you.</div>
+          </div>
+        </label>
       </div>
     </section>
 
     <!-- Continue -->
-    <footer class="px-6 py-6 mt-auto border-t border-base-300">
+    <footer class="px-6 py-6 mt-auto bg-base-200">
       <button class="btn btn-neutral w-full">Continue</button>
     </footer>
 
