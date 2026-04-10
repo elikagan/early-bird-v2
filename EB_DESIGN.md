@@ -288,7 +288,7 @@ Edge cases, loading states, error states, empty states, transitions, responsive 
 Existing screens (revise in place):
 - [x] 01. landing-buyer
 - [x] 02. landing-dealer
-- [ ] 03. onboarding (note 03.7 also asks for an `EB_DESIGN.md` update about buyer-onboarding preferences — handle inline)
+- [x] 03. onboarding (note 03.7 also asks for an `EB_DESIGN.md` update about buyer-onboarding preferences — handle inline)
 - [ ] 04. buy-feed (note 04.3 proposes new screen `home-buyer` — do NOT build it in this session; it is a separate checklist item below)
 - [ ] 05. watching
 - [ ] 06. item-detail-buyer → SPLIT into clean state + inquiry-drawer state (both files in one session — this is the only exception to the one-screen rule)
@@ -313,6 +313,7 @@ Note: `item-detail-buyer-inquiry` is NOT a separate checklist item. It is the sp
 
 - 2026-04-10 — 01. landing-buyer — restructured above-fold to lead with sign-in form, added top-right "Dealer? →" link, added FAQ + About sections, replaced footer `border-t` with `bg-base-200` panel treatment (T10), swapped hero copy to "Shop the drop" framing (T7).
 - 2026-04-10 — 02. landing-dealer — restructured above-fold to lead with sign-in form, added top-right "Buyer? →" link, hero/cards/FAQ/About all hammer free-to-use + no-cut + direct-transaction, added "Dealers shop too" value prop card + FAQ item acknowledging dealer-as-buyer, replaced footer `border-t` with `bg-base-200` panel (T10), swapped "pre-market your booth" for "Sell the drop. Sell before sunrise." framing (T7).
+- 2026-04-10 — 03. onboarding — dropped Welcome/Step-1-of-1/Heads-up clutter, swapped Upload Photo for Take Selfie, made display name free-form, added Follow Markets + Notifications sections, fixed verified pill (outline + padding, T2/T3), replaced footer `border-t` with `bg-base-200` panel (T10), swapped "Get set up to pre-buy" for "Get set up to shop the drop" (T7); also fixed EB_DESIGN.md "The Idea", "Who It's For" buyer line, and "Onboarding" bullet inline (T7 + 03.6).
 
 ---
 
