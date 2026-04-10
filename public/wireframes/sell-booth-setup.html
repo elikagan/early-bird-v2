@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Early Bird — Booth Setup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        fontFamily: {
+          sans: ['"JetBrains Mono"', 'monospace'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+          serif: ['"JetBrains Mono"', 'monospace'],
+        },
+      },
+    }
+  </script>
+  <style>
+    html, body { font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace; }
+  </style>
+</head>
+<body class="min-h-screen bg-base-300">
+  <div class="max-w-md mx-auto min-h-screen bg-base-100 flex flex-col">
+
+    <!-- Top bar -->
+    <header class="px-4 pt-6 pb-3 flex items-center justify-between border-b border-base-300">
+      <button class="btn btn-sm btn-circle btn-ghost">←</button>
+      <div class="text-sm font-bold uppercase tracking-wider">Set Up Booth</div>
+      <div class="w-8"></div>
+    </header>
+
+    <!-- Market context -->
+    <section class="px-4 pt-6 pb-4">
+      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-2">Market</div>
+      <div class="card card-compact bg-base-200">
+        <div class="card-body">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="font-bold text-base">Downtown Modernism</div>
+              <div class="text-xs text-base-content/60 mt-0.5">Sat Apr 26 · Downtown LA</div>
+            </div>
+            <button class="btn btn-xs btn-outline">Switch</button>
+          </div>
+          <div class="divider my-1"></div>
+          <div class="flex items-center justify-between">
+            <div class="text-xs uppercase text-base-content/60">Drops in</div>
+            <div class="font-bold text-sm tabular-nums">01D 14H 32M 09S</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider mx-4 my-0"></div>
+
+    <!-- Booth location -->
+    <section class="px-4 py-5">
+      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-3">Booth Location</div>
+      <label class="form-control w-full mb-3">
+        <div class="label">
+          <span class="label-text text-xs uppercase tracking-wider">Booth Number</span>
+        </div>
+        <input type="text" placeholder="42" class="input input-bordered w-full" />
+      </label>
+      <label class="form-control w-full mb-3">
+        <div class="label">
+          <span class="label-text text-xs uppercase tracking-wider">Row / Area</span>
+        </div>
+        <select class="select select-bordered w-full">
+          <option disabled selected>Pick your row</option>
+          <option>Row A</option>
+          <option>Row B</option>
+          <option>Row C — Antiques</option>
+          <option>Row D — Vintage Clothing</option>
+          <option>Main Aisle</option>
+        </select>
+      </label>
+      <label class="form-control w-full">
+        <div class="label">
+          <span class="label-text text-xs uppercase tracking-wider">Landmark Hint</span>
+          <span class="label-text-alt text-base-content/60">Optional</span>
+        </div>
+        <input type="text" placeholder="Across from the food trucks" class="input input-bordered w-full" />
+      </label>
+    </section>
+
+    <div class="divider mx-4 my-0"></div>
+
+    <!-- Payment preferences -->
+    <section class="px-4 py-5">
+      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-1">Payment</div>
+      <div class="text-[11px] text-base-content/60 mb-4 leading-relaxed">Buyers see these on your booth so they know what to bring.</div>
+
+      <div class="form-control">
+        <label class="label cursor-pointer gap-3 justify-start">
+          <input type="checkbox" checked class="checkbox checkbox-sm" />
+          <span class="label-text font-bold">Cash</span>
+        </label>
+      </div>
+
+      <div class="form-control">
+        <label class="label cursor-pointer gap-3 justify-start">
+          <input type="checkbox" checked class="checkbox checkbox-sm" />
+          <span class="label-text font-bold">Venmo</span>
+        </label>
+      </div>
+      <label class="form-control w-full pl-8 mb-2">
+        <input type="text" placeholder="@your-handle" class="input input-bordered input-sm w-full" />
+      </label>
+
+      <div class="form-control">
+        <label class="label cursor-pointer gap-3 justify-start">
+          <input type="checkbox" class="checkbox checkbox-sm" />
+          <span class="label-text font-bold">Zelle</span>
+        </label>
+      </div>
+      <label class="form-control w-full pl-8 mb-2">
+        <input type="text" placeholder="phone or email" class="input input-bordered input-sm w-full" disabled />
+      </label>
+
+      <div class="form-control">
+        <label class="label cursor-pointer gap-3 justify-start">
+          <input type="checkbox" class="checkbox checkbox-sm" />
+          <span class="label-text font-bold">Apple Pay / Card</span>
+        </label>
+      </div>
+    </section>
+
+    <div class="divider mx-4 my-0"></div>
+
+    <!-- Carry-forward notice -->
+    <section class="px-4 py-5 pb-8">
+      <div class="alert bg-base-200 border border-base-300 text-xs">
+        <div>
+          <div class="font-bold uppercase tracking-wider mb-1">Saved For Next Time</div>
+          <div class="text-base-content/70 leading-relaxed">These settings carry forward to your next market. Change them per-event if your booth moves.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sticky CTA -->
+    <div class="max-w-md mx-auto fixed bottom-16 left-0 right-0 bg-base-100 border-t border-base-300 px-4 py-4">
+      <button class="btn btn-neutral w-full">Save Booth &amp; Start Listing</button>
+    </div>
+
+    <!-- Bottom nav (dealer: 4 tabs) -->
+    <nav class="max-w-md mx-auto fixed bottom-0 left-0 right-0 bg-base-100 border-t border-base-300 flex">
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+        <span class="text-[10px] uppercase tracking-widest">Buy</span>
+      </a>
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+        <span class="text-[10px] uppercase tracking-widest">Watching</span>
+      </a>
+      <div class="w-px bg-base-300 my-2"></div>
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content font-bold border-t-2 border-neutral">
+        <span class="text-[10px] uppercase tracking-widest">Sell</span>
+      </a>
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+        <span class="text-[10px] uppercase tracking-widest">Account</span>
+      </a>
+    </nav>
+
+  </div>
+</body>
+</html>
