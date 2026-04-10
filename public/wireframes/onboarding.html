@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Early Bird — Onboarding</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        fontFamily: {
+          sans: ['"JetBrains Mono"', 'monospace'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+          serif: ['"JetBrains Mono"', 'monospace'],
+        },
+      },
+    }
+  </script>
+  <style>
+    html, body { font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace; }
+  </style>
+</head>
+<body class="min-h-screen bg-base-300">
+  <div class="max-w-md mx-auto min-h-screen bg-base-100 flex flex-col">
+
+    <!-- Header -->
+    <header class="px-6 pt-10 pb-4 border-b border-base-300">
+      <div class="flex items-center justify-between">
+        <div class="text-xl font-bold tracking-tight">EARLY BIRD</div>
+        <div class="text-xs uppercase tracking-widest text-base-content/60">Step 1 of 1</div>
+      </div>
+    </header>
+
+    <!-- Intro -->
+    <section class="px-6 pt-8 pb-6">
+      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-2">Welcome</div>
+      <h1 class="text-2xl font-bold leading-tight">Get set up<br>to pre-buy.</h1>
+      <p class="text-sm text-base-content/70 mt-4 leading-relaxed">
+        Dealers want to know who's reaching out. Your name and avatar show on every inquiry you send.
+      </p>
+    </section>
+
+    <!-- Avatar upload -->
+    <section class="px-6 pb-6">
+      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-3">Your Avatar</div>
+      <div class="flex items-center gap-4">
+        <div class="avatar placeholder">
+          <div class="bg-base-200 text-base-content/40 w-20 rounded-full border border-base-300">
+            <span class="text-2xl font-bold">?</span>
+          </div>
+        </div>
+        <div class="flex-1">
+          <button class="btn btn-sm btn-outline w-full">Upload Photo</button>
+          <p class="text-xs text-base-content/60 mt-2">JPG or PNG · 2MB max</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Display name -->
+    <section class="px-6 pb-6">
+      <label class="form-control w-full">
+        <div class="label">
+          <span class="label-text text-xs uppercase tracking-widest text-base-content/60">Display Name</span>
+        </div>
+        <input type="text" placeholder="John Chen" class="input input-bordered w-full" />
+        <div class="label">
+          <span class="label-text-alt text-xs text-base-content/60">Dealers will see your first name and last initial.</span>
+        </div>
+      </label>
+    </section>
+
+    <!-- Phone (readonly, already verified) -->
+    <section class="px-6 pb-6">
+      <label class="form-control w-full">
+        <div class="label">
+          <span class="label-text text-xs uppercase tracking-widest text-base-content/60">Phone</span>
+          <span class="label-text-alt badge badge-sm badge-success">Verified</span>
+        </div>
+        <input type="tel" value="(213) 555-0134" readonly class="input input-bordered w-full" />
+      </label>
+    </section>
+
+    <!-- Notice -->
+    <section class="px-6 pb-8">
+      <div class="alert bg-base-200 border border-base-300 text-xs">
+        <div>
+          <div class="font-bold uppercase tracking-wider mb-1">Heads up</div>
+          <div class="text-base-content/70 leading-relaxed">When you tap "I'm Interested" on an item, dealers get a text with your name, phone, and message. They call or text you directly. There's no in-app chat.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Continue -->
+    <footer class="px-6 py-6 mt-auto border-t border-base-300">
+      <button class="btn btn-neutral w-full">Continue</button>
+    </footer>
+
+  </div>
+</body>
+</html>
