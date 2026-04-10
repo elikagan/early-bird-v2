@@ -28,16 +28,33 @@
   <div class="max-w-md mx-auto min-h-screen bg-base-100 flex flex-col">
 
     <!-- Header -->
-    <header class="px-6 pt-12 pb-6">
-      <div class="text-3xl font-bold tracking-tight">EARLY BIRD</div>
-      <div class="text-xs uppercase tracking-widest text-base-content/60 mt-1">LA Flea Markets · Dealer</div>
+    <header class="px-6 pt-10 pb-4 flex items-start justify-between">
+      <div>
+        <div class="text-3xl font-bold tracking-tight">EARLY BIRD</div>
+        <div class="text-xs uppercase tracking-widest text-base-content/60 mt-1">LA Flea Markets · Dealer</div>
+      </div>
+      <a class="link link-hover text-xs uppercase tracking-widest text-base-content/70 pt-3">Buyer? →</a>
     </header>
 
-    <!-- Hero -->
+    <!-- Hero (compact, above the fold) -->
+    <section class="px-6 pb-5">
+      <h1 class="text-2xl font-bold leading-tight">Sell the drop.<br>Sell before sunrise.</h1>
+      <p class="text-sm text-base-content/70 mt-3 leading-relaxed">
+        Post inventory the night before the market. Serious buyers reach out before you've unloaded the truck. Free to use — no fees, no cut. You transact directly with the buyer.
+      </p>
+    </section>
+
+    <!-- Sign in form (above the fold) -->
     <section class="px-6 pb-8">
-      <h1 class="text-2xl font-bold leading-tight">Sell before setup.<br>Pre-market your booth.</h1>
-      <p class="text-sm text-base-content/70 mt-4 leading-relaxed">
-        Post your inventory the night before. Serious buyers reach out before sunrise. Sell your best pieces before you've even unloaded the truck.
+      <label class="form-control w-full">
+        <div class="label">
+          <span class="label-text text-xs uppercase tracking-wider">Phone Number</span>
+        </div>
+        <input type="tel" placeholder="(213) 555-0134" class="input input-bordered w-full" />
+      </label>
+      <button class="btn btn-neutral w-full mt-4">Send Magic Link</button>
+      <p class="text-xs text-base-content/60 mt-3 text-center">
+        We'll text you a link. No passwords. No codes.
       </p>
     </section>
 
@@ -51,8 +68,8 @@
             <div class="flex items-start gap-3">
               <div class="badge badge-neutral badge-lg font-bold">01</div>
               <div class="flex-1">
-                <div class="font-bold text-sm">Sell without haggling at 5am</div>
-                <div class="text-xs text-base-content/60 mt-1">Buyers commit to pieces before they arrive. No cold-booth bargaining.</div>
+                <div class="font-bold text-sm">Free. No fees, no cut.</div>
+                <div class="text-xs text-base-content/60 mt-1">No listing fees, no commissions. You keep every dollar of every sale.</div>
               </div>
             </div>
           </div>
@@ -64,7 +81,7 @@
               <div class="badge badge-neutral badge-lg font-bold">02</div>
               <div class="flex-1">
                 <div class="font-bold text-sm">Direct buyer contact</div>
-                <div class="text-xs text-base-content/60 mt-1">We send you their number. Text or call directly. No in-app chat.</div>
+                <div class="text-xs text-base-content/60 mt-1">We text you the buyer's name and number. You call or text them directly. No in-app chat.</div>
               </div>
             </div>
           </div>
@@ -75,8 +92,32 @@
             <div class="flex items-start gap-3">
               <div class="badge badge-neutral badge-lg font-bold">03</div>
               <div class="flex-1">
+                <div class="font-bold text-sm">Sell without haggling at 5am</div>
+                <div class="text-xs text-base-content/60 mt-1">Buyers commit to pieces before they arrive. No cold-booth bargaining in the dark.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-compact bg-base-100 border border-base-300">
+          <div class="card-body">
+            <div class="flex items-start gap-3">
+              <div class="badge badge-neutral badge-lg font-bold">04</div>
+              <div class="flex-1">
                 <div class="font-bold text-sm">Price drops = sales</div>
                 <div class="text-xs text-base-content/60 mt-1">Didn't move by noon? Lower the price, and every watcher gets a text.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-compact bg-base-100 border border-base-300">
+          <div class="card-body">
+            <div class="flex items-start gap-3">
+              <div class="badge badge-neutral badge-lg font-bold">05</div>
+              <div class="flex-1">
+                <div class="font-bold text-sm">Dealers shop too</div>
+                <div class="text-xs text-base-content/60 mt-1">Same login, both sides of the market. Browse other booths while you sell your own.</div>
               </div>
             </div>
           </div>
@@ -103,25 +144,74 @@
       </div>
     </section>
 
-    <!-- Sign in form -->
+    <!-- FAQ -->
     <section class="px-6 pb-8">
-      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-3">Start Selling</div>
-      <label class="form-control w-full">
-        <div class="label">
-          <span class="label-text text-xs uppercase tracking-wider">Phone Number</span>
+      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-3">FAQ</div>
+      <div class="flex flex-col gap-2">
+
+        <div class="collapse collapse-arrow bg-base-100 border border-base-300">
+          <input type="checkbox" />
+          <div class="collapse-title text-sm font-bold">How much does it cost?</div>
+          <div class="collapse-content text-xs text-base-content/70">
+            <p>Free. No listing fees, no commissions, no cut. You keep every dollar of every sale.</p>
+          </div>
         </div>
-        <input type="tel" placeholder="(213) 555-0134" class="input input-bordered w-full" />
-      </label>
-      <button class="btn btn-neutral w-full mt-4">Send Magic Link</button>
-      <p class="text-xs text-base-content/60 mt-3 text-center">
-        We'll text you a link. No passwords. No codes.
+
+        <div class="collapse collapse-arrow bg-base-100 border border-base-300">
+          <input type="checkbox" />
+          <div class="collapse-title text-sm font-bold">How does payment work?</div>
+          <div class="collapse-content text-xs text-base-content/70">
+            <p>The buyer pays you directly at the booth — cash, Venmo, Zelle, Apple Pay, card, whatever you accept. Early Bird never touches the money. You confirm the sale in person.</p>
+          </div>
+        </div>
+
+        <div class="collapse collapse-arrow bg-base-100 border border-base-300">
+          <input type="checkbox" />
+          <div class="collapse-title text-sm font-bold">Can I also shop other booths?</div>
+          <div class="collapse-content text-xs text-base-content/70">
+            <p>Yes. Every dealer account is also a buyer account. Same login, both experiences. Browse and buy from other dealers while your own booth is live.</p>
+          </div>
+        </div>
+
+        <div class="collapse collapse-arrow bg-base-100 border border-base-300">
+          <input type="checkbox" />
+          <div class="collapse-title text-sm font-bold">When does inventory go live?</div>
+          <div class="collapse-content text-xs text-base-content/70">
+            <p>The evening before each market — the drop. All dealer inventory becomes visible simultaneously, and buyers can start reaching out the moment the drop goes live.</p>
+          </div>
+        </div>
+
+        <div class="collapse collapse-arrow bg-base-100 border border-base-300">
+          <input type="checkbox" />
+          <div class="collapse-title text-sm font-bold">What happens when a buyer is interested?</div>
+          <div class="collapse-content text-xs text-base-content/70">
+            <p>We text you the buyer's first name, last initial, phone number, and a short note. You call or text them directly to work out the deal. No in-app chat, no threads, no inboxes.</p>
+          </div>
+        </div>
+
+        <div class="collapse collapse-arrow bg-base-100 border border-base-300">
+          <input type="checkbox" />
+          <div class="collapse-title text-sm font-bold">Do I need to set up for every market?</div>
+          <div class="collapse-content text-xs text-base-content/70">
+            <p>Once. Your booth location and payment methods carry forward across markets unless you change them. Add items per market, keep the rest on autopilot.</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- About -->
+    <section class="px-6 pb-10">
+      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-3">About</div>
+      <p class="text-sm text-base-content/70 leading-relaxed">
+        Early Bird is the marketplace for LA flea market dealers and the people who shop them. Dealers post inventory the night before each market. Buyers browse from the couch and reach out before sunrise. No fees. No cut. You and the buyer handle the transaction directly at the booth — the app is a matchmaker, not a middleman.
       </p>
     </section>
 
-    <!-- Buyer link -->
-    <footer class="px-6 py-6 mt-auto border-t border-base-300">
+    <!-- Footer -->
+    <footer class="px-6 py-8 mt-auto bg-base-200">
       <div class="text-xs text-center text-base-content/60">
-        Just here to shop? <a class="link link-hover font-bold">Buyer sign up</a>
+        Just here to shop? <a class="link link-hover font-bold">Browse as a buyer →</a>
       </div>
     </footer>
 

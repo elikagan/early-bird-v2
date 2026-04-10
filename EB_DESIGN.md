@@ -287,7 +287,7 @@ Edge cases, loading states, error states, empty states, transitions, responsive 
 
 Existing screens (revise in place):
 - [x] 01. landing-buyer
-- [ ] 02. landing-dealer
+- [x] 02. landing-dealer
 - [ ] 03. onboarding (note 03.7 also asks for an `EB_DESIGN.md` update about buyer-onboarding preferences — handle inline)
 - [ ] 04. buy-feed (note 04.3 proposes new screen `home-buyer` — do NOT build it in this session; it is a separate checklist item below)
 - [ ] 05. watching
@@ -312,6 +312,7 @@ Note: `item-detail-buyer-inquiry` is NOT a separate checklist item. It is the sp
 ### Session log
 
 - 2026-04-10 — 01. landing-buyer — restructured above-fold to lead with sign-in form, added top-right "Dealer? →" link, added FAQ + About sections, replaced footer `border-t` with `bg-base-200` panel treatment (T10), swapped hero copy to "Shop the drop" framing (T7).
+- 2026-04-10 — 02. landing-dealer — restructured above-fold to lead with sign-in form, added top-right "Buyer? →" link, hero/cards/FAQ/About all hammer free-to-use + no-cut + direct-transaction, added "Dealers shop too" value prop card + FAQ item acknowledging dealer-as-buyer, replaced footer `border-t` with `bg-base-200` panel (T10), swapped "pre-market your booth" for "Sell the drop. Sell before sunrise." framing (T7).
 
 ---
 
