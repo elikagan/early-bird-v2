@@ -83,6 +83,8 @@ Dealers see: Buy, Watching, Sell, Account (4 tabs).
 
 Buy and Watching are grouped on the left (the buying experience). Sell and Account on the right. A subtle divider separates the groups.
 
+Post-login flow: landing → magic link → onboarding → **home lobby** → tabs. Each role has its own home lobby (one for buyers, one for dealers — see The Screens below). The Early Bird logo in every post-login screen's header routes to the role-specific home lobby, not to the first tab. The buyer's logo routes to the home-buyer lobby; the dealer's logo routes to the home-dealer lobby.
+
 ---
 
 ## The Screens
@@ -94,6 +96,10 @@ Buy and Watching are grouped on the left (the buying experience). Sell and Accou
 **Landing (Dealer):** Dealer-specific value prop and sign-up. Same magic link flow.
 
 **Onboarding:** Selfie capture + display name + follow markets + notification preferences. Context for what's happening ("Get set up to shop the drop").
+
+### Home Lobby (Buyer)
+
+Post-login home base for buyers. Shows the markets the buyer follows with live drop countdowns, a short FAQ section, and a drop-alert opt-in toggle. The Early Bird logo in every buyer-side screen routes here — not to the Buy tab. This is the buyer's "home base" inside the app, sitting above the Buy/Watching/Account tabs in the post-login flow.
 
 ### Buy Tab (Feed)
 
@@ -207,6 +213,7 @@ Build every screen as static HTML using only DaisyUI classes. No JavaScript. No 
 - `landing-buyer.html`
 - `landing-dealer.html`
 - `onboarding.html`
+- `home-buyer.html`
 - `buy-feed.html`
 - `watching.html`
 - `item-detail-buyer.html` (State 1)
