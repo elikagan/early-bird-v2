@@ -259,7 +259,9 @@ Edge cases, loading states, error states, empty states, transitions, responsive 
 
 1. Read `CLAUDE.md` (global rules — no inline styles, etc.).
 2. Read this section of `EB_DESIGN.md` — not the whole file. The rest of `EB_DESIGN.md` is already reflected in the wireframe you're about to edit.
-3. Read `PHASE_1_REVIEW_NOTES.md` — only the subsection for the current checklist item. Do not scroll through the whole file.
+3. Read `PHASE_1_REVIEW_NOTES.md` in two parts:
+   a. The full "Cross-cutting themes" section (T1–T12) — short, canonical, applies to every screen. This is the hidden half of every screen's spec.
+   b. Only the per-screen section for the current checklist item (for example, `## 04. buy-feed`). Do not read any other per-screen sections.
 4. Read `public/wireframes/{current-screen}.html` — the one target file, nothing else.
 5. Apply the changes the notes ask for, one note at a time.
 6. Commit with a HEREDOC message. Title format: `Revise {screen}: {1-line summary}`. Body must list each addressed note by number (e.g., "addresses 01.1, 01.2, 01.3, 01.4"). Any note not addressed gets an explicit line explaining why.
