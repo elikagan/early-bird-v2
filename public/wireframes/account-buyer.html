@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Early Bird — Account (Buyer)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        fontFamily: {
+          sans: ['"JetBrains Mono"', 'monospace'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+          serif: ['"JetBrains Mono"', 'monospace'],
+        },
+      },
+    }
+  </script>
+  <style>
+    html, body { font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace; }
+  </style>
+</head>
+<body class="min-h-screen bg-base-300">
+  <div class="max-w-md mx-auto min-h-screen bg-base-100 flex flex-col">
+
+    <!-- Header -->
+    <header class="px-4 pt-6 pb-3 border-b border-base-300">
+      <div class="flex items-center justify-between">
+        <div class="text-lg font-bold tracking-tight">EARLY BIRD</div>
+        <div class="text-xs uppercase tracking-widest text-base-content/60">Account</div>
+      </div>
+    </header>
+
+    <!-- Profile -->
+    <section class="px-4 pt-6 pb-4">
+      <div class="flex items-center gap-4">
+        <div class="avatar placeholder">
+          <div class="bg-neutral text-neutral-content w-16 rounded-full">
+            <span class="text-xl font-bold">JC</span>
+          </div>
+        </div>
+        <div class="flex-1">
+          <div class="font-bold text-lg">John Chen</div>
+          <div class="text-xs text-base-content/60">(213) 555-0134</div>
+        </div>
+        <button class="btn btn-sm btn-outline">Edit</button>
+      </div>
+    </section>
+
+    <!-- Stats -->
+    <section class="px-4 pb-4">
+      <div class="stats stats-horizontal bg-base-200 w-full">
+        <div class="stat p-3">
+          <div class="stat-title text-[10px] uppercase tracking-wider">Watching</div>
+          <div class="stat-value text-xl">8</div>
+        </div>
+        <div class="stat p-3">
+          <div class="stat-title text-[10px] uppercase tracking-wider">Inquiries</div>
+          <div class="stat-value text-xl">12</div>
+        </div>
+        <div class="stat p-3">
+          <div class="stat-title text-[10px] uppercase tracking-wider">Bought</div>
+          <div class="stat-value text-xl">5</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider mx-4 my-0"></div>
+
+    <!-- Notifications -->
+    <section class="px-4 py-5">
+      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-3">Notifications</div>
+
+      <div class="form-control">
+        <label class="label cursor-pointer gap-3 justify-start">
+          <input type="checkbox" checked class="toggle toggle-sm" />
+          <div class="flex-1">
+            <div class="label-text font-bold">Drop Alerts</div>
+            <div class="label-text text-xs text-base-content/60">Text me when markets I follow go live</div>
+          </div>
+        </label>
+      </div>
+
+      <div class="form-control">
+        <label class="label cursor-pointer gap-3 justify-start">
+          <input type="checkbox" checked class="toggle toggle-sm" />
+          <div class="flex-1">
+            <div class="label-text font-bold">Price Drops</div>
+            <div class="label-text text-xs text-base-content/60">Text me when watched items drop in price</div>
+          </div>
+        </label>
+      </div>
+
+      <div class="form-control">
+        <label class="label cursor-pointer gap-3 justify-start">
+          <input type="checkbox" class="toggle toggle-sm" />
+          <div class="flex-1">
+            <div class="label-text font-bold">New Markets</div>
+            <div class="label-text text-xs text-base-content/60">Text me when new LA markets are added</div>
+          </div>
+        </label>
+      </div>
+    </section>
+
+    <div class="divider mx-4 my-0"></div>
+
+    <!-- Following -->
+    <section class="px-4 py-5">
+      <div class="flex items-center justify-between mb-3">
+        <div class="text-xs uppercase tracking-widest text-base-content/60">Markets You Follow</div>
+        <button class="btn btn-xs btn-ghost">Edit</button>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <div class="badge badge-neutral gap-2">Downtown Modernism</div>
+        <div class="badge badge-neutral gap-2">Rose Bowl Flea</div>
+        <div class="badge badge-neutral gap-2">PCC Flea</div>
+        <div class="badge badge-outline gap-2">+ Follow More</div>
+      </div>
+    </section>
+
+    <div class="divider mx-4 my-0"></div>
+
+    <!-- Upgrade -->
+    <section class="px-4 py-5">
+      <div class="card card-compact bg-base-200 border border-base-300">
+        <div class="card-body">
+          <div class="font-bold text-sm">Selling at a market?</div>
+          <div class="text-xs text-base-content/60 leading-relaxed mt-1">Add a dealer account to post inventory before the drop.</div>
+          <button class="btn btn-sm btn-outline mt-3">Become A Dealer</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider mx-4 my-0"></div>
+
+    <!-- Footer links -->
+    <section class="px-4 py-5 pb-8 flex flex-col gap-2">
+      <a class="link link-hover text-xs uppercase tracking-wider">Help &amp; Support</a>
+      <a class="link link-hover text-xs uppercase tracking-wider">Privacy Policy</a>
+      <a class="link link-hover text-xs uppercase tracking-wider">Terms</a>
+      <div class="divider my-2"></div>
+      <button class="btn btn-sm btn-ghost text-xs uppercase tracking-wider text-error self-start">Sign Out</button>
+      <div class="text-[10px] text-base-content/40 mt-4">Early Bird v1.0 · LA</div>
+    </section>
+
+    <!-- Spacer for bottom nav -->
+    <div class="h-16"></div>
+
+    <!-- Bottom nav (buyer: 3 tabs) -->
+    <nav class="max-w-md mx-auto fixed bottom-0 left-0 right-0 bg-base-100 border-t border-base-300 flex">
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+        <span class="text-[10px] uppercase tracking-widest">Buy</span>
+      </a>
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+        <span class="text-[10px] uppercase tracking-widest">Watching</span>
+      </a>
+      <div class="w-px bg-base-300 my-2"></div>
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content font-bold border-t-2 border-neutral">
+        <span class="text-[10px] uppercase tracking-widest">Account</span>
+      </a>
+    </nav>
+
+  </div>
+</body>
+</html>
