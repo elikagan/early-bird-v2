@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Early Bird — Sign In (Dealer)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        fontFamily: {
+          sans: ['"JetBrains Mono"', 'monospace'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+          serif: ['"JetBrains Mono"', 'monospace'],
+        },
+      },
+    }
+  </script>
+  <style>
+    html, body { font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace; }
+  </style>
+</head>
+<body class="min-h-screen bg-base-300">
+  <div class="max-w-md mx-auto min-h-screen bg-base-100 flex flex-col">
+
+    <!-- Header -->
+    <header class="px-6 pt-12 pb-6">
+      <div class="text-3xl font-bold tracking-tight">EARLY BIRD</div>
+      <div class="text-xs uppercase tracking-widest text-base-content/60 mt-1">LA Flea Markets · Dealer</div>
+    </header>
+
+    <!-- Hero -->
+    <section class="px-6 pb-8">
+      <h1 class="text-2xl font-bold leading-tight">Sell before setup.<br>Pre-market your booth.</h1>
+      <p class="text-sm text-base-content/70 mt-4 leading-relaxed">
+        Post your inventory the night before. Serious buyers reach out before sunrise. Sell your best pieces before you've even unloaded the truck.
+      </p>
+    </section>
+
+    <!-- Value Props -->
+    <section class="px-6 pb-8">
+      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-3">Why Dealers Use It</div>
+      <div class="flex flex-col gap-3">
+
+        <div class="card card-compact bg-base-100 border border-base-300">
+          <div class="card-body">
+            <div class="flex items-start gap-3">
+              <div class="badge badge-neutral badge-lg font-bold">01</div>
+              <div class="flex-1">
+                <div class="font-bold text-sm">Sell without haggling at 5am</div>
+                <div class="text-xs text-base-content/60 mt-1">Buyers commit to pieces before they arrive. No cold-booth bargaining.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-compact bg-base-100 border border-base-300">
+          <div class="card-body">
+            <div class="flex items-start gap-3">
+              <div class="badge badge-neutral badge-lg font-bold">02</div>
+              <div class="flex-1">
+                <div class="font-bold text-sm">Direct buyer contact</div>
+                <div class="text-xs text-base-content/60 mt-1">We send you their number. Text or call directly. No in-app chat.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-compact bg-base-100 border border-base-300">
+          <div class="card-body">
+            <div class="flex items-start gap-3">
+              <div class="badge badge-neutral badge-lg font-bold">03</div>
+              <div class="flex-1">
+                <div class="font-bold text-sm">Price drops = sales</div>
+                <div class="text-xs text-base-content/60 mt-1">Didn't move by noon? Lower the price, and every watcher gets a text.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Stats strip -->
+    <section class="px-6 pb-8">
+      <div class="stats stats-vertical bg-base-200 w-full">
+        <div class="stat">
+          <div class="stat-title text-xs uppercase tracking-wider">Active Dealers</div>
+          <div class="stat-value text-2xl">214</div>
+        </div>
+        <div class="stat">
+          <div class="stat-title text-xs uppercase tracking-wider">Markets Covered</div>
+          <div class="stat-value text-2xl">9</div>
+        </div>
+        <div class="stat">
+          <div class="stat-title text-xs uppercase tracking-wider">Inquiries Last Drop</div>
+          <div class="stat-value text-2xl">1,842</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sign in form -->
+    <section class="px-6 pb-8">
+      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-3">Start Selling</div>
+      <label class="form-control w-full">
+        <div class="label">
+          <span class="label-text text-xs uppercase tracking-wider">Phone Number</span>
+        </div>
+        <input type="tel" placeholder="(213) 555-0134" class="input input-bordered w-full" />
+      </label>
+      <button class="btn btn-neutral w-full mt-4">Send Magic Link</button>
+      <p class="text-xs text-base-content/60 mt-3 text-center">
+        We'll text you a link. No passwords. No codes.
+      </p>
+    </section>
+
+    <!-- Buyer link -->
+    <footer class="px-6 py-6 mt-auto border-t border-base-300">
+      <div class="text-xs text-center text-base-content/60">
+        Just here to shop? <a class="link link-hover font-bold">Buyer sign up</a>
+      </div>
+    </footer>
+
+  </div>
+</body>
+</html>
