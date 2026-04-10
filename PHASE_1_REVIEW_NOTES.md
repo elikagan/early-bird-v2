@@ -89,7 +89,7 @@ Do not read other screens' per-screen sections — cross-screen context pollutio
 - **Rule:** Post-login flow is: landing → magic link → onboarding → **home lobby** → tabs. The home lobby is a new logged-in lobby screen (one for each role) that sits above Buy/Watching/Sell/Account. It shows markets, countdowns, FAQ, and drop-alert opt-in. Every screen's header logo routes to the home lobby (not to the first tab).
 - **Requires two new wireframes** — `home-buyer.html` and `home-dealer.html`. Each is its own dedicated session (separate checklist items in the workflow). Do NOT build them inside the `buy-feed` or `sell-booth-setup` revision sessions.
 - **Requires an `EB_DESIGN.md` update** to the flow / navigation section, plus adding the two home screens to The Screens list.
-- **Applies to:** every screen's header (the logo becomes an anchor to the home lobby). Also requires the two new wireframes.
+- **Applies to:** every post-login screen's header (the logo becomes an anchor to the home lobby). Excludes pre-auth screens (`landing-buyer`, `landing-dealer`) and the linear onboarding flow. Also requires the two new wireframes.
 
 ### T9. Account screens edit in place — no modal Edit screens
 
@@ -128,7 +128,7 @@ Do not read other screens' per-screen sections — cross-screen context pollutio
 3. Needs an FAQ and About at the bottom
 4. Needs a "Dealer, Click Here" button on the top right.
 
-**Themes that apply here:** T1 (source of rule), T10 (sticky footer — applies everywhere).
+**Themes that apply here:** T1 (source of rule), T7 (marketing copy on this page must not use "pre-buy" / "preview" framing — the landing page is the first place the buyer encounters the product positioning, so the words matter most here), T10 (sticky footer — applies everywhere). T8 does NOT apply: this is a pre-auth page, the logo doesn't need to route to the home lobby yet.
 
 ---
 
@@ -139,7 +139,7 @@ Do not read other screens' per-screen sections — cross-screen context pollutio
 3. Add FAQ and About. Section.
 4. Remember dealers are also buyers. probably should mention.
 
-**Themes that apply here:** T1 (note 02.1 is an explicit cross-reference — "similar not" means "similar note" to 01.1), T10. Note 02.4 is a reminder that the dealer landing page should acknowledge dealers are also buyers (role switcher to buyer experience, or copy mentioning both sides).
+**Themes that apply here:** T1 (note 02.1 is an explicit cross-reference — "similar not" means "similar note" to 01.1), T7 (same as 01: marketing copy must not use "pre-buy" / "preview" framing; dealers are SELLING before the crowd, not previewing), T10. T8 does NOT apply: pre-auth page. Note 02.4 is a reminder that the dealer landing page should acknowledge dealers are also buyers (role switcher to buyer experience, or copy mentioning both sides).
 
 ---
 
@@ -163,7 +163,7 @@ Do not read other screens' per-screen sections — cross-screen context pollutio
 2. All/Saved and Dealer Category are fighting eachother. The all/saved styling looks totally out of place. it's also a different height than the other elements in the row.
 3. So this screen seems sort of like the main screen the buyer sees when he logs in, but i don't think you're thinking carefully about this. The buyer is going to come to the landing page and put in there number. They will get a magic link. It takes them to the onboarding. Once they get through that they come here... unless the drop hasn't happened. We need a landing page that looks kind of like the landing-buyer that has the markets and countdowns and FAQ. And a probably the next market should be expanding bigger than the others. And in big letters it should say something like: You will be texted when the stuff drops. Maybe it'll be a checkbox thing. But my point is that that page with the markets on it is really their home page. And if they click on the early bird logo that's where they should go i would think. Please fix the .md file so it understands the correct flow. and build this page and include it in this wireframe reviewer.
 
-**Themes that apply here:** T1 (bottom nav), T2 (favorite hearts, dealer badges, status pills on cards), T3 (pill padding throughout the feed), T4 (any back/close on filter modals), T6 (source: 04.2 filter row), T8 (source: 04.3 proposes home-buyer — do NOT build it in the buy-feed revision session; it's a separate checklist item), T10 (sticky nav). Note 04.3 also requires an `EB_DESIGN.md` flow-map update — handle inline in the buy-feed revision session.
+**Themes that apply here:** T1 (bottom nav), T2 (favorite hearts, dealer badges, status pills on cards), T3 (pill padding throughout the feed), T4 (any back/close on filter modals), T6 (source: 04.2 filter row), T7 (feed headers and any marketing copy on this screen must not use "pre-buy" / "preview" framing — this is the main shopping surface, the language here must read as shopping), T8 (source: 04.3 proposes home-buyer — do NOT build it in the buy-feed revision session; it's a separate checklist item; logo in this screen's header should anchor to the future home-buyer page), T10 (sticky nav), T12 (if a filter modal exists, it must be a drawer, not a DaisyUI modal). Note 04.3 also requires an `EB_DESIGN.md` flow-map update — handle inline in the buy-feed revision session.
 
 ---
 
@@ -174,7 +174,7 @@ Do not read other screens' per-screen sections — cross-screen context pollutio
 3. the "8 items you care about" title is a bit much. How about "Watching 8 items"
 4. I think the hearts should be black.
 
-**Themes that apply here:** T1, T2 (source: 05.1 price drop color — this is a canonical source of T2 — and 05.4 asks for hearts to be black, which is part of the same color-down rule), T3 (source: 05.1 vertical alignment padding), T10. Note: 05.1's "we've discussed this elsewhere" references prior conversation — T3 captures the padding conversation; T2 captures the color conversation. Note 05.4 (hearts black) also applies to `buy-feed` wherever hearts appear.
+**Themes that apply here:** T1, T2 (source: 05.1 price drop color — this is a canonical source of T2 — and 05.4 asks for hearts to be black, which is part of the same color-down rule), T3 (source: 05.1 vertical alignment padding), T8 (logo in this screen's header routes to the future home-buyer lobby), T10. Note: 05.1's "we've discussed this elsewhere" references prior conversation — T3 captures the padding conversation; T2 captures the color conversation. Note 05.4 (hearts black) also applies to `buy-feed` wherever hearts appear.
 
 ---
 
@@ -186,7 +186,7 @@ Do not read other screens' per-screen sections — cross-screen context pollutio
 4. This is supposed to be the buyer view of the item detail but i think you've make a mistake and not build a view of this page without the send inquiry pop up. This seems like a mistake that came from the .md file. I believe we need to make another screen so i can review. this.
 5. Also the "buyer view" at the top seems inadvertant on your part. It should just say [object name]
 
-**Themes that apply here:** T1, T2, T3, T4 (source: 06.3 X too small), T5 (source: 06.5 "buyer view" debug label), T7 (source: 06.2 preview confusion — this theme also requires an `EB_DESIGN.md` update), T10, T12 (source: 06.1 — canonical anti-modal rule). Note 06.4 requires splitting the wireframe into two files: a clean buyer-view state + an inquiry-drawer state. This is the one permitted exception to the one-screen-per-session rule: the split happens in a single session.
+**Themes that apply here:** T1, T2, T3, T4 (source: 06.3 X too small), T5 (source: 06.5 "buyer view" debug label), T7 (source: 06.2 preview confusion — this theme also requires an `EB_DESIGN.md` update), T8 (logo in this screen's header routes to the future home-buyer lobby), T10, T12 (source: 06.1 — canonical anti-modal rule). Note 06.4 requires splitting the wireframe into two files: a clean buyer-view state + an inquiry-drawer state. This is the one permitted exception to the one-screen-per-session rule: the split happens in a single session.
 
 ---
 
@@ -197,7 +197,7 @@ Do not read other screens' per-screen sections — cross-screen context pollutio
 3. THe live / hold / sold selector feels like it doesn't fit. color is crazy. Also maybe it could be clearer that the dealer should mark sold when it's sold.
 4. Why does it say "dealer own state 2" at the top. probably should say the object name?
 
-**Themes that apply here:** T1, T2 (source: 07.2 pill clashing, 07.3 selector "color is crazy"), T3, T4 (source: 07.1 — canonical back arrow rule), T5 (source: 07.4 debug label), T10. Note 07.3 also has a copy hint: make it clearer that the dealer should mark SOLD when something sells (probably: rename the selector option or add a helper line).
+**Themes that apply here:** T1, T2 (source: 07.2 pill clashing, 07.3 selector "color is crazy"), T3, T4 (source: 07.1 — canonical back arrow rule), T5 (source: 07.4 debug label), T8 (logo in this screen's header routes to the future home-dealer lobby — this is the dealer's own item detail, so dealer-side nav), T10. Note 07.3 also has a copy hint: make it clearer that the dealer should mark SOLD when something sells (probably: rename the selector option or add a helper line).
 
 ---
 
@@ -206,7 +206,7 @@ Do not read other screens' per-screen sections — cross-screen context pollutio
 1.i've given the price drop pill note elsewhere.
 2. i don't understand where the "art deco" comes from.
 
-**Themes that apply here:** T1, T2 (explicit cross-ref: note 08.1 points to 05.1, which is a T2/T3 source), T3, T4 (back/close), T5 (grep this screen for a debug label), T10. Note 08.2 is a content bug: the "art deco" substyle appeared without justification in the wireframe — just drop the substyle, keep the category (probably "Lighting" or similar).
+**Themes that apply here:** T1, T2 (explicit cross-ref: note 08.1 points to 05.1, which is a T2/T3 source), T3, T4 (back/close), T5 (grep this screen for a debug label — this is the third item-detail state, and 06 + 07 both had leftover `State N` / role-name labels in their headers, so this one almost certainly does too), T8 (logo in this screen's header routes to the future home-dealer lobby — this is the dealer browsing someone else's item, so dealer-side nav), T10. Note 08.2 is a content bug: the "art deco" substyle appeared without justification in the wireframe — just drop the substyle, keep the category (probably "Lighting" or similar).
 
 ---
 
@@ -231,7 +231,7 @@ Do not read other screens' per-screen sections — cross-screen context pollutio
 5. Per my last few comments i think you should really work on thinking this page through.
 6. Also i think you can do better with the styling of the footer. And this applies everywhere. I don't think the line-above indicator style feels consistent with the design system.
 
-**Themes that apply here:** T1, T2 (sources: 10.2 "no hierachy", 10.4 dropped pill), T3, T4, T6 (source: 10.1 filter row picker), T10 (SOURCE — and the reviewer explicitly wrote "this applies everywhere", meaning the T10 fix must land on every sticky-footer screen, not just this one). Note 10.3: merge Hold/Release into a single button that flips label based on state. Note 10.5 is a meta instruction: slow down on this screen — the reviewer thinks it wasn't thought through carefully enough the first time.
+**Themes that apply here:** T1, T2 (sources: 10.2 "no hierachy", 10.4 dropped pill), T3, T4, T6 (source: 10.1 filter row picker), T7 (any "pre-buy" / "preview" framing in booth-active copy — e.g. empty-state text, add-item hint copy — must be corrected to shopping/selling framing), T8 (logo in this screen's header routes to the future home-dealer lobby), T10 (SOURCE — and the reviewer explicitly wrote "this applies everywhere", meaning the T10 fix must land on every sticky-footer screen, not just this one). Note 10.3: merge Hold/Release into a single button that flips label based on state. Note 10.5 is a meta instruction: slow down on this screen — the reviewer thinks it wasn't thought through carefully enough the first time.
 
 ---
 
@@ -243,7 +243,7 @@ Do not read other screens' per-screen sections — cross-screen context pollutio
 4. I think only the picture, cat and title should be required
 5
 
-**Themes that apply here:** T1 (source: 11.1 — the gap glitch is a canonical T1 symptom; fix the structural sticky-footer pattern, not just the symptom), T2, T3, T4 (any header back/cancel), T10. Note 11.2 is a conditional-copy product requirement: the "live instantly" confirmation only appears when an item is posted AFTER the drop. Before the drop, the copy should say something like "Your item goes live when the market drops at [time]". Note 11.5 is blank in the original — nothing to action.
+**Themes that apply here:** T1 (source: 11.1 — the gap glitch is a canonical T1 symptom; fix the structural sticky-footer pattern, not just the symptom), T2, T3, T4 (any header back/cancel), T7 (the add-item copy is dealer-facing framing for how the marketplace works — "live instantly", "goes live when the market drops", etc. — make sure none of it leaks "pre-buy" / "preview" language), T8 (logo in this screen's header routes to the future home-dealer lobby — even though this is a form screen reached from booth-active, the logo nav rule still applies), T10. Note 11.2 is a conditional-copy product requirement: the "live instantly" confirmation only appears when an item is posted AFTER the drop. Before the drop, the copy should say something like "Your item goes live when the market drops at [time]". Note 11.5 is blank in the original — nothing to action.
 
 ---
 
@@ -263,7 +263,7 @@ Do not read other screens' per-screen sections — cross-screen context pollutio
 3. What does become a dealer do?
 4. I don't like the way the pills with the marketplaces look. especially the "follow more" something about camel case and this font and pills with almost not padding. i'ts an odd look.
 
-**Themes that apply here:** T1 (bottom nav), T2 (market pills), T3 (source: 13.4 padding), T9 (source: 13.1 — canonical edit-in-place rule), T10. Note 13.2: "follow more" is unclear copy — reviewer likes the markets-you-follow feature but doesn't understand what the affordance does. Probably rename/restyle so it's obviously "add another market to follow". Note 13.3: "become a dealer" is unclear — what does it actually do? Tie to the dealer-apply flow and clarify the copy. Note 13.4 also calls out camelCase being weird in the monospace font — anywhere market names appear, check the casing.
+**Themes that apply here:** T1 (bottom nav), T2 (market pills), T3 (source: 13.4 padding), T8 (logo in this screen's header routes to the future home-buyer lobby), T9 (source: 13.1 — canonical edit-in-place rule), T10. Note 13.2: "follow more" is unclear copy — reviewer likes the markets-you-follow feature but doesn't understand what the affordance does. Probably rename/restyle so it's obviously "add another market to follow". Note 13.3: "become a dealer" is unclear — what does it actually do? Tie to the dealer-apply flow and clarify the copy. Note 13.4 also calls out camelCase being weird in the monospace font — anywhere market names appear, check the casing.
 
 ---
 
@@ -278,7 +278,7 @@ Do not read other screens' per-screen sections — cross-screen context pollutio
 
 5. I don't really see the point of the metrics
 
-**Themes that apply here:** T1, T2, T3, T9 (sources: 14.1 implicit cross-ref to 13.1, 14.3 explicit "everything should be editable right here"), T10, T11 (source: 14.2 "definitely remove the venmo and zell account info"). Note 14.4 is an open product question: should booth defaults be per-market rather than global? (The sentence "And its not" is truncated in the original — reviewer started a thought and didn't finish it. Treat as a flag for a design decision, not a directive.) Note 14.5: drop the stats cards entirely — reviewer doesn't see the point of the metrics on the account screen.
+**Themes that apply here:** T1, T2, T3, T8 (logo in this screen's header routes to the future home-dealer lobby), T9 (sources: 14.1 implicit cross-ref to 13.1, 14.3 explicit "everything should be editable right here"), T10, T11 (source: 14.2 "definitely remove the venmo and zell account info"). Note 14.4 is an open product question: should booth defaults be per-market rather than global? (The sentence "And its not" is truncated in the original — reviewer started a thought and didn't finish it. Treat as a flag for a design decision, not a directive.) Note 14.5: drop the stats cards entirely — reviewer doesn't see the point of the metrics on the account screen.
 
 ---
 
