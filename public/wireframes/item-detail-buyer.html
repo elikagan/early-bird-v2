@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Early Bird — Item Detail (Buyer)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        fontFamily: {
+          sans: ['"JetBrains Mono"', 'monospace'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+          serif: ['"JetBrains Mono"', 'monospace'],
+        },
+      },
+    }
+  </script>
+  <style>
+    html, body { font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace; }
+  </style>
+</head>
+<body class="min-h-screen bg-base-300">
+  <div class="max-w-md mx-auto min-h-screen bg-base-100 flex flex-col relative">
+
+    <!-- Top bar -->
+    <header class="px-4 pt-6 pb-3 flex items-center justify-between">
+      <button class="btn btn-sm btn-circle btn-ghost">←</button>
+      <div class="text-[10px] uppercase tracking-widest text-base-content/60">Buyer View · State 1</div>
+      <button class="btn btn-sm btn-circle btn-ghost">♡</button>
+    </header>
+
+    <!-- Hero photo -->
+    <figure class="aspect-square bg-base-200 mx-4 rounded relative flex items-center justify-center">
+      <div class="text-xs uppercase tracking-widest text-base-content/30">Photo 1 of 5</div>
+      <button class="btn btn-sm btn-circle btn-ghost bg-base-100/80 absolute left-2 top-1/2 -translate-y-1/2">‹</button>
+      <button class="btn btn-sm btn-circle btn-ghost bg-base-100/80 absolute right-2 top-1/2 -translate-y-1/2">›</button>
+    </figure>
+
+    <!-- Thumbnails -->
+    <div class="px-4 pt-3 flex gap-2">
+      <div class="w-14 h-14 bg-base-200 rounded border-2 border-neutral"></div>
+      <div class="w-14 h-14 bg-base-200 rounded border border-base-300"></div>
+      <div class="w-14 h-14 bg-base-200 rounded border border-base-300"></div>
+      <div class="w-14 h-14 bg-base-200 rounded border border-base-300"></div>
+      <div class="w-14 h-14 bg-base-200 rounded border border-base-300"></div>
+    </div>
+
+    <!-- Title + price -->
+    <section class="px-4 pt-5 pb-3">
+      <h1 class="text-2xl font-bold leading-tight">Walnut Credenza</h1>
+      <div class="flex items-baseline gap-3 mt-2">
+        <div class="text-3xl font-bold">$450</div>
+        <div class="badge badge-outline badge-sm">Price Firm</div>
+      </div>
+      <div class="text-xs text-base-content/60 mt-1 uppercase tracking-wider">Furniture · Mid-century</div>
+    </section>
+
+    <!-- Description -->
+    <section class="px-4 pb-4">
+      <p class="text-sm leading-relaxed text-base-content/80">
+        Low 4-drawer walnut credenza, circa 1962. Tapered legs, original brass pulls. Veneer has a few small chips on the top left corner (see photo 4). Interior clean, drawers glide smoothly. Measures 66" W × 18" D × 28" H. Local pickup only.
+      </p>
+    </section>
+
+    <div class="divider mx-4 my-0"></div>
+
+    <!-- Dealer card -->
+    <section class="px-4 py-4">
+      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-3">Dealer</div>
+      <div class="flex items-center gap-3">
+        <div class="avatar placeholder">
+          <div class="bg-neutral text-neutral-content w-14 rounded-full">
+            <span class="text-sm font-bold">MF</span>
+          </div>
+        </div>
+        <div class="flex-1">
+          <div class="font-bold text-sm">Marco's Finds</div>
+          <div class="text-xs text-base-content/60">Booth 42 · 127 items listed</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider mx-4 my-0"></div>
+
+    <!-- Market context -->
+    <section class="px-4 py-4">
+      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-2">Available At</div>
+      <div class="card card-compact bg-base-200">
+        <div class="card-body">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="font-bold text-sm">Downtown Modernism</div>
+              <div class="text-xs text-base-content/60">Sat Apr 26 · Downtown LA</div>
+            </div>
+            <div class="badge badge-success badge-sm gap-1">
+              <span class="inline-block w-1.5 h-1.5 rounded-full bg-success-content"></span>
+              LIVE
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Spacer for fixed cta -->
+    <div class="h-32"></div>
+
+    <!-- Sticky CTA -->
+    <div class="max-w-md mx-auto fixed bottom-0 left-0 right-0 bg-base-100 border-t border-base-300 px-4 py-4">
+      <button class="btn btn-neutral w-full">I'm Interested</button>
+      <p class="text-[10px] text-center text-base-content/60 mt-2 uppercase tracking-wider">Dealer gets your phone + message</p>
+    </div>
+
+    <!-- Compose drawer (shown open) -->
+    <dialog class="modal modal-open modal-bottom sm:modal-middle">
+      <div class="modal-box max-w-md">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-bold text-sm uppercase tracking-widest">Send Inquiry</h3>
+          <button class="btn btn-sm btn-circle btn-ghost">✕</button>
+        </div>
+
+        <div class="text-xs text-base-content/60 mb-3 leading-relaxed">
+          Marco's Finds gets a text with your name, phone, and your message. They'll contact you directly.
+        </div>
+
+        <div class="card card-compact bg-base-200 mb-4">
+          <div class="card-body">
+            <div class="flex items-center gap-2">
+              <div class="w-10 h-10 bg-base-300 rounded flex-shrink-0"></div>
+              <div class="flex-1 min-w-0">
+                <div class="text-xs font-bold truncate">Walnut Credenza</div>
+                <div class="text-xs text-base-content/60">$450 · Marco's Finds</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <label class="form-control w-full">
+          <div class="label">
+            <span class="label-text text-xs uppercase tracking-wider">Your Message</span>
+            <span class="label-text-alt text-xs text-base-content/60">0 / 240</span>
+          </div>
+          <textarea class="textarea textarea-bordered h-24" placeholder="Love the credenza — is the veneer chip visible from 3 feet? Coming at 6am."></textarea>
+        </label>
+
+        <div class="mt-4 text-[10px] text-base-content/60 flex items-start gap-2">
+          <span>→</span>
+          <span>We'll include: John C. · (213) 555-0134</span>
+        </div>
+
+        <div class="modal-action mt-4 gap-2">
+          <button class="btn btn-sm btn-ghost flex-1">Cancel</button>
+          <button class="btn btn-sm btn-neutral flex-1">Send</button>
+        </div>
+      </div>
+    </dialog>
+
+  </div>
+</body>
+</html>
