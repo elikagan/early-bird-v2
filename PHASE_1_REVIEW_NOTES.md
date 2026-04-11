@@ -302,6 +302,14 @@ _Cross-cutting themes that also apply: T1, T2, T3, T8, T9, T10, T11._
 
 ---
 
+## Follow-ups from later sessions
+
+Items that surfaced after a screen was already shipped, where a single rule (often captured in a feedback memory) implies a re-pass on a sister screen. Each one is its own dedicated session — do not bundle.
+
+- **FU1 — `home-buyer` hero hierarchy re-pass.** The home-dealer session corrected my mental model of the market/drop relationship: markets are the events (Rose Bowl Flea, Downtown Modernism — the headline noun), drops are the timing detail for when each market's inventory goes live the night before. `home-buyer.html` was built before that correction landed and uses "Drops in 29d 6h" framing in its hero alongside the LIVE NOW state — needs a pass to confirm the market name is the h1 hero and any drop-countdown framing sits as a supporting widget beneath the market identity, not as the headline. See `feedback_eb_no_drop_branding.md` (v3) for the rule. Separate session; no bundling with other revisions.
+
+---
+
 ## Open product questions
 
 These are questions raised during review that need a design decision before the relevant screen can be finalized. Do not try to answer them inside a revision session — flag them in the commit message, leave the current behavior alone, and surface them for a decision.
