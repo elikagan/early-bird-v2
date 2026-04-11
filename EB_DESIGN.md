@@ -297,7 +297,7 @@ Existing screens (revise in place):
 - [x] 02. landing-dealer
 - [x] 03. onboarding (note 03.7 also asks for an `EB_DESIGN.md` update about buyer-onboarding preferences — handle inline)
 - [x] 04. buy-feed (note 04.3 proposes new screen `home-buyer` — do NOT build it in this session; it is a separate checklist item below)
-- [ ] 05. watching
+- [x] 05. watching
 - [ ] 06. item-detail-buyer → SPLIT into clean state + inquiry-drawer state (both files in one session — this is the only exception to the one-screen rule)
 - [ ] 07. item-detail-dealer-own
 - [ ] 08. item-detail-dealer-browsing
@@ -325,6 +325,7 @@ Note: `item-detail-buyer-inquiry` is NOT a separate checklist item. It is the sp
 - 2026-04-10 — design decision (cross-screen) — buy feed has no filters in v1: removed entire filter bar from `buy-feed.html` (ALL/SAVED toggle + Dealer + Category dropdowns); SAVED is redundant because Watching is the saved-and-inquired view. Watching tab is scoped to the current market only — removed cross-market Folk Art Weather Vane item from `watching.html` and updated count from 8 to 7. Spec updated: Buy Tab and Watching Tab sections in EB_DESIGN.md rewritten. Note: `watching.html` still pending its full 05 revision pass (header/market context).
 - 2026-04-10 — partial 05. watching + cross-screen nav update — wired EARLY BIRD logo on `watching.html` to `home-buyer.html` (T8), replaced "Watching / 7 items you care about" header with eyebrow + market context line ("Downtown Modernism · Apr 26") so the screen tells you which market it's scoped to; bottom-nav Watching link now shows the count "Watching (7)" across all 12 screens with a bottom nav (buyer + dealer); `account-buyer.html` Watching stat updated 8 → 7 to match. Full 05 revision still queued for its own session.
 - 2026-04-10 — sell-add-item — removed Category form field (and the 10-option select) since v1 captures no category data and offers no category filter. Open Question 1 (Categories) marked deferred to v2 in EB_DESIGN.md.
+- 2026-04-10 — 05. watching — completed revision pass: hearts neutralized (text-error → text-base-content, 05.4 canonical), inquiry-sent rows now show the actual buyer message inline (05.2), bottom nav switched to bg-base-200 panel (T10). Deferred 05.1/05.3 (T2/T3 on PRICE DROP/HELD/SOLD) to a cross-screen pass. Flagged buy-feed.html as also needing red→neutral hearts.
 
 ---
 
