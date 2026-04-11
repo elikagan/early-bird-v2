@@ -81,32 +81,9 @@
 
     <div class="divider mx-4 my-0"></div>
 
-    <!-- Booth settings -->
-    <section class="px-4 py-5">
-      <div class="flex items-center justify-between mb-3">
-        <div class="text-xs uppercase tracking-widest text-base-content/60">Booth Defaults</div>
-        <button class="btn btn-xs btn-ghost">Edit</button>
-      </div>
-      <div class="card card-compact bg-base-200">
-        <div class="card-body">
-          <div class="flex items-start justify-between">
-            <div class="text-xs text-base-content/60 uppercase tracking-wider">Default Row</div>
-            <div class="font-bold text-sm">Row C — Antiques</div>
-          </div>
-          <div class="flex items-start justify-between mt-2">
-            <div class="text-xs text-base-content/60 uppercase tracking-wider">Landmark</div>
-            <div class="font-bold text-sm text-right">Across from food trucks</div>
-          </div>
-          <div class="flex items-start justify-between mt-2">
-            <div class="text-xs text-base-content/60 uppercase tracking-wider">Last Booth #</div>
-            <div class="font-bold text-sm">42</div>
-          </div>
-        </div>
-      </div>
-      <div class="text-[10px] text-base-content/60 mt-2 leading-relaxed">These carry forward to every new market. Override per-market during setup.</div>
-    </section>
-
-    <div class="divider mx-4 my-0"></div>
+    <!-- Booth defaults intentionally omitted. Per product rule, the only booth-location data is -->
+    <!-- the booth number itself, and it's set per-market in sell-booth-setup, not as an account- -->
+    <!-- level default. Do NOT reintroduce "Default Row", "Landmark", or "Last Booth #" fields. -->
 
     <!-- Payment methods (T11: methods-only, no handles, no Edit/Connect — app is never the payment middleman) -->
     <section class="px-4 py-5">
