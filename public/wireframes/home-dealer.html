@@ -45,53 +45,67 @@
 
     <main class="flex-1 pb-24">
 
-      <!-- HERO: the next market needing a booth setup owns the top of the screen. -->
-      <!-- Most actionable thing for a dealer logging in is "your next market needs a booth" — that gets the hero. -->
-      <!-- Big market name → muted metadata → full-width primary CTA. Generous padding (pt-8 pb-7) so it breathes. -->
-      <!-- No "NEXT MARKET" eyebrow pill — T2 outline-down by default, and the position + size already signal hero. -->
-      <!-- Mirrors home-buyer's hero structure exactly, but the action is "set up" instead of "browse". -->
+      <!-- HERO: the next market is the headline. The drop countdown is a supporting widget beneath it. -->
+      <!-- Markets are the events — Rose Bowl Flea, Downtown Modernism, PCC Flea — and the market name is -->
+      <!-- the noun the dealer is thinking about ("I'm going to Rose Bowl Flea"). Each market has a "drop" -->
+      <!-- the night before when its inventory goes live for buyers; the drop is a TIMING DETAIL of the -->
+      <!-- market, not the headline. The countdown drives urgency through tabular precision and its -->
+      <!-- placement above the CTA — not by being bigger than the market name. -->
+      <!-- (See feedback_eb_no_drop_branding.md — three rounds of correction got us here.) -->
+      <!-- Reading order: market name h1 hero → market date / dealer count (muted) → "DROPS IN" eyebrow -->
+      <!-- → tabular countdown (smaller than market name) → absolute drop time (muted) → primary CTA. -->
       <section class="px-4 pt-8 pb-7 border-b border-base-300">
-        <h1 class="text-3xl font-bold leading-tight tracking-tight mb-3">Rose Bowl Flea</h1>
-        <div class="text-xs text-base-content/60 leading-relaxed">Sun May 11 · ~80 dealers</div>
-        <div class="text-xs text-base-content/60 leading-relaxed mb-6">Opens to buyers Sat May 10, 6pm</div>
+        <h1 class="text-3xl font-bold leading-tight tracking-tight mb-2">Rose Bowl Flea</h1>
+        <div class="text-xs text-base-content/60 leading-relaxed mb-6">Sun May 11 · ~80 dealers</div>
+        <div class="mb-6">
+          <div class="text-[10px] uppercase tracking-widest text-base-content/60 mb-1">Drops in</div>
+          <div class="text-2xl font-bold tabular-nums leading-none">01D 14H 32M</div>
+          <div class="text-xs text-base-content/60 mt-1">Sat May 10, 6pm</div>
+        </div>
         <a href="sell-booth-setup.html" class="btn btn-neutral btn-block">Set up your booth →</a>
       </section>
 
       <!-- Coming up — the rest of the dealer's calendar. -->
       <!-- This section ALSO IS the market switcher, absorbed from the deleted sell-market-picker (PHASE_1 note 12). -->
       <!-- Tapping any row routes to sell-booth-setup for that market — the dealer picks which market to prep -->
-      <!-- by tapping it here. No separate picker screen. The hero IS the most-imminent market by default; -->
+      <!-- by tapping it here. No separate picker screen. The hero IS the most-imminent drop by default; -->
       <!-- the rows below let the dealer jump ahead to a later market if they want to set that one up first. -->
-      <!-- Bold weight is reserved for the market name (the only headline in each row). The "Opens in N days" -->
-      <!-- line is intentionally light so it reads as metadata, not as a sibling row (the hierarchy bug from -->
-      <!-- the first home-buyer pass where a countdown line read like a market name). -->
+      <!-- Each row carries its own row-scale countdown ("Drops in 8d") — right-aligned next to the market -->
+      <!-- name so urgency stays glanceable across the whole calendar, not just the hero. The spec is -->
+      <!-- explicit: "a live drop countdown for EACH" upcoming market. -->
       <section class="px-4 pt-7 pb-3">
         <div class="text-xs uppercase tracking-widest text-base-content/60">Coming up</div>
       </section>
 
       <a href="sell-booth-setup.html" class="block px-4 py-4 border-t border-base-300">
-        <div class="text-base font-bold">PCC Flea</div>
+        <div class="flex items-baseline justify-between gap-3">
+          <div class="text-base font-bold">PCC Flea</div>
+          <div class="text-xs font-bold tabular-nums">Drops in 8d</div>
+        </div>
         <div class="text-xs text-base-content/60 mt-0.5">Sun May 18 · ~50 dealers</div>
-        <div class="text-xs text-base-content/60 mt-2">Opens in 36 days · Sat May 17, 6pm</div>
+        <div class="text-xs text-base-content/60 mt-0.5">Sat May 17, 6pm</div>
       </a>
 
       <a href="sell-booth-setup.html" class="block px-4 py-4 border-t border-base-300">
-        <div class="text-base font-bold">Long Beach Antique Market</div>
+        <div class="flex items-baseline justify-between gap-3">
+          <div class="text-base font-bold">Long Beach Antique Market</div>
+          <div class="text-xs font-bold tabular-nums">Drops in 64d</div>
+        </div>
         <div class="text-xs text-base-content/60 mt-0.5">Sun Jun 15 · ~120 dealers</div>
-        <div class="text-xs text-base-content/60 mt-2">Opens in 64 days · Sat Jun 14, 6pm</div>
+        <div class="text-xs text-base-content/60 mt-0.5">Sat Jun 14, 6pm</div>
       </a>
 
-      <!-- Why set up early — flat prose, no accordion. -->
-      <!-- Spec calls this a "how the drop works explainer that persuades dealers to set up in advance". -->
-      <!-- Persuasion-first framing ("Why set up early") reads more dealer-specific than the buyer-side -->
-      <!-- "How it works" eyebrow. The substance is the same shape: 3 short paragraphs. -->
-      <!-- One functional "drop" reference in paragraph 1 ("days before the drop, not hours"). That's the -->
-      <!-- spice — the rest of the prose uses plain English to avoid hype-language saturation. -->
+      <!-- How it works — flat prose, no accordion. -->
+      <!-- Spec language ("how the drop works explainer that persuades dealers to set up in advance"), -->
+      <!-- but the section header frames around the market not the drop ("How it works", not "How the -->
+      <!-- drop works") — the drop is a timing mechanism, the screen is about markets. -->
+      <!-- Three short paragraphs: dealer-side mechanism (publish → sit before drop → inquiries before sunrise), -->
+      <!-- inquiry handoff, in-person payment. All three are functional mechanism prose, no hype register. -->
       <!-- Anything longer (terms, dispute handling, dealer agreement) lives in Dealer Help, not here. -->
       <section class="px-4 pt-7 pb-8 border-t border-base-300">
-        <div class="text-xs uppercase tracking-widest text-base-content/60 mb-4">Why set up early</div>
+        <div class="text-xs uppercase tracking-widest text-base-content/60 mb-4">How it works</div>
         <div class="text-sm text-base-content/70 leading-relaxed space-y-3">
-          <p>Your items go in front of buyers the moment you publish, and they sit there until the market opens. Get set up days before the drop, not hours, and you'll hear from buyers before sunrise.</p>
+          <p>Your items go live the moment you publish, and they sit in front of buyers right up to the drop. Set up days early instead of hours and you'll hear from buyers before sunrise.</p>
           <p>When a buyer is interested, you get a single text with their name, phone number, and message. From there you talk directly — call, text, or sort it out at the booth.</p>
           <p>Buyers pay you in person, after you've confirmed the sale. Early Bird never holds payment.</p>
         </div>
