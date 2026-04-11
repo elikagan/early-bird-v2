@@ -16,6 +16,7 @@ Read `EB_DESIGN.md` before doing anything. It is the source of truth for this pr
 3. **No class name changes.** Do not rename, remove, or override DaisyUI classes from the wireframes unless explicitly told to.
 4. **One job per session.** Each session has a single phase or task. Do not bleed into other phases. If the task is "build API routes," do not touch frontend files.
 5. **Commit after every completed unit.** A unit is one screen, one route, or one feature. Commit and push immediately. Do not batch.
+6. **Never read REVISION_LOG.md.** It exceeds the token limit and is not needed for any session. If a task requires revision history, ask the user to provide the specific entry.
 
 ## Build Phases
 
