@@ -38,17 +38,14 @@
         </div>
       </div>
 
-      <!-- Market switcher -->
-      <button class="flex items-center justify-between w-full text-left">
-        <div>
-          <div class="text-sm font-bold">Downtown Modernism</div>
-          <div class="text-[10px] uppercase tracking-widest text-base-content/60">Booth 42 · Tap to switch market</div>
-        </div>
+      <!-- Market context -->
+      <div class="flex items-center justify-between">
+        <div class="text-sm font-bold">Downtown Modernism</div>
         <div class="badge badge-success gap-1">
           <span class="inline-block w-1.5 h-1.5 rounded-full bg-success-content"></span>
           LIVE
         </div>
-      </button>
+      </div>
     </header>
 
     <!-- Live stats -->
@@ -70,15 +67,8 @@
       <div class="text-[10px] uppercase tracking-widest text-base-content/60 mt-2 text-center">Market is live · 127 buyers shopping</div>
     </section>
 
-    <!-- Filter bar -->
-    <div class="px-4 py-3 border-b border-base-300 flex items-center gap-2">
-      <div class="join">
-        <button class="btn btn-sm join-item btn-neutral">ALL</button>
-        <button class="btn btn-sm join-item btn-outline">LIVE</button>
-        <button class="btn btn-sm join-item btn-outline">HELD</button>
-        <button class="btn btn-sm join-item btn-outline">SOLD</button>
-      </div>
-      <div class="flex-1"></div>
+    <!-- Action bar -->
+    <div class="px-4 py-3 border-b border-base-300">
       <button class="btn btn-sm btn-neutral">+ Add</button>
     </div>
 
@@ -89,19 +79,46 @@
       <div class="flex items-start gap-3 px-4 py-4 border-b border-base-300">
         <div class="w-16 h-16 bg-base-200 rounded flex-shrink-0 flex items-center justify-center text-[9px] uppercase tracking-widest text-base-content/30">Photo</div>
         <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2 mb-1">
-            <div class="badge badge-outline">LIVE</div>
-            <div class="badge badge-outline">3 asks</div>
-          </div>
           <div class="text-sm font-bold leading-tight truncate">Walnut Credenza</div>
           <div class="flex items-center gap-2 mt-1">
             <span class="font-bold text-sm">$450</span>
-            <span class="text-[10px] text-base-content/60">· 12 watchers</span>
+            <span class="text-[10px] text-base-content/60">· 12 watchers · 3 inquiries</span>
           </div>
           <div class="flex gap-2 mt-2">
-            <button class="btn btn-xs btn-outline">Edit</button>
             <button class="btn btn-xs btn-outline">Hold</button>
             <button class="btn btn-xs btn-outline">Drop Price</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item 4 - Live, no activity -->
+      <div class="flex items-start gap-3 px-4 py-4 border-b border-base-300">
+        <div class="w-16 h-16 bg-base-200 rounded flex-shrink-0 flex items-center justify-center text-[9px] uppercase tracking-widest text-base-content/30">Photo</div>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm font-bold leading-tight truncate">Oak Rolltop Desk</div>
+          <div class="flex items-center gap-2 mt-1">
+            <span class="font-bold text-sm">$625</span>
+            <span class="text-[10px] text-base-content/60">· 2 watchers</span>
+          </div>
+          <div class="flex gap-2 mt-2">
+            <button class="btn btn-xs btn-outline">Hold</button>
+            <button class="btn btn-xs btn-outline">Drop Price</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item 5 - Live, price dropped -->
+      <div class="flex items-start gap-3 px-4 py-4 border-b border-base-300">
+        <div class="w-16 h-16 bg-base-200 rounded flex-shrink-0 flex items-center justify-center text-[9px] uppercase tracking-widest text-base-content/30">Photo</div>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm font-bold leading-tight truncate">Pair of Cane Chairs</div>
+          <div class="flex items-center gap-2 mt-1">
+            <span class="font-bold text-sm">$180</span>
+            <span class="text-xs text-base-content/40 line-through">$240</span>
+          </div>
+          <div class="flex gap-2 mt-2">
+            <button class="btn btn-xs btn-outline">Hold</button>
+            <button class="btn btn-xs btn-outline">Mark Sold</button>
           </div>
         </div>
       </div>
@@ -112,15 +129,13 @@
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-2 mb-1">
             <div class="badge badge-outline">HELD</div>
-            <div class="badge badge-outline">1 ask</div>
           </div>
           <div class="text-sm font-bold leading-tight truncate">Teak Nesting Tables</div>
           <div class="flex items-center gap-2 mt-1">
             <span class="font-bold text-sm">$220</span>
-            <span class="text-[10px] text-base-content/60">· 4 watchers</span>
+            <span class="text-[10px] text-base-content/60">· 4 watchers · 1 inquiry</span>
           </div>
           <div class="flex gap-2 mt-2">
-            <button class="btn btn-xs btn-outline">Edit</button>
             <button class="btn btn-xs btn-outline">Release</button>
             <button class="btn btn-xs btn-outline">Mark Sold</button>
           </div>
@@ -138,46 +153,6 @@
           <div class="flex items-center gap-2 mt-1">
             <span class="font-bold text-sm line-through">$140</span>
             <span class="text-[10px] text-base-content/60">· Sold to John C.</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Item 4 - Live, no activity -->
-      <div class="flex items-start gap-3 px-4 py-4 border-b border-base-300">
-        <div class="w-16 h-16 bg-base-200 rounded flex-shrink-0 flex items-center justify-center text-[9px] uppercase tracking-widest text-base-content/30">Photo</div>
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2 mb-1">
-            <div class="badge badge-outline">LIVE</div>
-          </div>
-          <div class="text-sm font-bold leading-tight truncate">Oak Rolltop Desk</div>
-          <div class="flex items-center gap-2 mt-1">
-            <span class="font-bold text-sm">$625</span>
-            <span class="text-[10px] text-base-content/60">· 2 watchers</span>
-          </div>
-          <div class="flex gap-2 mt-2">
-            <button class="btn btn-xs btn-outline">Edit</button>
-            <button class="btn btn-xs btn-outline">Hold</button>
-            <button class="btn btn-xs btn-outline">Drop Price</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Item 5 - Live, price dropped -->
-      <div class="flex items-start gap-3 px-4 py-4 border-b border-base-300">
-        <div class="w-16 h-16 bg-base-200 rounded flex-shrink-0 flex items-center justify-center text-[9px] uppercase tracking-widest text-base-content/30">Photo</div>
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2 mb-1">
-            <div class="badge badge-outline">LIVE</div>
-          </div>
-          <div class="text-sm font-bold leading-tight truncate">Pair of Cane Chairs</div>
-          <div class="flex items-center gap-2 mt-1">
-            <span class="font-bold text-sm">$180</span>
-            <span class="text-xs text-base-content/40 line-through">$240</span>
-          </div>
-          <div class="flex gap-2 mt-2">
-            <button class="btn btn-xs btn-outline">Edit</button>
-            <button class="btn btn-xs btn-outline">Hold</button>
-            <button class="btn btn-xs btn-outline">Mark Sold</button>
           </div>
         </div>
       </div>
