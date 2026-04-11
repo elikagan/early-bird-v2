@@ -57,7 +57,7 @@ Flea markets are inherently scarce. Things sell once. Early Bird makes this scar
 
 - Countdown timers to the drop (with seconds ticking)
 - "X buyers are shopping" when the market is live
-- PRICE DROP badges that appear in real-time
+- Real-time price drops (struck-through old price)
 - Sold items stay visible (grayed out) — you can see what you missed
 - Avatars everywhere — every dealer and buyer has a face, attaching a person to every transaction
 
@@ -111,7 +111,7 @@ No filters in v1. The buyer is shopping a single market drop and the grid is the
 
 Items in the current market that the buyer has favorited or inquired about. Scoped to one market at a time — switching markets switches the Watching list. Watching is the unified saved-and-inquired view; there is no separate SAVED filter in Buy.
 
-Each row shows: thumbnail, price, status, item title, dealer name, heart icon if favorited, inquiry indicator if messaged, PRICE DROP badge if price lowered with old price struck through. Sorted by most recent activity.
+Each row shows: thumbnail, price, status, item title, dealer name, heart icon if favorited, inquiry indicator if messaged, and a struck-through old price if the price was lowered. Sorted by most recent activity.
 
 Tap any item → opens item detail.
 
@@ -182,7 +182,7 @@ The marketplace flywheel.
 3. Dealer lowers price to $180
 4. App prompts: "Notify 5 watchers?"
 5. SMS to all watchers: "Price drop! Brass Desk Lamp is now $180 (was $250)"
-6. Watching tab shows PRICE DROP badge, old price struck through
+6. Watching tab shows the new price with the old price struck through
 7. Buyer taps, sends inquiry, dealer calls them, deal happens
 
 **Why this matters:** Dynamic pricing at flea markets is currently just haggling. The ability to proactively signal interested buyers creates a conversion loop that doesn't exist anywhere else: browse → favorite → price drops → notification → inquiry → deal.
