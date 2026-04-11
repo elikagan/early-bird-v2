@@ -33,6 +33,7 @@ Do not read other screens' per-screen sections — cross-screen context pollutio
 - **T10** — Sticky footer: no "line-above" indicator style
 - **T11** — No stored payment handles (methods-only, not accounts)
 - **T12** — No pop-ups/modals on mobile (use drawers)
+- **T13** — Market status indicator: lightning-bolt circle for LIVE, calendar circle for upcoming
 
 ---
 
@@ -104,6 +105,16 @@ Do not read other screens' per-screen sections — cross-screen context pollutio
 
 - **Rule:** Any interaction that would be a modal becomes a drawer (bottom sheet) instead. DaisyUI `modal modal-bottom` is STILL a modal — the spec is to use a raw Tailwind fixed-position container with drag handle, rounded top corners, and a thin top border. Not the DaisyUI modal primitive.
 - **Applies to:** any modal in the app. Primary instance is the `item-detail-buyer` inquiry compose. Also applies to any future confirm/edit sheets. Account screens should edit in place (see T9), not use drawers either.
+
+### T13. Market status indicator — lightning-bolt circle for LIVE, calendar circle for upcoming
+
+- **Rule:** The current green "LIVE" text pill (`badge badge-success gap-1` with the "LIVE" text label) gets replaced with a circle containing a lightning-bolt icon. Markets that are not currently live (upcoming drops) get a circle containing a calendar icon. The indicator is a compact, icon-only chip — no text label inside.
+- **Why it matters:** The text pill is loud, wordy, and blends in with other badges in a row. A shape + icon is instantly readable, scales to every density (feed row, item detail header, market card), and cleanly separates "live now" from "scheduled" without repeating the word LIVE in every card. It also complements T2 (color-down) — the LIVE circle can stay colored since it's the only alerting state endorsed, while the upcoming circle is outline/muted.
+- **Scope notes:**
+    - Deferred to a cross-screen pass — do NOT apply this inside a single-screen revision session.
+    - Applies to the "LIVE" pill wherever it currently appears. Not to the LIVE tab label inside `sell-booth-active`'s status tabs (that's a different control — tab copy, not a status indicator).
+    - Icon choice is open — lightning bolt and calendar could be a heroicon, a material icon, or inline SVG; the decision belongs to the session that executes this pass.
+- **Applies to:** every screen with a market status indicator. Current instances (as of 2026-04-10): `buy-feed.html`, `item-detail-buyer.html`, `item-detail-buyer-inquiry.html`, `item-detail-dealer-browsing.html`, `sell-market-picker.html`, `sell-add-item.html`, `sell-booth-active.html` (multiple inside). Grep `badge-success` across `public/wireframes/` before the pass to catch any additions.
 
 ---
 

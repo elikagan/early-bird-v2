@@ -327,6 +327,7 @@ Note: `item-detail-buyer-inquiry` is NOT a separate checklist item. It is the sp
 - 2026-04-10 — sell-add-item — removed Category form field (and the 10-option select) since v1 captures no category data and offers no category filter. Open Question 1 (Categories) marked deferred to v2 in EB_DESIGN.md.
 - 2026-04-10 — 05. watching — completed revision pass: hearts neutralized (text-error → text-base-content, 05.4 canonical), inquiry-sent rows now show the actual buyer message inline (05.2), bottom nav switched to bg-base-200 panel (T10). Deferred 05.1/05.3 (T2/T3 on PRICE DROP/HELD/SOLD) to a cross-screen pass. Flagged buy-feed.html as also needing red→neutral hearts.
 - 2026-04-10 — 06. item-detail-buyer SPLIT — clean buyer-view state revised in place; inquiry compose extracted into new item-detail-buyer-inquiry.html as a raw Tailwind bottom drawer with backdrop + drag handle (NOT DaisyUI modal, T12). Applied T1/T4/T5/T7/T8/T10 + neutralized hearts. Added new file to review.html WIREFRAMES (count N → N+1). Deferred T2/T3 on badges to cross-screen pass.
+- 2026-04-10 — new cross-cutting theme T13 added to PHASE_1_REVIEW_NOTES.md — Market status indicator: replace the green "LIVE" text pill with a lightning-bolt circle, and add a calendar circle for upcoming (not-yet-live) markets. Deferred to a cross-screen pass. Current instances flagged across 7 wireframes (buy-feed, item-detail-buyer, item-detail-buyer-inquiry, item-detail-dealer-browsing, sell-market-picker, sell-add-item, sell-booth-active).
 
 ---
 
