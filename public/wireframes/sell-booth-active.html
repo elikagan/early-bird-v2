@@ -68,88 +68,92 @@
       <button class="btn btn-sm btn-neutral">+ Add Listing</button>
     </div>
 
-    <!-- Items list -->
-    <main class="flex-1 pb-32">
+    <!-- Items grid -->
+    <main class="flex-1 px-4 py-4 pb-32">
+      <div class="grid grid-cols-2 gap-3">
 
-      <!-- Item 1 - Live with inquiries -->
-      <div class="flex items-start gap-3 px-4 py-4 border-b border-base-300">
-        <div class="w-16 h-16 bg-base-200 rounded flex-shrink-0 flex items-center justify-center text-[9px] uppercase tracking-widest text-base-content/30">Photo</div>
-        <div class="flex-1 min-w-0">
-          <div class="text-sm font-bold leading-tight truncate">Walnut Credenza</div>
-          <div class="flex items-center gap-2 mt-1">
-            <span class="font-bold text-sm">$450</span>
-            <span class="text-[10px] text-base-content/60">· 12 watchers · 3 inquiries</span>
-          </div>
-          <div class="flex gap-2 mt-2">
-            <button class="btn btn-xs btn-outline">Hold</button>
-            <button class="btn btn-xs btn-outline">Mark Sold</button>
+        <!-- Item 1 - Walnut Credenza, LIVE, 12 watchers · 3 inquiries -->
+        <div class="card card-compact bg-base-100 border border-base-300 overflow-hidden">
+          <figure class="aspect-square bg-base-200 relative">
+            <div class="absolute inset-0 flex items-center justify-center text-[10px] uppercase tracking-widest text-base-content/30">Photo</div>
+          </figure>
+          <div class="card-body">
+            <div class="text-xs font-bold leading-tight line-clamp-2">Walnut Credenza</div>
+            <div class="font-bold text-sm">$450</div>
+            <div class="text-[10px] text-base-content/60 truncate">12 watchers · 3 inquiries</div>
+            <div class="flex flex-col gap-1 mt-1">
+              <button class="btn btn-xs btn-outline">Hold</button>
+              <button class="btn btn-xs btn-outline">Mark Sold</button>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Item 4 - Live, no activity -->
-      <div class="flex items-start gap-3 px-4 py-4 border-b border-base-300">
-        <div class="w-16 h-16 bg-base-200 rounded flex-shrink-0 flex items-center justify-center text-[9px] uppercase tracking-widest text-base-content/30">Photo</div>
-        <div class="flex-1 min-w-0">
-          <div class="text-sm font-bold leading-tight truncate">Oak Rolltop Desk</div>
-          <div class="flex items-center gap-2 mt-1">
-            <span class="font-bold text-sm">$625</span>
-            <span class="text-[10px] text-base-content/60">· 2 watchers</span>
-          </div>
-          <div class="flex gap-2 mt-2">
-            <button class="btn btn-xs btn-outline">Hold</button>
-            <button class="btn btn-xs btn-outline">Mark Sold</button>
+        <!-- Item 4 - Oak Rolltop Desk, LIVE, 2 watchers -->
+        <div class="card card-compact bg-base-100 border border-base-300 overflow-hidden">
+          <figure class="aspect-square bg-base-200 relative">
+            <div class="absolute inset-0 flex items-center justify-center text-[10px] uppercase tracking-widest text-base-content/30">Photo</div>
+          </figure>
+          <div class="card-body">
+            <div class="text-xs font-bold leading-tight line-clamp-2">Oak Rolltop Desk</div>
+            <div class="font-bold text-sm">$625</div>
+            <div class="text-[10px] text-base-content/60 truncate">2 watchers</div>
+            <div class="flex flex-col gap-1 mt-1">
+              <button class="btn btn-xs btn-outline">Hold</button>
+              <button class="btn btn-xs btn-outline">Mark Sold</button>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Item 5 - Live, price dropped -->
-      <div class="flex items-start gap-3 px-4 py-4 border-b border-base-300">
-        <div class="w-16 h-16 bg-base-200 rounded flex-shrink-0 flex items-center justify-center text-[9px] uppercase tracking-widest text-base-content/30">Photo</div>
-        <div class="flex-1 min-w-0">
-          <div class="text-sm font-bold leading-tight truncate">Pair of Cane Chairs</div>
-          <div class="flex items-center gap-2 mt-1">
-            <span class="font-bold text-sm">$180</span>
-            <span class="text-xs text-base-content/40 line-through">$240</span>
-          </div>
-          <div class="flex gap-2 mt-2">
-            <button class="btn btn-xs btn-outline">Hold</button>
-            <button class="btn btn-xs btn-outline">Mark Sold</button>
+        <!-- Item 5 - Pair of Cane Chairs, LIVE, price dropped -->
+        <div class="card card-compact bg-base-100 border border-base-300 overflow-hidden">
+          <figure class="aspect-square bg-base-200 relative">
+            <div class="absolute inset-0 flex items-center justify-center text-[10px] uppercase tracking-widest text-base-content/30">Photo</div>
+          </figure>
+          <div class="card-body">
+            <div class="text-xs font-bold leading-tight line-clamp-2">Pair of Cane Chairs</div>
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-sm">$180</span>
+              <span class="text-xs text-base-content/40 line-through">$240</span>
+            </div>
+            <div class="flex flex-col gap-1 mt-1">
+              <button class="btn btn-xs btn-outline">Hold</button>
+              <button class="btn btn-xs btn-outline">Mark Sold</button>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Item 2 - Held -->
-      <div class="flex items-start gap-3 px-4 py-4 border-b border-base-300">
-        <div class="w-16 h-16 bg-base-200 rounded flex-shrink-0 flex items-center justify-center text-[9px] uppercase tracking-widest text-base-content/30">Photo</div>
-        <div class="flex-1 min-w-0">
-          <div class="text-sm font-bold leading-tight truncate">Teak Nesting Tables</div>
-          <div class="flex items-center gap-2 mt-1">
-            <span class="font-bold text-sm">$220</span>
-            <span class="text-[10px] text-base-content/60">· 4 watchers · 1 inquiry</span>
-          </div>
-          <div class="flex gap-2 mt-2">
-            <button class="btn btn-xs btn-neutral">HELD</button>
-            <button class="btn btn-xs btn-outline">Mark Sold</button>
+        <!-- Item 2 - Teak Nesting Tables, HELD, 4 watchers · 1 inquiry -->
+        <div class="card card-compact bg-base-100 border border-base-300 overflow-hidden">
+          <figure class="aspect-square bg-base-200 relative">
+            <div class="absolute inset-0 flex items-center justify-center text-[10px] uppercase tracking-widest text-base-content/30">Photo</div>
+          </figure>
+          <div class="card-body">
+            <div class="text-xs font-bold leading-tight line-clamp-2">Teak Nesting Tables</div>
+            <div class="font-bold text-sm">$220</div>
+            <div class="text-[10px] text-base-content/60 truncate">4 watchers · 1 inquiry</div>
+            <div class="flex flex-col gap-1 mt-1">
+              <button class="btn btn-xs btn-neutral">HELD</button>
+              <button class="btn btn-xs btn-outline">Mark Sold</button>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Item 3 - Sold -->
-      <div class="flex items-start gap-3 px-4 py-4 border-b border-base-300 opacity-60">
-        <div class="w-16 h-16 bg-base-200 rounded flex-shrink-0 flex items-center justify-center text-[9px] uppercase tracking-widest text-base-content/30">Photo</div>
-        <div class="flex-1 min-w-0">
-          <div class="text-sm font-bold leading-tight truncate line-through">Enamel Kitchen Table</div>
-          <div class="flex items-center gap-2 mt-1">
-            <span class="font-bold text-sm line-through">$140</span>
-            <span class="text-[10px] text-base-content/60">· Sold to John C.</span>
-          </div>
-          <div class="flex gap-2 mt-2">
-            <button class="btn btn-xs btn-neutral" disabled>SOLD</button>
+        <!-- Item 3 - Enamel Kitchen Table, SOLD -->
+        <div class="card card-compact bg-base-100 border border-base-300 overflow-hidden opacity-60">
+          <figure class="aspect-square bg-base-200 relative">
+            <div class="absolute inset-0 flex items-center justify-center text-[10px] uppercase tracking-widest text-base-content/30">Photo</div>
+          </figure>
+          <div class="card-body">
+            <div class="text-xs font-bold leading-tight line-clamp-2 line-through">Enamel Kitchen Table</div>
+            <div class="font-bold text-sm line-through">$140</div>
+            <div class="text-[10px] text-base-content/60 truncate">Sold to John C.</div>
+            <div class="flex flex-col gap-1 mt-1">
+              <button class="btn btn-xs btn-neutral" disabled>SOLD</button>
+            </div>
           </div>
         </div>
-      </div>
 
+      </div>
     </main>
 
     <!-- FAB add item -->
