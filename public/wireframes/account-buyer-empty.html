@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Early Bird — Account (Buyer, No Markets Followed)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        fontFamily: {
+          sans: ['"JetBrains Mono"', 'monospace'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+          serif: ['"JetBrains Mono"', 'monospace'],
+        },
+      },
+    }
+  </script>
+  <style>
+    html, body { font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace; }
+  </style>
+</head>
+<!--
+  ============================================================
+  EMPTY STATE — sibling of account-buyer.html
+  ============================================================
+  Renders the account screen with the "Markets You Follow" list
+  empty (the only varying-length list on this screen). The rest
+  of the screen — profile, stats, notifications, "Become A Seller",
+  footer — is fully populated. Common case: a brand-new buyer who
+  hasn't picked any markets to follow yet.
+
+  Pattern decisions for the cross-screen empty-states pass: see the
+  comment block at the top of sell-booth-active-empty.html for the
+  full rationale.
+
+  Chrome (header, profile, stats, notifications, "Become A Seller",
+  footer, bottom nav) is byte-identical to account-buyer.html. The
+  only delta is the "Markets You Follow" section: the four follow-
+  toggle pills are replaced with the centered empty-state block.
+
+  Stats are kept honest: Watching=0, Inquiries=0, Bought=0 — a
+  buyer who follows no markets has had no activity yet either.
+
+  account-dealer has NO sibling empty file in this pass. Its only
+  list-shaped sections are Payment Methods and Notifications, both
+  of which are fixed-length checkbox/toggle groups, not variable-
+  length lists. Their "empty" semantic is "all unchecked", not
+  "no rows" — that's a different shape than what this pass covers.
+  ============================================================
+-->
+<body class="min-h-screen bg-base-300">
+  <div class="max-w-md mx-auto min-h-screen bg-base-100 flex flex-col">
+
+    <!-- Header -->
+    <header class="px-4 pt-6 pb-3 border-b border-base-300">
+      <div class="flex items-center justify-between">
+        <a href="home-buyer.html" class="text-lg font-bold tracking-tight">EARLY BIRD</a>
+        <div class="avatar placeholder">
+          <div class="bg-neutral text-neutral-content w-8 rounded-full">
+            <span class="text-xs font-bold">JC</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Profile -->
+    <section class="px-4 pt-6 pb-4">
+      <div class="flex items-center gap-4">
+        <div class="avatar placeholder">
+          <div class="bg-neutral text-neutral-content w-16 rounded-full">
+            <span class="text-xl font-bold">JC</span>
+          </div>
+        </div>
+        <div class="flex-1">
+          <div class="font-bold text-lg">John Chen</div>
+          <div class="text-xs text-base-content/60">(213) 555-0134</div>
+        </div>
+        <button class="btn btn-ghost btn-xs rounded-full gap-1 text-base-content/60">Edit ✎</button>
+      </div>
+    </section>
+
+    <!-- Stats — zeros for the brand-new-buyer case -->
+    <section class="px-4 pb-4">
+      <div class="stats stats-horizontal bg-base-200 w-full">
+        <div class="stat p-3">
+          <div class="stat-title text-[10px] uppercase tracking-wider">Watching</div>
+          <div class="stat-value text-xl">0</div>
+        </div>
+        <div class="stat p-3">
+          <div class="stat-title text-[10px] uppercase tracking-wider">Inquiries</div>
+          <div class="stat-value text-xl">0</div>
+        </div>
+        <div class="stat p-3">
+          <div class="stat-title text-[10px] uppercase tracking-wider">Bought</div>
+          <div class="stat-value text-xl">0</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider mx-4 my-0"></div>
+
+    <!-- Notifications -->
+    <section class="px-4 py-5">
+      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-3">Notifications</div>
+
+      <div class="form-control">
+        <label class="label cursor-pointer justify-between p-0 py-3 gap-4 border-b border-base-300">
+          <div class="flex-1">
+            <div class="text-sm font-bold">Drop Alerts</div>
+            <div class="text-xs text-base-content/60 leading-tight mt-0.5">Text me when markets I follow go live</div>
+          </div>
+          <input type="checkbox" checked class="toggle" />
+        </label>
+      </div>
+
+      <div class="form-control">
+        <label class="label cursor-pointer justify-between p-0 py-3 gap-4 border-b border-base-300">
+          <div class="flex-1">
+            <div class="text-sm font-bold">Price Drops</div>
+            <div class="text-xs text-base-content/60 leading-tight mt-0.5">Text me when watched items drop in price</div>
+          </div>
+          <input type="checkbox" checked class="toggle" />
+        </label>
+      </div>
+
+      <div class="form-control">
+        <label class="label cursor-pointer justify-between p-0 py-3 gap-4">
+          <div class="flex-1">
+            <div class="text-sm font-bold">New Markets</div>
+            <div class="text-xs text-base-content/60 leading-tight mt-0.5">Text me when new LA markets are added</div>
+          </div>
+          <input type="checkbox" class="toggle" />
+        </label>
+      </div>
+    </section>
+
+    <div class="divider mx-4 my-0"></div>
+
+    <!-- Markets You Follow — empty -->
+    <section class="px-4 py-5">
+      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-3">Markets You Follow</div>
+
+      <!-- Empty state — replaces the follow-toggle pills -->
+      <div class="flex flex-col items-center text-center gap-3 py-6">
+        <div class="text-sm font-bold">You're not following any markets yet.</div>
+        <div class="text-xs text-base-content/60 leading-relaxed max-w-[20rem]">Follow LA flea markets to shop their drops and get a text the moment one goes live.</div>
+        <a class="btn btn-sm btn-outline mt-3">Find markets →</a>
+      </div>
+    </section>
+
+    <div class="divider mx-4 my-0"></div>
+
+    <!-- Become A Seller -->
+    <section class="px-4 py-5">
+      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-3">Become A Seller</div>
+      <div class="text-sm leading-relaxed">Are you selling at an upcoming market and wanna post here for free? <a href="#" class="link font-bold">Learn more →</a></div>
+    </section>
+
+    <div class="divider mx-4 my-0"></div>
+
+    <!-- Footer -->
+    <section class="px-4 py-5 pb-8">
+      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-3">More</div>
+
+      <a class="flex items-center justify-between py-3 border-b border-base-300">
+        <div class="text-sm font-bold">Help &amp; Support</div>
+        <div class="text-sm text-base-content/40">›</div>
+      </a>
+
+      <a class="flex items-center justify-between py-3 border-b border-base-300">
+        <div class="text-sm font-bold">Privacy Policy</div>
+        <div class="text-sm text-base-content/40">›</div>
+      </a>
+
+      <a class="flex items-center justify-between py-3 border-b border-base-300">
+        <div class="text-sm font-bold">Terms</div>
+        <div class="text-sm text-base-content/40">›</div>
+      </a>
+
+      <button class="btn btn-sm btn-outline w-full mt-6">Sign Out</button>
+
+      <div class="text-xs text-base-content/60 text-center mt-4">Early Bird v1.0 · LA</div>
+    </section>
+
+    <!-- Spacer for bottom nav -->
+    <div class="h-16"></div>
+
+    <!-- Bottom nav (buyer: 3 tabs) -->
+    <nav class="max-w-md mx-auto fixed bottom-0 left-0 right-0 bg-base-200 flex">
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+        <span class="text-[10px] uppercase tracking-widest">Buy</span>
+      </a>
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+        <span class="text-[10px] uppercase tracking-widest">Watching (0)</span>
+      </a>
+      <div class="w-px bg-base-300 my-2"></div>
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content font-bold border-t-2 border-neutral">
+        <span class="text-[10px] uppercase tracking-widest">Account</span>
+      </a>
+    </nav>
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Early Bird — Watching (Empty)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        fontFamily: {
+          sans: ['"JetBrains Mono"', 'monospace'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+          serif: ['"JetBrains Mono"', 'monospace'],
+        },
+      },
+    }
+  </script>
+  <style>
+    html, body { font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace; }
+  </style>
+</head>
+<!--
+  ============================================================
+  EMPTY STATE — sibling of watching.html
+  ============================================================
+  Renders when the buyer has favorited or inquired about zero items
+  in the currently-selected market.
+
+  Pattern decisions for the cross-screen empty-states pass: see the
+  comment block at the top of sell-booth-active-empty.html for the
+  full rationale (visual pattern + file pattern). One-line summary:
+  centered prose, optional outline CTA, no illustration; separate
+  -empty.html sibling so the review tool can navigate to it.
+
+  Chrome (header with eyebrow + market label, bottom nav) is
+  byte-identical to watching.html. The items list is replaced with
+  the centered empty-state block. The Watching tab in the bottom
+  nav reads "Watching (0)" instead of "Watching (7)" because the
+  count IS the empty thing on this screen.
+  ============================================================
+-->
+<body class="min-h-screen bg-base-300">
+  <div class="max-w-md mx-auto min-h-screen bg-base-100 flex flex-col">
+
+    <!-- Header -->
+    <header class="px-4 pt-6 pb-3 border-b border-base-300">
+      <div class="flex items-center justify-between mb-3">
+        <a href="home-buyer.html" class="text-lg font-bold tracking-tight">EARLY BIRD</a>
+        <div class="avatar placeholder">
+          <div class="bg-neutral text-neutral-content w-8 rounded-full">
+            <span class="text-xs font-bold">JC</span>
+          </div>
+        </div>
+      </div>
+      <div class="text-[10px] uppercase tracking-widest text-base-content/60">Watching</div>
+      <div class="text-sm font-bold mt-1">Downtown Modernism · Apr 26</div>
+    </header>
+
+    <!-- Empty state — replaces the items list -->
+    <main class="flex-1 flex items-center justify-center px-6 pb-24">
+      <div class="flex flex-col items-center text-center gap-3 max-w-[20rem]">
+        <div class="text-sm font-bold">Nothing in your watch list yet.</div>
+        <div class="text-xs text-base-content/60 leading-relaxed">Tap the heart on any item in the feed to keep an eye on it. Watched items show up here with live price changes.</div>
+        <a href="buy-feed.html" class="btn btn-sm btn-outline mt-3">Browse the market →</a>
+      </div>
+    </main>
+
+    <!-- Bottom nav -->
+    <nav class="max-w-md mx-auto fixed bottom-0 left-0 right-0 bg-base-200 flex">
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+        <span class="text-[10px] uppercase tracking-widest">Buy</span>
+      </a>
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content font-bold border-t-2 border-neutral">
+        <span class="text-[10px] uppercase tracking-widest">Watching (0)</span>
+      </a>
+      <div class="w-px bg-base-300 my-2"></div>
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+        <span class="text-[10px] uppercase tracking-widest">Account</span>
+      </a>
+    </nav>
+
+  </div>
+</body>
+</html>

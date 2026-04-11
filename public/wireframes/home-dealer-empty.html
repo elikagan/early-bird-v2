@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Early Bird — Home (Dealer, Empty)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        fontFamily: {
+          sans: ['"JetBrains Mono"', 'monospace'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+          serif: ['"JetBrains Mono"', 'monospace'],
+        },
+      },
+    }
+  </script>
+  <style>
+    html, body { font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace; }
+  </style>
+</head>
+<!--
+  ============================================================
+  EMPTY STATE — sibling of home-dealer.html
+  ============================================================
+  Renders when the dealer has zero upcoming markets on their
+  calendar — most commonly the brand-new dealer who just finished
+  onboarding and hasn't been scheduled into any market yet.
+
+  Pattern decisions for the cross-screen empty-states pass: see the
+  comment block at the top of sell-booth-active-empty.html for the
+  full rationale.
+
+  Chrome (header, "How it works" section, bottom nav) is byte-
+  identical to home-dealer.html. Two sections are removed in the
+  empty case:
+    - The hero next-market block (no market to feature, no countdown
+      to anchor, no Set-Up-Booth CTA to point at).
+    - The "Coming up" calendar (no markets to list — and the Coming-up
+      rows on home-dealer also act as the market switcher absorbed
+      from the deleted sell-market-picker, so there's nothing to
+      switch to either).
+  In place of the hero + Coming-up sections, the centered empty-state
+  block is purely informational. No CTA — dealers don't browse markets
+  the way buyers do; they're scheduled into them, and the right next
+  step is to wait until a market is announced. "How it works" is kept
+  because it's still useful context for a new dealer.
+  ============================================================
+-->
+<body class="min-h-screen bg-base-300">
+  <div class="max-w-md mx-auto min-h-screen bg-base-100 flex flex-col">
+
+    <!-- Header -->
+    <!-- Same self-route note as home-dealer.html: this IS the home lobby, so the wordmark is not a link. -->
+    <header class="px-4 pt-6 pb-3 border-b border-base-300">
+      <div class="flex items-center justify-between">
+        <div class="text-lg font-bold tracking-tight">EARLY BIRD</div>
+        <div class="avatar placeholder">
+          <div class="bg-neutral text-neutral-content w-8 rounded-full">
+            <span class="text-xs font-bold">MF</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="flex-1 pb-24">
+
+      <!-- Empty state — replaces the hero + "Coming up" sections -->
+      <section class="px-6 pt-16 pb-16 border-b border-base-300 flex flex-col items-center text-center gap-3">
+        <div class="text-sm font-bold">No upcoming markets.</div>
+        <div class="text-xs text-base-content/60 leading-relaxed max-w-[20rem]">When new LA markets are scheduled, you'll see them here with countdowns and a set-up-your-booth button. We'll text you when one opens.</div>
+      </section>
+
+      <!-- How it works — kept verbatim from the populated screen. Useful context for a new dealer. -->
+      <section class="px-4 pt-7 pb-8">
+        <div class="text-xs uppercase tracking-widest text-base-content/60 mb-4">How it works</div>
+        <div class="text-sm text-base-content/70 leading-relaxed space-y-3">
+          <p>Your items go live the moment you publish, and they sit in front of buyers right up to the drop. Set up days early instead of hours and you'll hear from buyers before sunrise.</p>
+          <p>When a buyer is interested, you get a single text with their name, phone number, and message. From there you talk directly — call, text, or sort it out at the booth.</p>
+          <p>Buyers pay you in person, after you've confirmed the sale. Early Bird never holds payment.</p>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Bottom nav (dealer: 4 tabs) -->
+    <nav class="max-w-md mx-auto fixed bottom-0 left-0 right-0 bg-base-200 flex">
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+        <span class="text-[10px] uppercase tracking-widest">Buy</span>
+      </a>
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+        <span class="text-[10px] uppercase tracking-widest">Watching (0)</span>
+      </a>
+      <div class="w-px bg-base-300 my-2"></div>
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+        <span class="text-[10px] uppercase tracking-widest">Sell</span>
+      </a>
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+        <span class="text-[10px] uppercase tracking-widest">Account</span>
+      </a>
+    </nav>
+
+  </div>
+</body>
+</html>

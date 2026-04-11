@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Early Bird — Buy (Empty)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        fontFamily: {
+          sans: ['"JetBrains Mono"', 'monospace'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+          serif: ['"JetBrains Mono"', 'monospace'],
+        },
+      },
+    }
+  </script>
+  <style>
+    html, body { font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace; }
+  </style>
+</head>
+<!--
+  ============================================================
+  EMPTY STATE — sibling of buy-feed.html
+  ============================================================
+  Renders when the buyer is viewing a market that has zero items
+  posted yet — most commonly because the dealers haven't started
+  uploading inventory for the upcoming drop.
+
+  Pattern decisions for the cross-screen empty-states pass: see the
+  comment block at the top of sell-booth-active-empty.html for the
+  full rationale.
+
+  Chrome (header, market context, bottom nav) is byte-identical to
+  buy-feed.html, with two honest deltas:
+    - The "127 buyers shopping now" line is dropped (there's nothing
+      to shop, so the count is meaningless and would read as a lie).
+    - The LIVE pill is kept because the market itself is still
+      scheduled / open — only the inventory is missing. The empty
+      copy explains the timing.
+  The grid is replaced by the centered empty-state block.
+  ============================================================
+-->
+<body class="min-h-screen bg-base-300">
+  <div class="max-w-md mx-auto min-h-screen bg-base-100 flex flex-col">
+
+    <!-- Header -->
+    <header class="px-4 pt-6 pb-3 border-b border-base-300">
+      <div class="flex items-center justify-between mb-3">
+        <a href="home-buyer.html" class="text-lg font-bold tracking-tight">EARLY BIRD</a>
+        <div class="avatar placeholder">
+          <div class="bg-neutral text-neutral-content w-8 rounded-full">
+            <span class="text-xs font-bold">JC</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Market context -->
+      <div class="flex items-center justify-between gap-2">
+        <button class="flex items-center gap-2 text-left">
+          <div>
+            <div class="text-sm font-bold">Downtown Modernism</div>
+            <div class="text-[10px] uppercase tracking-widest text-base-content/60">Sat Apr 26 · Tap to switch</div>
+          </div>
+        </button>
+        <div class="badge badge-success gap-1">
+          <span class="inline-block w-1.5 h-1.5 rounded-full bg-success-content"></span>
+          LIVE
+        </div>
+      </div>
+    </header>
+
+    <!-- Empty state — replaces the items grid -->
+    <main class="flex-1 flex items-center justify-center px-6 pb-24">
+      <div class="flex flex-col items-center text-center gap-3 max-w-[20rem]">
+        <div class="text-sm font-bold">No items in this market yet.</div>
+        <div class="text-xs text-base-content/60 leading-relaxed">Dealers usually post the night before each drop. Check back closer to market day, or follow the market to get a text the moment it opens.</div>
+      </div>
+    </main>
+
+    <!-- Bottom nav -->
+    <nav class="max-w-md mx-auto fixed bottom-0 left-0 right-0 bg-base-200 flex">
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content font-bold border-t-2 border-neutral">
+        <span class="text-[10px] uppercase tracking-widest">Buy</span>
+      </a>
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+        <span class="text-[10px] uppercase tracking-widest">Watching (0)</span>
+      </a>
+      <div class="w-px bg-base-300 my-2"></div>
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+        <span class="text-[10px] uppercase tracking-widest">Account</span>
+      </a>
+    </nav>
+
+  </div>
+</body>
+</html>

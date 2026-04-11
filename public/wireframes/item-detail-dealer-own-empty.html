@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Early Bird — Item Detail (Dealer Own, No Inquiries)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        fontFamily: {
+          sans: ['"JetBrains Mono"', 'monospace'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+          serif: ['"JetBrains Mono"', 'monospace'],
+        },
+      },
+    }
+  </script>
+  <style>
+    html, body { font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace; }
+  </style>
+</head>
+<!--
+  ============================================================
+  EMPTY STATE — sibling of item-detail-dealer-own.html
+  ============================================================
+  Renders when the dealer is viewing one of their own items that
+  has zero inquiries. The item itself is fully populated — only
+  the inquiry log section is empty. Common case: an item that
+  just went live and hasn't picked up any "I'm Interested" taps yet.
+
+  Pattern decisions for the cross-screen empty-states pass: see the
+  comment block at the top of sell-booth-active-empty.html for the
+  full rationale.
+
+  Chrome (hero photo, status controls, title/price, description,
+  market context, bottom nav) is byte-identical to
+  item-detail-dealer-own.html. Two honest deltas:
+    - The Inquiries stat in the stats row drops from 3 to 0.
+    - The Inquiries section header reads "Inquiries" with no count
+      parenthetical, and the three inquiry cards are replaced with
+      the centered empty-state block.
+  The Watching tab in the bottom nav stays at (7) because the
+  dealer's personal watch list is independent of any one item's
+  inquiry log — the empty thing here is scoped to this item only.
+  ============================================================
+-->
+<body class="min-h-screen bg-base-300">
+  <div class="max-w-md mx-auto min-h-screen bg-base-100 flex flex-col">
+
+    <!-- Hero photo (edge-to-edge, swipeable; controls overlaid) -->
+    <figure class="aspect-square bg-base-200 relative">
+      <button class="btn btn-sm btn-ghost gap-1 bg-base-100/80 absolute top-3 left-3">← Back</button>
+      <button class="btn btn-sm btn-ghost text-xs uppercase tracking-wider bg-base-100/80 absolute top-3 right-3">Edit</button>
+      <div class="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-base-content"></span>
+        <span class="w-2 h-2 rounded-full bg-base-content/30"></span>
+        <span class="w-2 h-2 rounded-full bg-base-content/30"></span>
+        <span class="w-2 h-2 rounded-full bg-base-content/30"></span>
+        <span class="w-2 h-2 rounded-full bg-base-content/30"></span>
+      </div>
+    </figure>
+
+    <!-- Status controls -->
+    <section class="px-4 pt-5 pb-4">
+      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-2">Status</div>
+      <div role="tablist" class="join w-full">
+        <button role="tab" class="btn btn-sm join-item flex-1 btn-neutral">Live</button>
+        <button role="tab" class="btn btn-sm join-item flex-1">Hold</button>
+        <button role="tab" class="btn btn-sm join-item flex-1">Sold</button>
+      </div>
+      <div class="text-[10px] text-base-content/60 mt-2 leading-relaxed">
+        Mark SOLD the moment it sells at your booth. This closes the listing so no one else inquires.
+      </div>
+    </section>
+
+    <div class="divider mx-4 my-0"></div>
+
+    <!-- Title + price -->
+    <section class="px-4 pt-4 pb-3">
+      <h1 class="text-2xl font-bold leading-tight">Walnut Credenza</h1>
+      <div class="flex items-baseline gap-3 mt-2">
+        <div class="text-3xl font-bold">$450</div>
+        <div class="badge badge-outline badge-sm">Price Firm</div>
+      </div>
+    </section>
+
+    <!-- Stats — Inquiries drops to 0 in the empty case -->
+    <section class="px-4 pb-4">
+      <div class="stats stats-horizontal bg-base-200 w-full">
+        <div class="stat p-3">
+          <div class="stat-title text-[10px] uppercase tracking-wider">Views</div>
+          <div class="stat-value text-xl">84</div>
+        </div>
+        <div class="stat p-3">
+          <div class="stat-title text-[10px] uppercase tracking-wider">Watchers</div>
+          <div class="stat-value text-xl">12</div>
+        </div>
+        <div class="stat p-3">
+          <div class="stat-title text-[10px] uppercase tracking-wider">Inquiries</div>
+          <div class="stat-value text-xl">0</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Description -->
+    <section class="px-4 pb-4">
+      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-2">Description</div>
+      <p class="text-sm leading-relaxed text-base-content/80">
+        Low 4-drawer walnut credenza, circa 1962. Tapered legs, original brass pulls. Veneer has a few small chips on the top left corner (see photo 4). Interior clean, drawers glide smoothly. Measures 66" W × 18" D × 28" H. Local pickup only.
+      </p>
+    </section>
+
+    <div class="divider mx-4 my-0"></div>
+
+    <!-- Market context -->
+    <section class="px-4 py-4">
+      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-2">Listed In</div>
+      <div class="card card-compact bg-base-200">
+        <div class="card-body">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="font-bold text-sm">Downtown Modernism</div>
+              <div class="text-xs text-base-content/60">Sat Apr 26 · Booth 42</div>
+            </div>
+            <div class="badge badge-success badge-sm gap-1">
+              <span class="inline-block w-1.5 h-1.5 rounded-full bg-success-content"></span>
+              LIVE
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider mx-4 my-0"></div>
+
+    <!-- Inquiry log — empty -->
+    <section class="px-4 py-4 pb-24">
+      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-3">Inquiries</div>
+
+      <!-- Empty state — replaces the inquiry cards -->
+      <div class="flex flex-col items-center text-center gap-3 py-10">
+        <div class="text-sm font-bold">No inquiries yet.</div>
+        <div class="text-xs text-base-content/60 leading-relaxed max-w-[20rem]">When buyers tap "I'm Interested" you'll see them here with their name, number, and message. Early Bird hands off the conversation — you talk to buyers directly from there.</div>
+      </div>
+    </section>
+
+    <!-- Bottom nav (dealer: 4 tabs) -->
+    <nav class="max-w-md mx-auto fixed bottom-0 left-0 right-0 bg-base-200 flex">
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+        <span class="text-[10px] uppercase tracking-widest">Buy</span>
+      </a>
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+        <span class="text-[10px] uppercase tracking-widest">Watching (7)</span>
+      </a>
+      <div class="w-px bg-base-300 my-2"></div>
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content font-bold border-t-2 border-neutral">
+        <span class="text-[10px] uppercase tracking-widest">Sell</span>
+      </a>
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+        <span class="text-[10px] uppercase tracking-widest">Account</span>
+      </a>
+    </nav>
+
+  </div>
+</body>
+</html>

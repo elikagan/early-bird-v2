@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Early Bird — Active Booth (Empty)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        fontFamily: {
+          sans: ['"JetBrains Mono"', 'monospace'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+          serif: ['"JetBrains Mono"', 'monospace'],
+        },
+      },
+    }
+  </script>
+  <style>
+    html, body { font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace; }
+  </style>
+</head>
+<!--
+  ============================================================
+  EMPTY STATE — sibling of sell-booth-active.html
+  ============================================================
+  Renders when the dealer's booth is set up for this market but
+  contains zero listings (the most common day-one dealer state).
+
+  Pattern decisions for the empty-states cross-screen pass:
+
+  1. VISUAL PATTERN — centered copy + optional outline CTA, no
+     illustration. Headline (text-sm font-bold) + sub (text-xs
+     muted, max-width-clamped) + optional btn-sm btn-outline.
+     T2 outline-down restraint: calm prose, no fill colors, no
+     big icons, no urgency. The empty state should feel like a
+     quiet aside, not a marketing landing page.
+
+  2. FILE PATTERN — separate -empty.html sibling rather than an
+     inline alternative state inside the parent wireframe. Three
+     reasons:
+       (a) public/review.html loads one wireframe per iframe slot —
+           an inline-only state would be invisible to the review tool.
+       (b) The 06 split (item-detail-buyer / -inquiry) and the 07
+           confirm drawer (item-detail-dealer-own / -confirm) both
+           went the separate-file route. Same convention here keeps
+           the wireframe collection consistent.
+       (c) Phase 3 wiring will conditionally render one or the other —
+           two clean files are easier to read against than two states
+           stacked inside one file.
+
+  Chrome (header, market context, stats panel, action bar, FAB,
+  bottom nav) is byte-identical to sell-booth-active.html. Only
+  the items grid is replaced — by the centered empty-state block,
+  with the three stat values dropped to zero. The "127 SHOPPERS"
+  badge stays honest: those buyers are browsing other dealers'
+  booths in the same market.
+  ============================================================
+-->
+<body class="min-h-screen bg-base-300">
+  <div class="max-w-md mx-auto min-h-screen bg-base-100 flex flex-col">
+
+    <!-- Header -->
+    <header class="px-4 pt-6 pb-3 border-b border-base-300">
+      <div class="flex items-center justify-between mb-3">
+        <a href="home-dealer.html" class="text-lg font-bold tracking-tight">EARLY BIRD</a>
+        <div class="avatar placeholder">
+          <div class="bg-neutral text-neutral-content w-8 rounded-full">
+            <span class="text-xs font-bold">MF</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Market context -->
+      <div class="flex items-center justify-between">
+        <div class="text-sm font-bold">Downtown Modernism</div>
+        <div class="badge badge-outline">127 SHOPPERS</div>
+      </div>
+    </header>
+
+    <!-- Live stats — zeros for the empty case -->
+    <section class="px-4 py-4 bg-base-200">
+      <div class="stats stats-horizontal w-full bg-base-100">
+        <div class="stat p-3">
+          <div class="stat-title text-[10px] uppercase tracking-wider">Listed</div>
+          <div class="stat-value text-xl">0</div>
+        </div>
+        <div class="stat p-3">
+          <div class="stat-title text-[10px] uppercase tracking-wider">Watchers</div>
+          <div class="stat-value text-xl">0</div>
+        </div>
+        <div class="stat p-3">
+          <div class="stat-title text-[10px] uppercase tracking-wider">Inquiries</div>
+          <div class="stat-value text-xl">0</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Action bar -->
+    <div class="px-4 py-3 border-b border-base-300">
+      <button class="btn btn-sm btn-neutral">+ Add Listing</button>
+    </div>
+
+    <!-- Empty state — replaces the items grid -->
+    <main class="flex-1 flex items-center justify-center px-6 pb-32">
+      <div class="flex flex-col items-center text-center gap-3 max-w-[20rem]">
+        <div class="text-sm font-bold">No listings yet.</div>
+        <div class="text-xs text-base-content/60 leading-relaxed">Add your first item and it'll go live the moment the market drops. Set up days early and buyers will find you before sunrise.</div>
+        <a class="btn btn-sm btn-outline mt-3">+ Add an item</a>
+      </div>
+    </main>
+
+    <!-- FAB add item -->
+    <button class="max-w-md mx-auto fixed bottom-20 right-4 left-auto btn btn-circle btn-lg btn-neutral shadow-lg z-10">+</button>
+
+    <!-- Bottom nav (dealer: 4 tabs) -->
+    <nav class="max-w-md mx-auto fixed bottom-0 left-0 right-0 bg-base-200 flex">
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+        <span class="text-[10px] uppercase tracking-widest">Buy</span>
+      </a>
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+        <span class="text-[10px] uppercase tracking-widest">Watching (0)</span>
+      </a>
+      <div class="w-px bg-base-300 my-2"></div>
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content font-bold border-t-2 border-neutral">
+        <span class="text-[10px] uppercase tracking-widest">Sell</span>
+      </a>
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+        <span class="text-[10px] uppercase tracking-widest">Account</span>
+      </a>
+    </nav>
+
+  </div>
+</body>
+</html>
