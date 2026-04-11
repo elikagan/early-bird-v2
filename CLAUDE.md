@@ -29,6 +29,8 @@ Read `EB_DESIGN.md` before doing anything. It is the source of truth for this pr
 
 There is no in-app messaging. Buyer taps "I'm Interested," writes a short message, and the app sends a single SMS/email to the dealer with the buyer's name, phone number, and message. After that, the app is out of the loop. Do not build chat, inboxes, threads, or real-time messaging.
 
+**Carve-out — per-inquiry transactional receipts.** The "out of the loop" rule has one narrow exception. When the dealer taps Hold or Sell on a specific inquiry card in the Inquiry Log on `item-detail-dealer-own.html`, the app sends one transactional SMS to the affected buyer(s): the winning buyer gets a "Sold! …" or "first dibs" receipt; the other inquirers get a "sold to another buyer" receipt. These are one-way after-the-fact receipts — same category as a Shopify order confirmation. They do NOT open a thread, do NOT accept replies, and do NOT create an inbox. This is the only place the app sends an outbound message after the original inquiry handoff. Full spec in `EB_DESIGN.md` → Communication: One-Touch Inquiry Handoff → Per-Inquiry Transactional Receipts (Carve-Out). Confirm-drawer wireframe: `public/wireframes/item-detail-dealer-own-confirm.html`.
+
 ## Item Detail Has 3 States (Not 4)
 
 1. **Buyer view** — photos, price, dealer info, "I'm Interested" button with compose drawer

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Early Bird — Item Detail (Dealer Own)</title>
+  <title>Early Bird — Item Detail Confirm Sell (Dealer Own)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -25,7 +25,7 @@
   </style>
 </head>
 <body class="min-h-screen bg-base-300">
-  <div class="max-w-md mx-auto min-h-screen bg-base-100 flex flex-col">
+  <div class="max-w-md mx-auto min-h-screen bg-base-100 flex flex-col relative">
 
     <!-- Hero photo (edge-to-edge, swipeable; controls overlaid) -->
     <figure class="aspect-square bg-base-200 relative">
@@ -228,6 +228,63 @@
         <span class="text-[10px] uppercase tracking-widest">Account</span>
       </a>
     </nav>
+
+    <!-- Backdrop dim (constrained to mobile column) -->
+    <div class="absolute inset-0 bg-black/40 z-40"></div>
+
+    <!--
+      Confirm drawer — bottom sheet for the per-inquiry Sell action.
+
+      Sister pattern for the bottom-sheet primitive: item-detail-buyer-inquiry.html
+      (the inquiry compose drawer). Both use the same raw Tailwind primitive:
+      fixed-position container, drag handle, rounded top corners, thin top
+      border. NOT a DaisyUI `modal modal-bottom` (T12).
+
+      Triggered by tapping Sell on a specific inquiry card in the Inquiry Log.
+      On confirm, the app sends one transactional SMS to the winning buyer
+      ("Sold! …") and one to each losing inquirer ("…sold to another buyer").
+      One-way after-the-fact receipts — not messaging. See EB_DESIGN.md →
+      Communication: One-Touch Inquiry Handoff → Per-Inquiry Transactional
+      Receipts (Carve-Out) for the full spec, and CLAUDE.md → Communication
+      Model for the matching carve-out to the "after handoff, the app is out
+      of the loop" rule.
+    -->
+    <div class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-base-100 rounded-t-2xl border-t border-base-300 z-50 px-6 pt-3 pb-6">
+      <div class="w-12 h-1 bg-base-300 rounded-full mx-auto mb-4"></div>
+
+      <a href="item-detail-dealer-own.html" class="btn btn-sm btn-circle btn-ghost absolute top-3 right-3" aria-label="Close">✕</a>
+
+      <h3 class="font-bold text-sm uppercase tracking-widest mb-3">Sell To John C.?</h3>
+
+      <p class="text-xs text-base-content/60 mb-4 leading-relaxed">
+        Closes the listing and sends these texts. No undo after this — make sure you've confirmed with John at the booth.
+      </p>
+
+      <!-- SMS preview: winner -->
+      <div class="card card-compact bg-base-200 border border-base-300 mb-3">
+        <div class="card-body">
+          <div class="text-[10px] uppercase tracking-widest text-base-content/60 mb-1">John Gets</div>
+          <div class="text-xs leading-relaxed">
+            "Early Bird: Sold! Walnut Credenza is yours. See Marco at Booth 42, Downtown Modernism, Sat Apr 26. Bring payment."
+          </div>
+        </div>
+      </div>
+
+      <!-- SMS preview: losers -->
+      <div class="card card-compact bg-base-200 border border-base-300 mb-4">
+        <div class="card-body">
+          <div class="text-[10px] uppercase tracking-widest text-base-content/60 mb-1">Sarah R. + Danny T. Get</div>
+          <div class="text-xs leading-relaxed">
+            "Early Bird: Walnut Credenza sold to another buyer. Keep an eye on Marco's booth for more drops."
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-2">
+        <a href="item-detail-dealer-own.html" class="btn btn-sm btn-outline flex-1">Cancel</a>
+        <button class="btn btn-sm btn-neutral flex-1">Yes, Sell To John</button>
+      </div>
+    </div>
 
   </div>
 </body>
