@@ -30,8 +30,12 @@
     <!-- Header -->
     <header class="px-4 pt-6 pb-3 border-b border-base-300">
       <div class="flex items-center justify-between">
-        <div class="text-lg font-bold tracking-tight">EARLY BIRD</div>
-        <div class="text-xs uppercase tracking-widest text-base-content/60">Account</div>
+        <a href="home-buyer.html" class="text-lg font-bold tracking-tight">EARLY BIRD</a>
+        <div class="avatar placeholder">
+          <div class="bg-neutral text-neutral-content w-8 rounded-full">
+            <span class="text-xs font-bold">JC</span>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -44,10 +48,9 @@
           </div>
         </div>
         <div class="flex-1">
-          <div class="font-bold text-lg">John Chen</div>
+          <input type="text" value="John Chen" class="input input-ghost font-bold text-lg w-full px-0 h-auto min-h-0 py-0 focus:outline-none" />
           <div class="text-xs text-base-content/60">(213) 555-0134</div>
         </div>
-        <button class="btn btn-sm btn-outline">Edit</button>
       </div>
     </section>
 
@@ -110,21 +113,20 @@
 
     <!-- Following -->
     <section class="px-4 py-5">
-      <div class="flex items-center justify-between mb-3">
-        <div class="text-xs uppercase tracking-widest text-base-content/60">Markets You Follow</div>
-        <button class="btn btn-xs btn-ghost">Edit</button>
-      </div>
+      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-3">Markets You Follow</div>
       <div class="flex flex-wrap gap-2">
-        <div class="badge badge-neutral gap-2">Downtown Modernism</div>
-        <div class="badge badge-neutral gap-2">Rose Bowl Flea</div>
-        <div class="badge badge-neutral gap-2">PCC Flea</div>
-        <div class="badge badge-outline gap-2">+ Follow More</div>
+        <div class="badge badge-outline px-3 py-3">Downtown Modernism</div>
+        <div class="badge badge-outline px-3 py-3">Rose Bowl Flea</div>
+        <div class="badge badge-outline px-3 py-3">PCC Flea</div>
+        <button class="badge badge-outline border-dashed px-3 py-3">+ Add Market</button>
       </div>
     </section>
 
     <div class="divider mx-4 my-0"></div>
 
     <!-- Upgrade -->
+    <!-- OQ3: copy + button label depend on dealer-apply flow (one-tap toggle vs. application + review). -->
+    <!-- Resolve OQ3 before finalizing this block. Current copy left intact pending that decision. -->
     <section class="px-4 py-5">
       <div class="card card-compact bg-base-200 border border-base-300">
         <div class="card-body">
@@ -138,6 +140,8 @@
     <div class="divider mx-4 my-0"></div>
 
     <!-- Footer links -->
+    <!-- TODO: footer needs a redesign — current Help/Privacy/Terms + Sign Out + version stack reads as ghastly. -->
+    <!-- Deferred to a follow-up session (see EB_DESIGN.md "Follow-up revisions"). Do not fix in the 13 revision pass. -->
     <section class="px-4 py-5 pb-8 flex flex-col gap-2">
       <a class="link link-hover text-xs uppercase tracking-wider">Help &amp; Support</a>
       <a class="link link-hover text-xs uppercase tracking-wider">Privacy Policy</a>
@@ -151,7 +155,7 @@
     <div class="h-16"></div>
 
     <!-- Bottom nav (buyer: 3 tabs) -->
-    <nav class="max-w-md mx-auto fixed bottom-0 left-0 right-0 bg-base-100 border-t border-base-300 flex">
+    <nav class="max-w-md mx-auto fixed bottom-0 left-0 right-0 bg-base-200 flex">
       <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
         <span class="text-[10px] uppercase tracking-widest">Buy</span>
       </a>
