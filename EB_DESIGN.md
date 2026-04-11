@@ -103,7 +103,7 @@ Post-login home base for buyers. Shows the markets the buyer follows with live d
 
 ### Home Lobby (Dealer)
 
-Post-login home base for dealers. Shows the upcoming markets the dealer is selling at, with a live drop countdown for each, a "set up your booth" CTA on the next market, and a short "how the drop works" explainer that persuades dealers to set up in advance (the earlier a booth is set up, the longer the items sit in front of buyers before the drop). The Early Bird logo in every dealer-side screen routes here — not to the Sell tab. This is the dealer's "home base" inside the app, sitting above the Buy/Watching/Sell/Account tabs in the post-login flow. Market switching happens here too — the dealer picks which market to set up for from this lobby instead of from a separate market-picker screen.
+Post-login home base for dealers. Shows the upcoming markets the dealer is selling at, with a live drop countdown for each, a "set up your booth" CTA on the next market, and a short "how the drop works" explainer that persuades dealers to set up in advance (the earlier a booth is set up, the longer the items sit in front of buyers before the drop). The Early Bird logo in every dealer-side screen routes here — not to the Sell tab. This is the dealer's "home base" inside the app, sitting above the Buy/Watching/Sell/Account tabs in the post-login flow. Market switching also happens here — the dealer picks which market to set up for from this lobby.
 
 ### Buy Tab (Feed)
 
@@ -136,8 +136,6 @@ The most important screen. Transforms based on who's looking.
 **Active booth:** Item list with status, prices, inquiry counts, action buttons. Countdown to drop. After drop: "Market is live."
 
 **Add Item:** Context shows which market you're adding to. Photo grid with drag-reorder, first photo is main photo. Title, description, price, "Price Firm" toggle. Post button disabled until photo + price filled.
-
-**Market Picker:** Switch between upcoming markets. Shows both event date and drop countdown for each.
 
 ### Account
 
@@ -245,7 +243,6 @@ Build every screen as static HTML using only DaisyUI classes. No JavaScript. No 
 - `sell-booth-setup.html`
 - `sell-booth-active.html`
 - `sell-add-item.html`
-- `sell-market-picker.html`
 - `account-buyer.html`
 - `account-dealer.html`
 
@@ -308,7 +305,6 @@ Edge cases, loading states, error states, empty states, transitions, responsive 
 
 ### Special cases
 
-- **"Remove this page"** (applies to `sell-market-picker`, notes 12.1–12.2): the session deletes the wireframe file, removes the entry from the `WIREFRAMES` array in `public/review.html`, updates the sidebar count (`Wireframes (N)`), updates the progress counter default (`1 / N`), updates the clear-all confirm copy, updates this checklist, commits, ends.
 - **"We need a new screen"** (notes 04.3 and 09.2 propose `home-buyer` and `home-dealer`): the session revising the source screen (`buy-feed`, `sell-booth-setup`) does NOT build the new screen in that session. The new screen is its own checklist item and gets its own dedicated session with its own clean context window.
 - **"Split into two states"** (note 06.4 splits `item-detail-buyer` into a clean buyer-view state and an inquiry-drawer state): the session handling the split creates both files in one commit because they are tightly coupled. This is the only permitted exception to the one-screen-per-session rule, and it is explicitly flagged in the checklist.
 - **"Update the plan"** (notes that ask for changes to `EB_DESIGN.md` — e.g., note 03.7 asks for a buyer-onboarding preferences note; note 09.4 asks for a payment-handles policy note): these are inline edits made in the same commit that revises the wireframe. Only touch the specific `EB_DESIGN.md` section the note explicitly references.
@@ -331,7 +327,7 @@ Existing screens (revise in place):
 - [x] 14. account-dealer
 
 Deletions:
-- [ ] 12. sell-market-picker (notes 12.1–12.2 explicitly remove this page)
+- [x] 12. sell-market-picker (notes 12.1–12.2 explicitly remove this page)
 
 New screens (each is a dedicated session):
 - [ ] home-buyer (from note 04.3 — buyer's logged-in lobby with markets list, countdown, FAQ, drop-alert opt-in)
