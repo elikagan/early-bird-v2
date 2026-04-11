@@ -108,50 +108,29 @@
 
     <div class="divider mx-4 my-0"></div>
 
-    <!-- Payment methods -->
+    <!-- Payment methods (T11: methods-only, no handles, no Edit/Connect — app is never the payment middleman) -->
     <section class="px-4 py-5">
       <div class="text-xs uppercase tracking-widest text-base-content/60 mb-3">Payment Methods</div>
+      <div class="text-[10px] text-base-content/60 mb-3 leading-relaxed">Buyers see which methods you accept. Payment happens in person at the booth.</div>
 
-      <div class="flex items-center justify-between py-2 border-b border-base-300">
-        <div class="flex items-center gap-3">
-          <input type="checkbox" checked class="checkbox checkbox-sm" />
-          <div>
-            <div class="font-bold text-sm">Cash</div>
-          </div>
-        </div>
+      <div class="flex items-center gap-3 py-3 border-b border-base-300">
+        <input type="checkbox" checked class="checkbox checkbox-sm" />
+        <div class="font-bold text-sm">Cash</div>
       </div>
 
-      <div class="flex items-center justify-between py-2 border-b border-base-300">
-        <div class="flex items-center gap-3">
-          <input type="checkbox" checked class="checkbox checkbox-sm" />
-          <div>
-            <div class="font-bold text-sm">Venmo</div>
-            <div class="text-xs text-base-content/60">@marcos-finds</div>
-          </div>
-        </div>
-        <button class="btn btn-xs btn-ghost">Edit</button>
+      <div class="flex items-center gap-3 py-3 border-b border-base-300">
+        <input type="checkbox" checked class="checkbox checkbox-sm" />
+        <div class="font-bold text-sm">Venmo</div>
       </div>
 
-      <div class="flex items-center justify-between py-2 border-b border-base-300">
-        <div class="flex items-center gap-3">
-          <input type="checkbox" checked class="checkbox checkbox-sm" />
-          <div>
-            <div class="font-bold text-sm">Zelle</div>
-            <div class="text-xs text-base-content/60">marco@marcosfinds.com</div>
-          </div>
-        </div>
-        <button class="btn btn-xs btn-ghost">Edit</button>
+      <div class="flex items-center gap-3 py-3 border-b border-base-300">
+        <input type="checkbox" checked class="checkbox checkbox-sm" />
+        <div class="font-bold text-sm">Zelle</div>
       </div>
 
-      <div class="flex items-center justify-between py-2">
-        <div class="flex items-center gap-3">
-          <input type="checkbox" class="checkbox checkbox-sm" />
-          <div>
-            <div class="font-bold text-sm">Apple Pay / Card</div>
-            <div class="text-xs text-base-content/60">Not connected</div>
-          </div>
-        </div>
-        <button class="btn btn-xs btn-outline">Connect</button>
+      <div class="flex items-center gap-3 py-3">
+        <input type="checkbox" class="checkbox checkbox-sm" />
+        <div class="font-bold text-sm">Apple Pay / Card</div>
       </div>
     </section>
 
