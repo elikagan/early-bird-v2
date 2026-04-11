@@ -306,7 +306,7 @@ _Cross-cutting themes that also apply: T1, T2, T3, T8, T9, T10, T11._
 
 Items that surfaced after a screen was already shipped, where a single rule (often captured in a feedback memory) implies a re-pass on a sister screen. Each one is its own dedicated session — do not bundle.
 
-- **FU1 — `home-buyer` hero hierarchy re-pass.** The home-dealer session corrected my mental model of the market/drop relationship: markets are the events (Rose Bowl Flea, Downtown Modernism — the headline noun), drops are the timing detail for when each market's inventory goes live the night before. `home-buyer.html` was built before that correction landed and uses "Drops in 29d 6h" framing in its hero alongside the LIVE NOW state — needs a pass to confirm the market name is the h1 hero and any drop-countdown framing sits as a supporting widget beneath the market identity, not as the headline. See `feedback_eb_no_drop_branding.md` (v3) for the rule. Separate session; no bundling with other revisions.
+- **FU1 — `home-buyer` hero hierarchy re-pass.** [DONE 2026-04-11] Hero was already correct (LIVE state — "Downtown Modernism" as h1, LIVE NOW badge as eyebrow). Actual gap was the upcoming-markets rows: they used "Opens in 29 days · Sat May 10, 6pm" crammed onto one muted line with no row-scale countdown. Re-passed to match home-dealer.html (commit 26b9e6d) byte-for-byte: bold market name left + right-aligned `tabular-nums` "Drops in Nd" right, two separate muted subtext lines (date/dealers, absolute drop time), section header renamed "Upcoming markets" → "Coming up" for sister-screen consistency. Dummy countdowns reset (14d, 21d) to match the hero's "today = Sat Apr 26" context. See `feedback_eb_no_drop_branding.md` (v3).
 
 ---
 

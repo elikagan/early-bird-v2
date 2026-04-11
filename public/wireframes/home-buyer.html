@@ -57,25 +57,34 @@
         <a class="btn btn-neutral btn-block">Browse the market →</a>
       </section>
 
-      <!-- Upcoming markets -->
-      <!-- No "UPCOMING" pill — T2 outline-down by default, and the absence of a LIVE eyebrow is enough. -->
-      <!-- Bold weight is reserved for the market name (the only headline in each row). -->
-      <!-- The "Opens in N days" line is intentionally light so it reads as metadata about the market above it, -->
-      <!-- not as a sibling row. This was the bug in the first pass where "Drops in 29d 6h" looked like a market name. -->
+      <!-- Coming up — rest of the buyer's market calendar. -->
+      <!-- Row pattern mirrors home-dealer.html (commit 26b9e6d) byte-for-byte: bold market name left, -->
+      <!-- right-aligned tabular "Drops in Nd" countdown right, then two muted subtext lines (date/dealers, -->
+      <!-- absolute drop time). Row-scale countdowns keep urgency glanceable across the whole calendar, not -->
+      <!-- just the hero. Market name stays bold and primary; countdown is the supporting widget. -->
+      <!-- Section header frames around markets ("Coming up"), not around drops — the drop is the timing -->
+      <!-- mechanism, the event is the market. See feedback_eb_no_drop_branding.md for the rule -->
+      <!-- (markets are the headline noun, drops are supporting widgets beneath). -->
       <section class="px-4 pt-7 pb-3">
-        <div class="text-xs uppercase tracking-widest text-base-content/60">Upcoming markets</div>
+        <div class="text-xs uppercase tracking-widest text-base-content/60">Coming up</div>
       </section>
 
       <a class="block px-4 py-4 border-t border-base-300">
-        <div class="text-base font-bold">Rose Bowl Flea</div>
+        <div class="flex items-baseline justify-between gap-3">
+          <div class="text-base font-bold">Rose Bowl Flea</div>
+          <div class="text-xs font-bold tabular-nums">Drops in 14d</div>
+        </div>
         <div class="text-xs text-base-content/60 mt-0.5">Sun May 11 · ~80 dealers</div>
-        <div class="text-xs text-base-content/60 mt-2">Opens in 29 days · Sat May 10, 6pm</div>
+        <div class="text-xs text-base-content/60 mt-0.5">Sat May 10, 6pm</div>
       </a>
 
       <a class="block px-4 py-4 border-t border-base-300">
-        <div class="text-base font-bold">PCC Flea</div>
+        <div class="flex items-baseline justify-between gap-3">
+          <div class="text-base font-bold">PCC Flea</div>
+          <div class="text-xs font-bold tabular-nums">Drops in 21d</div>
+        </div>
         <div class="text-xs text-base-content/60 mt-0.5">Sun May 18 · ~50 dealers</div>
-        <div class="text-xs text-base-content/60 mt-2">Opens in 36 days · Sat May 17, 6pm</div>
+        <div class="text-xs text-base-content/60 mt-0.5">Sat May 17, 6pm</div>
       </a>
 
       <!-- Alerts opt-in — single global SMS toggle. -->
