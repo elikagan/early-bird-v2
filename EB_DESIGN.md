@@ -153,6 +153,24 @@ The app captures one structured data point per inquiry (who, what, when, message
 
 **Why this works:** Flea market people already communicate by text and phone call. They don't want another inbox. They want to know someone's interested and how to reach them. That's it.
 
+### Per-Inquiry Transactional Receipts (Carve-Out)
+
+The one-way handoff rule above has one narrow exception: when the dealer acts on a specific inquiry in the Inquiry Log (taps Hold or Sell on an inquiry card), the app sends a single transactional SMS to the affected buyer(s). This is a one-way, after-the-fact receipt — not messaging. It does not open a thread, does not accept replies, and does not create an inbox. Same category as a Shopify order confirmation. `CLAUDE.md`'s Communication Model rule ("after the handoff, the app is out of the loop") needs a matching carve-out when this gets built.
+
+**Per-inquiry actions:**
+
+- **Hold for [buyer]** — Dealer taps Hold on Jon C.'s inquiry card. Item is committed to Jon as first dibs. Jon gets: *"Early Bird: Marcus is holding Walnut Credenza for you. First dibs at Booth 42, Downtown Modernism, Sat Apr 26."*
+- **Sell to [buyer]** — Dealer taps Sell on Jon C.'s inquiry card. Item is sold to Jon; listing closes. Jon gets: *"Early Bird: Sold! Walnut Credenza is yours. See Marcus at Booth 42, Downtown Modernism, Sat Apr 26. Bring payment."* Other inquirers get: *"Early Bird: Walnut Credenza sold to another buyer. Keep an eye on Marcus's booth for more drops."*
+
+**Governance rule (per-inquiry ↔ global status):**
+
+1. **Per-inquiry actions set the global item status.** Tapping Hold on Jon's inquiry flips the global status tab to HOLD and attributes the hold to Jon. Tapping Sell on Jon's inquiry flips it to SOLD and attributes the sale to Jon.
+2. **Changing the global status while a per-inquiry commitment is active requires confirmation.** If the item is held-for-Jon and the dealer taps the global LIVE tab (or the global SOLD tab, or Hold/Sell on a different inquiry), a bottom drawer opens: *"This item is currently on hold for Jon C. Setting it back to LIVE will release the hold and notify Jon. Continue?"* Same pattern for overriding a Sell commitment. Bottom drawer, not modal (T12).
+3. **Global HOLD and SOLD tabs remain tappable as walk-up fallbacks.** The walk-up case (someone shows up at the booth and pays cash without ever inquiring through the app) has no per-inquiry card to tap — the dealer taps the global SOLD tab directly. Confirm drawer: *"Mark sold without a specific buyer? This is for walk-up sales. The 3 inquirers will be notified it sold to another buyer."* Tapping the global HOLD tab directly is a "pause listing" action with no specific buyer attached.
+4. **Single source of truth.** Item status is the canonical state. Per-inquiry buttons are a shortcut that writes to that state and records which inquiry triggered it. The inquiries table needs a `status` field (`open | held | sold | lost`) so Phase 2 can track which row was the winner and which rows lost.
+
+**Walk-up case is common.** Most sales at a physical market are walk-ups, not pre-market inquiries. The global SOLD tab is the canonical path for walk-ups. The per-inquiry Sell button is the canonical path for pre-market inquiry wins.
+
 ---
 
 ## Price Drop Notifications
@@ -314,6 +332,9 @@ New screens (each is a dedicated session):
 - [ ] home-buyer (from note 04.3 — buyer's logged-in lobby with markets list, countdown, FAQ, drop-alert opt-in)
 - [ ] home-dealer (from note 09.2 — dealer's logged-in lobby with upcoming markets and set-up-booth CTA)
 
+Follow-up revisions (each is a dedicated session):
+- [ ] 07. item-detail-dealer-own — per-inquiry Hold/Sell buttons + transactional SMS receipts + confirm-drawer state. Adds Hold/Sell actions to each inquiry card in the Inquiry Log; taps open a confirm drawer (new file `item-detail-dealer-own-confirm.html`, same split pattern as 06 → 06-inquiry). On confirm, app sends a one-way transactional SMS (winner gets "sold to you" or "first dibs"; losers get "sold to another buyer"). Governance rule for per-inquiry ↔ global status coupling is specced in `## Communication: One-Touch Inquiry Handoff` → `### Per-Inquiry Transactional Receipts (Carve-Out)`. This session must: (a) add Hold/Sell buttons to each inquiry card in `item-detail-dealer-own.html`; (b) create `item-detail-dealer-own-confirm.html` as the confirm drawer state (bottom sheet, raw Tailwind, T12 rules — not a DaisyUI modal); (c) add the new file to `public/review.html` WIREFRAMES; (d) amend `CLAUDE.md`'s Communication Model section with a carve-out for transactional receipts. Phase 2 must add `status` field to `inquiries` table (`open | held | sold | lost`).
+
 Note: `item-detail-buyer-inquiry` is NOT a separate checklist item. It is the split-off state created within the `item-detail-buyer` session (row 06 above).
 
 ### Session log
@@ -330,6 +351,7 @@ Note: `item-detail-buyer-inquiry` is NOT a separate checklist item. It is the sp
 - 2026-04-10 — new cross-cutting theme T13 added to PHASE_1_REVIEW_NOTES.md — Market status indicator: replace the green "LIVE" text pill with a lightning-bolt circle, and add a calendar circle for upcoming (not-yet-live) markets. Deferred to a cross-screen pass. Current instances flagged across 7 wireframes (buy-feed, item-detail-buyer, item-detail-buyer-inquiry, item-detail-dealer-browsing, sell-market-picker, sell-add-item, sell-booth-active).
 - 2026-04-10 — 07. item-detail-dealer-own — added helper line under LIVE/HOLD/SOLD tabs clarifying that the dealer should mark SOLD the moment the item actually sells (07.3 copy-clarity); switched bottom nav from `bg-base-100 border-t border-base-300` to `bg-base-200` panel (T10). T4 back affordance (07.1) already addressed in 6363d2c via overlaid `← Back` text button on hero. T5 header label (07.4) N/A — no header bar exists on this screen. T8 logo routing (07.5) N/A — no logo element exists on this screen (edge-to-edge hero, same reasoning as 06). T1 N/A — no sticky CTA stacked above bottom nav. Deferred 07.2 and 07.3 color-half to the cross-screen T2/T3 pass; deferred T13 LIVE-pill replacement to the cross-screen pass.
 - 2026-04-10 — 07. item-detail-dealer-own follow-up — pulled 07.3 color-half and the 07.2 inquiries-pill fix OUT of the T2/T3 deferral because both controls are unique to this screen (no cross-screen consistency to protect). LIVE/HOLD/SOLD selector rebuilt from `tabs tabs-boxed` (which rendered the active tab in loud primary purple) to a `join` of `btn-sm` buttons with `btn-neutral` for the active state, matching the T6 segmented-control pattern used elsewhere in the app. "3 inquiries" badge dropped entirely; count folded into the section label as "Inquiries (3)" to match the `Watching (7)` pattern in the bottom nav. 07.2 market-LIVE pill in the "Listed In" card is still deferred — that one IS cross-screen.
+- 2026-04-10 — spec addition — new product concept: per-inquiry Hold/Sell buttons on each inquiry card in `item-detail-dealer-own`, with one-way transactional SMS receipts to the affected buyers. Full spec added to `## Communication: One-Touch Inquiry Handoff` → `### Per-Inquiry Transactional Receipts (Carve-Out)` including per-inquiry action behavior, SMS templates, the governance rule coupling per-inquiry actions to the global Live/Hold/Sold status (per-inquiry sets global; global change while a per-inquiry commitment is active triggers a confirm drawer), and the walk-up fallback. New follow-up checklist item added for the dedicated future session that will build it (wireframe revision + confirm-drawer split + review.html update + CLAUDE.md carve-out amendment). No wireframe changes this session.
 
 ---
 
