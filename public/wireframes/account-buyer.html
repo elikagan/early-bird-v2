@@ -140,16 +140,32 @@
 
     <div class="divider mx-4 my-0"></div>
 
-    <!-- Footer links -->
-    <!-- TODO: footer needs a redesign — current Help/Privacy/Terms + Sign Out + version stack reads as ghastly. -->
-    <!-- Deferred to a follow-up session (see EB_DESIGN.md "Follow-up revisions"). Do not fix in the 13 revision pass. -->
-    <section class="px-4 py-5 pb-8 flex flex-col gap-2">
-      <a class="link link-hover text-xs uppercase tracking-wider">Help &amp; Support</a>
-      <a class="link link-hover text-xs uppercase tracking-wider">Privacy Policy</a>
-      <a class="link link-hover text-xs uppercase tracking-wider">Terms</a>
-      <div class="divider my-2"></div>
-      <button class="btn btn-sm btn-ghost text-xs uppercase tracking-wider text-error self-start">Sign Out</button>
-      <div class="text-[10px] text-base-content/40 mt-4">Early Bird v1.0 · LA</div>
+    <!-- Footer: settings-row pattern mirrors the Notifications section above (label left, affordance right) -->
+    <!-- so the footer reads as a proper screen section instead of a loose link stack. Sign Out is outline, -->
+    <!-- not fill-red — destructive fill-red clashes with T2 color-down; the intended behavior is a confirm -->
+    <!-- step on tap (no JS in Phase 1; Phase 4 polish will wire the confirm). Version line uses the same -->
+    <!-- text-xs text-base-content/60 primitive as the profile phone number, not an arbitrary text-[10px]/40. -->
+    <section class="px-4 py-5 pb-8">
+      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-3">More</div>
+
+      <a class="flex items-center justify-between py-3 border-b border-base-300">
+        <div class="text-sm font-bold">Help &amp; Support</div>
+        <div class="text-sm text-base-content/40">›</div>
+      </a>
+
+      <a class="flex items-center justify-between py-3 border-b border-base-300">
+        <div class="text-sm font-bold">Privacy Policy</div>
+        <div class="text-sm text-base-content/40">›</div>
+      </a>
+
+      <a class="flex items-center justify-between py-3 border-b border-base-300">
+        <div class="text-sm font-bold">Terms</div>
+        <div class="text-sm text-base-content/40">›</div>
+      </a>
+
+      <button class="btn btn-sm btn-outline w-full mt-6">Sign Out</button>
+
+      <div class="text-xs text-base-content/60 text-center mt-4">Early Bird v1.0 · LA</div>
     </section>
 
     <!-- Spacer for bottom nav -->
