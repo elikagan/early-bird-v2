@@ -323,12 +323,14 @@ Note: `item-detail-buyer-inquiry` is NOT a separate checklist item. It is the sp
 - 2026-04-10 — 03. onboarding — dropped Welcome/Step-1-of-1/Heads-up clutter, swapped Upload Photo for Take Selfie, made display name free-form, added Follow Markets + Notifications sections, fixed verified pill (outline + padding, T2/T3), replaced footer `border-t` with `bg-base-200` panel (T10), swapped "Get set up to pre-buy" for "Get set up to shop the drop" (T7); also fixed EB_DESIGN.md "The Idea", "Who It's For" buyer line, and "Onboarding" bullet inline (T7 + 03.6).
 - 2026-04-10 — 04. buy-feed — enlarged dealer avatars (w-6→w-10), wired EARLY BIRD logo to `home-buyer.html` (T8), replaced footer `border-t` with `bg-base-200` panel (T10); also added Navigation post-login flow + new Home Lobby (Buyer) screen + `home-buyer.html` to Phase 1 file list in EB_DESIGN.md (04.3/T8). HELD/SOLD T2/T3 restyle reverted same day to stay consistent with un-revised screens — T2/T3 will be re-applied across all screens together.
 - 2026-04-10 — design decision (cross-screen) — buy feed has no filters in v1: removed entire filter bar from `buy-feed.html` (ALL/SAVED toggle + Dealer + Category dropdowns); SAVED is redundant because Watching is the saved-and-inquired view. Watching tab is scoped to the current market only — removed cross-market Folk Art Weather Vane item from `watching.html` and updated count from 8 to 7. Spec updated: Buy Tab and Watching Tab sections in EB_DESIGN.md rewritten. Note: `watching.html` still pending its full 05 revision pass (header/market context).
+- 2026-04-10 — partial 05. watching + cross-screen nav update — wired EARLY BIRD logo on `watching.html` to `home-buyer.html` (T8), replaced "Watching / 7 items you care about" header with eyebrow + market context line ("Downtown Modernism · Apr 26") so the screen tells you which market it's scoped to; bottom-nav Watching link now shows the count "Watching (7)" across all 12 screens with a bottom nav (buyer + dealer); `account-buyer.html` Watching stat updated 8 → 7 to match. Full 05 revision still queued for its own session.
+- 2026-04-10 — sell-add-item — removed Category form field (and the 10-option select) since v1 captures no category data and offers no category filter. Open Question 1 (Categories) marked deferred to v2 in EB_DESIGN.md.
 
 ---
 
 ## Open Questions
 
-1. **Categories:** What product categories for filtering?
+1. **Categories:** Deferred to v2. v1 captures no category data on items and offers no category filter on the buy feed. Revisit when a single market drop grows past what's browsable in one scroll.
 2. **Payment:** Does the app handle payment or just coordinate? (Currently assumes Venmo/Zelle/cash directly.)
 3. **Shipping:** Local pickup only, or support shipping?
 4. **Scale:** 200 dealers, 5,000 items — algorithmic feed or chronological?
