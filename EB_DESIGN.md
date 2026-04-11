@@ -299,7 +299,7 @@ Existing screens (revise in place):
 - [x] 04. buy-feed (note 04.3 proposes new screen `home-buyer` — do NOT build it in this session; it is a separate checklist item below)
 - [x] 05. watching
 - [x] 06. item-detail-buyer → SPLIT into clean state + inquiry-drawer state (both files in one session — this is the only exception to the one-screen rule)
-- [ ] 07. item-detail-dealer-own
+- [x] 07. item-detail-dealer-own
 - [ ] 08. item-detail-dealer-browsing
 - [ ] 09. sell-booth-setup (note 09.2 proposes new screen `home-dealer` — do NOT build it in this session; note 09.4 asks for an `EB_DESIGN.md` policy update about payment handles — handle inline)
 - [ ] 10. sell-booth-active
@@ -328,6 +328,7 @@ Note: `item-detail-buyer-inquiry` is NOT a separate checklist item. It is the sp
 - 2026-04-10 — 05. watching — completed revision pass: hearts neutralized (text-error → text-base-content, 05.4 canonical), inquiry-sent rows now show the actual buyer message inline (05.2), bottom nav switched to bg-base-200 panel (T10). Deferred 05.1/05.3 (T2/T3 on PRICE DROP/HELD/SOLD) to a cross-screen pass. Flagged buy-feed.html as also needing red→neutral hearts.
 - 2026-04-10 — 06. item-detail-buyer SPLIT — clean buyer-view state revised in place; inquiry compose extracted into new item-detail-buyer-inquiry.html as a raw Tailwind bottom drawer with backdrop + drag handle (NOT DaisyUI modal, T12). Applied T1/T4/T5/T7/T8/T10 + neutralized hearts. Added new file to review.html WIREFRAMES (count N → N+1). Deferred T2/T3 on badges to cross-screen pass.
 - 2026-04-10 — new cross-cutting theme T13 added to PHASE_1_REVIEW_NOTES.md — Market status indicator: replace the green "LIVE" text pill with a lightning-bolt circle, and add a calendar circle for upcoming (not-yet-live) markets. Deferred to a cross-screen pass. Current instances flagged across 7 wireframes (buy-feed, item-detail-buyer, item-detail-buyer-inquiry, item-detail-dealer-browsing, sell-market-picker, sell-add-item, sell-booth-active).
+- 2026-04-10 — 07. item-detail-dealer-own — added helper line under LIVE/HOLD/SOLD tabs clarifying that the dealer should mark SOLD the moment the item actually sells (07.3 copy-clarity); switched bottom nav from `bg-base-100 border-t border-base-300` to `bg-base-200` panel (T10). T4 back affordance (07.1) already addressed in 6363d2c via overlaid `← Back` text button on hero. T5 header label (07.4) N/A — no header bar exists on this screen. T8 logo routing (07.5) N/A — no logo element exists on this screen (edge-to-edge hero, same reasoning as 06). T1 N/A — no sticky CTA stacked above bottom nav. Deferred 07.2 and 07.3 color-half to the cross-screen T2/T3 pass; deferred T13 LIVE-pill replacement to the cross-screen pass.
 
 ---
 
