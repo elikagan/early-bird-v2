@@ -48,9 +48,12 @@
           </div>
         </div>
         <div class="flex-1">
-          <input type="text" value="John Chen" class="input input-ghost font-bold text-lg w-full px-0 h-auto min-h-0 py-0 focus:outline-none" />
+          <div class="font-bold text-lg">John Chen</div>
           <div class="text-xs text-base-content/60">(213) 555-0134</div>
         </div>
+        <!-- Subtle pill-with-pencil edit affordance (cross-screen pattern, mirrored on account-dealer). -->
+        <!-- Supersedes the earlier T9 input-ghost invisible-field treatment, which was not discoverable. -->
+        <button class="btn btn-ghost btn-xs rounded-full gap-1 text-base-content/60">Edit ✎</button>
       </div>
     </section>
 
