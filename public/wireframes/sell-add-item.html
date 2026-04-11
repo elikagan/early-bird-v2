@@ -51,7 +51,7 @@
     <!-- Photos -->
     <section class="px-4 py-5">
       <div class="flex items-center justify-between mb-3">
-        <div class="text-xs uppercase tracking-widest text-base-content/60">Photos</div>
+        <div class="text-xs uppercase tracking-widest text-base-content/60">Photos *</div>
         <div class="text-[10px] text-base-content/60">First photo = main · Drag to reorder</div>
       </div>
       <div class="grid grid-cols-3 gap-2">
@@ -59,7 +59,7 @@
         <!-- Photo 1 (main) -->
         <div class="aspect-square bg-base-200 rounded border-2 border-neutral relative flex items-center justify-center">
           <div class="text-[9px] uppercase tracking-widest text-base-content/30">Photo</div>
-          <div class="badge badge-neutral badge-sm absolute top-1 left-1">MAIN</div>
+          <div class="badge badge-outline absolute top-1 left-1">MAIN</div>
           <button class="btn btn-circle btn-xs btn-neutral absolute top-1 right-1">✕</button>
         </div>
 
@@ -98,7 +98,7 @@
     <section class="px-4 py-4">
       <label class="form-control w-full">
         <div class="label">
-          <span class="label-text text-xs uppercase tracking-widest text-base-content/60">Title</span>
+          <span class="label-text text-xs uppercase tracking-widest text-base-content/60">Title *</span>
           <span class="label-text-alt text-base-content/60">0 / 60</span>
         </div>
         <input type="text" placeholder="Walnut Credenza" class="input input-bordered w-full" />
@@ -131,7 +131,6 @@
         <label class="label cursor-pointer gap-3 justify-start">
           <input type="checkbox" class="checkbox checkbox-sm" />
           <span class="label-text font-bold">Price Firm</span>
-          <span class="label-text text-xs text-base-content/60">· No haggling at booth</span>
         </label>
       </div>
     </section>
@@ -143,9 +142,10 @@
     <div class="max-w-md mx-auto fixed bottom-0 left-0 right-0 bg-base-200">
       <div class="px-4 pt-4 pb-3">
         <button class="btn btn-neutral w-full">Post Item</button>
+        <!-- OQ1: copy is market-state-aware. Post-drop (current wireframe state, market is LIVE): "Live instantly · Watchers get notified". Pre-drop: "Goes live when the market drops · Sat Apr 26, 6:00 PM". Actual wiring is Phase 3. -->
         <p class="text-[10px] text-center text-base-content/60 mt-2 uppercase tracking-wider">Live instantly · Watchers get notified</p>
       </div>
-      <nav class="flex bg-base-100">
+      <nav class="flex bg-base-200">
         <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
           <span class="text-[10px] uppercase tracking-widest">Buy</span>
         </a>
