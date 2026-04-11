@@ -105,11 +105,11 @@ Post-login home base for buyers. Shows the markets the buyer follows with live d
 
 Scrollable grid of item cards. Each card shows photo, dealer avatar, favorite button, price, title, dealer name, and status if held/sold. "I'm Interested" button on every card.
 
-Toggle between ALL and SAVED. Filter by dealer (searchable autocomplete — simple dropdown won't scale to 100+ dealers) and category.
+No filters in v1. The buyer is shopping a single market drop and the grid is the whole drop. There is no SAVED toggle here — favorited items live in the Watching tab. Dealer and category filters return when a market grows past what's browsable in one scroll.
 
 ### Watching Tab
 
-Items the buyer has favorited or inquired about. One unified view of "items I care about."
+Items in the current market that the buyer has favorited or inquired about. Scoped to one market at a time — switching markets switches the Watching list. Watching is the unified saved-and-inquired view; there is no separate SAVED filter in Buy.
 
 Each row shows: thumbnail, price, status, item title, dealer name, heart icon if favorited, inquiry indicator if messaged, PRICE DROP badge if price lowered with old price struck through. Sorted by most recent activity.
 
