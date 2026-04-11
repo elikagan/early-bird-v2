@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Early Bird — Home (Buyer)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        fontFamily: {
+          sans: ['"JetBrains Mono"', 'monospace'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+          serif: ['"JetBrains Mono"', 'monospace'],
+        },
+      },
+    }
+  </script>
+  <style>
+    html, body { font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace; }
+  </style>
+</head>
+<body class="min-h-screen bg-base-300">
+  <div class="max-w-md mx-auto min-h-screen bg-base-100 flex flex-col">
+
+    <!-- Header -->
+    <!-- EARLY BIRD wordmark is intentionally NOT a link on this screen — this IS the home lobby. -->
+    <!-- On every other post-login screen the wordmark routes here (T8); the self-route would be a no-op. -->
+    <!-- Header structure (logo left, 32px avatar right) is byte-identical to the canonical pattern on -->
+    <!-- watching.html and account-buyer.html — see the cross-references logged in the commit message. -->
+    <header class="px-4 pt-6 pb-3 border-b border-base-300">
+      <div class="flex items-center justify-between">
+        <div class="text-lg font-bold tracking-tight">EARLY BIRD</div>
+        <div class="avatar placeholder">
+          <div class="bg-neutral text-neutral-content w-8 rounded-full">
+            <span class="text-xs font-bold">JC</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="flex-1 pb-24">
+
+      <!-- Live Now -->
+      <!-- A market is "live" once its drop time has passed and inventory is visible to buyers. -->
+      <!-- The LIVE badge uses badge-success — T13 (lightning-bolt circle replacement) is deferred -->
+      <!-- to a cross-screen pass; this screen will be updated then alongside every other LIVE pill. -->
+      <section class="px-4 pt-5 pb-2">
+        <div class="text-xs uppercase tracking-widest text-base-content/60 mb-3">Live Now</div>
+      </section>
+
+      <a class="block px-4 py-4 border-y border-base-300">
+        <div class="flex items-center justify-between mb-1">
+          <div class="text-base font-bold">Downtown Modernism</div>
+          <div class="badge badge-success badge-sm font-bold">LIVE</div>
+        </div>
+        <div class="text-xs text-base-content/60">Sat Apr 26 · 32 dealers · 487 items</div>
+        <div class="flex items-center justify-between mt-3">
+          <div class="text-sm font-bold">Live now · Ends 8:00pm Sat</div>
+          <span class="text-xs font-bold uppercase tracking-wider">Shop the drop →</span>
+        </div>
+      </a>
+
+      <!-- Upcoming -->
+      <!-- No "UPCOMING" pill on these rows — T2 says outline-down by default, and the absence of a -->
+      <!-- LIVE badge already conveys upcoming. The countdown line carries the information. -->
+      <section class="px-4 pt-6 pb-2">
+        <div class="text-xs uppercase tracking-widest text-base-content/60 mb-3">Upcoming</div>
+      </section>
+
+      <a class="block px-4 py-4 border-y border-base-300">
+        <div class="text-base font-bold">Rose Bowl Flea</div>
+        <div class="text-xs text-base-content/60">Sun May 11 · ~80 dealers</div>
+        <div class="text-sm font-bold mt-2">Drops in 29d 6h</div>
+        <div class="text-[10px] text-base-content/60 uppercase tracking-wider mt-0.5">Sat May 10 · 6:00pm</div>
+      </a>
+
+      <a class="block px-4 py-4 border-b border-base-300">
+        <div class="text-base font-bold">PCC Flea</div>
+        <div class="text-xs text-base-content/60">Sun May 18 · ~50 dealers</div>
+        <div class="text-sm font-bold mt-2">Drops in 36d 6h</div>
+        <div class="text-[10px] text-base-content/60 uppercase tracking-wider mt-0.5">Sat May 17 · 6:00pm</div>
+      </a>
+
+      <!-- Drop Alerts opt-in -->
+      <!-- Single global toggle — texts the buyer when ANY market they follow goes live. -->
+      <!-- Per-market alert preferences live on Account (Notifications section), not here. -->
+      <section class="px-4 py-5">
+        <div class="form-control">
+          <label class="label cursor-pointer justify-between p-0 py-3 gap-4">
+            <div class="flex-1">
+              <div class="text-sm font-bold">Drop Alerts</div>
+              <div class="text-xs text-base-content/60 leading-tight mt-0.5">Text me when a market I follow goes live</div>
+            </div>
+            <input type="checkbox" checked class="toggle" />
+          </label>
+        </div>
+      </section>
+
+      <div class="divider mx-4 my-0"></div>
+
+      <!-- FAQ -->
+      <!-- DaisyUI collapse rows — pure HTML/CSS accordion, no JS needed for the wireframe. -->
+      <!-- Kept short (4 entries) per the spec. The longer help/policy content lives in Help & Support. -->
+      <section class="px-4 py-5">
+        <div class="text-xs uppercase tracking-widest text-base-content/60 mb-3">FAQ</div>
+
+        <div class="collapse collapse-arrow border border-base-300 mb-2">
+          <input type="checkbox" />
+          <div class="collapse-title text-sm font-bold">How does Early Bird work?</div>
+          <div class="collapse-content text-xs text-base-content/70 leading-relaxed">
+            <p>Dealers post photos and prices the night before a flea market. You browse from your couch, save the pieces you want, and reach out to dealers directly — before the crowd shows up at 4am.</p>
+          </div>
+        </div>
+
+        <div class="collapse collapse-arrow border border-base-300 mb-2">
+          <input type="checkbox" />
+          <div class="collapse-title text-sm font-bold">What's a "drop"?</div>
+          <div class="collapse-content text-xs text-base-content/70 leading-relaxed">
+            <p>Every market has a drop time, usually the evening before the market itself. At drop time, every dealer's booth goes live at once. Until then, the market is locked.</p>
+          </div>
+        </div>
+
+        <div class="collapse collapse-arrow border border-base-300 mb-2">
+          <input type="checkbox" />
+          <div class="collapse-title text-sm font-bold">How do I contact a dealer?</div>
+          <div class="collapse-content text-xs text-base-content/70 leading-relaxed">
+            <p>Tap "I'm Interested" on any item. Write a short message. The dealer gets a text with your name, phone number, and message. From there you talk directly — call, text, or meet at the booth.</p>
+          </div>
+        </div>
+
+        <div class="collapse collapse-arrow border border-base-300 mb-2">
+          <input type="checkbox" />
+          <div class="collapse-title text-sm font-bold">How do I pay?</div>
+          <div class="collapse-content text-xs text-base-content/70 leading-relaxed">
+            <p>You pay the dealer in person at the booth — cash, Venmo, Zelle, Apple Pay, or card, whichever the dealer accepts. Early Bird never handles payment.</p>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Bottom nav -->
+    <!-- No active tab on this screen — the home lobby sits ABOVE Buy / Watching / Account in the flow. -->
+    <!-- T10 panel treatment: bg-base-200, no border-t line above. Matches every other revised screen. -->
+    <nav class="max-w-md mx-auto fixed bottom-0 left-0 right-0 bg-base-200 flex">
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+        <span class="text-[10px] uppercase tracking-widest">Buy</span>
+      </a>
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+        <span class="text-[10px] uppercase tracking-widest">Watching (7)</span>
+      </a>
+      <div class="w-px bg-base-300 my-2"></div>
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+        <span class="text-[10px] uppercase tracking-widest">Account</span>
+      </a>
+    </nav>
+
+  </div>
+</body>
+</html>

@@ -330,7 +330,7 @@ Deletions:
 - [x] 12. sell-market-picker (notes 12.1–12.2 explicitly remove this page)
 
 New screens (each is a dedicated session):
-- [ ] home-buyer (from note 04.3 — buyer's logged-in lobby with markets list, countdown, FAQ, drop-alert opt-in)
+- [x] home-buyer (from note 04.3 — buyer's logged-in lobby with markets list, countdown, FAQ, drop-alert opt-in)
 - [ ] home-dealer (from note 09.2 — dealer's logged-in lobby with upcoming markets and set-up-booth CTA)
 
 Follow-up revisions (each is a dedicated session):
