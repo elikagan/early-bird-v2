@@ -105,12 +105,11 @@
       <button class="btn btn-sm btn-neutral">+ Add Listing</button>
     </div>
 
-    <!-- Empty state — replaces the items grid -->
+    <!-- Empty state — replaces the items grid. No CTA inside the centered block: the persistent "+ Add Listing" action-bar button and the "+" FAB are both already on screen, so an extra empty-state CTA would be the third Add affordance. Pure prose here. -->
     <main class="flex-1 flex items-center justify-center px-6 pb-32">
       <div class="flex flex-col items-center text-center gap-3 max-w-[20rem]">
         <div class="text-sm font-bold">No listings yet.</div>
         <div class="text-xs text-base-content/60 leading-relaxed">Add your first item and it'll go live the moment the market drops. Set up days early and buyers will find you before sunrise.</div>
-        <a class="btn btn-sm btn-outline mt-3">+ Add an item</a>
       </div>
     </main>
 
