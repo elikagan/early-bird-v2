@@ -41,51 +41,44 @@
           <div class="text-[10px] uppercase tracking-widest text-base-content/60">Adding To</div>
           <div class="font-bold text-sm">Downtown Modernism · Sat Apr 26</div>
         </div>
-        <div class="badge badge-success badge-sm gap-1">
-          <span class="inline-block w-1.5 h-1.5 rounded-full bg-success-content"></span>
-          LIVE
-        </div>
+        <div class="badge badge-outline">DROPS FRI · 6PM</div>
       </div>
     </section>
 
     <!-- Photos -->
     <section class="px-4 py-5">
-      <div class="flex items-center justify-between mb-3">
-        <div class="text-xs uppercase tracking-widest text-base-content/60">Photos *</div>
-        <div class="text-[10px] text-base-content/60">First photo = main · Drag to reorder</div>
-      </div>
       <div class="grid grid-cols-3 gap-2">
 
         <!-- Photo 1 (main) -->
         <div class="aspect-square bg-base-200 rounded border-2 border-neutral relative flex items-center justify-center">
           <div class="text-[9px] uppercase tracking-widest text-base-content/30">Photo</div>
           <div class="badge badge-outline absolute top-1 left-1">MAIN</div>
-          <button class="btn btn-circle btn-xs btn-neutral absolute top-1 right-1">✕</button>
+          <button class="btn btn-circle btn-xs btn-ghost bg-base-100 border border-base-300 text-base-content/60 absolute top-1 right-1">✕</button>
         </div>
 
         <!-- Photo 2 -->
         <div class="aspect-square bg-base-200 rounded border border-base-300 relative flex items-center justify-center">
           <div class="text-[9px] uppercase tracking-widest text-base-content/30">Photo</div>
-          <button class="btn btn-circle btn-xs btn-neutral absolute top-1 right-1">✕</button>
+          <button class="btn btn-circle btn-xs btn-ghost bg-base-100 border border-base-300 text-base-content/60 absolute top-1 right-1">✕</button>
         </div>
 
         <!-- Photo 3 -->
         <div class="aspect-square bg-base-200 rounded border border-base-300 relative flex items-center justify-center">
           <div class="text-[9px] uppercase tracking-widest text-base-content/30">Photo</div>
-          <button class="btn btn-circle btn-xs btn-neutral absolute top-1 right-1">✕</button>
+          <button class="btn btn-circle btn-xs btn-ghost bg-base-100 border border-base-300 text-base-content/60 absolute top-1 right-1">✕</button>
         </div>
 
         <!-- Photo 4 -->
         <div class="aspect-square bg-base-200 rounded border border-base-300 relative flex items-center justify-center">
           <div class="text-[9px] uppercase tracking-widest text-base-content/30">Photo</div>
-          <button class="btn btn-circle btn-xs btn-neutral absolute top-1 right-1">✕</button>
+          <button class="btn btn-circle btn-xs btn-ghost bg-base-100 border border-base-300 text-base-content/60 absolute top-1 right-1">✕</button>
         </div>
 
         <!-- Add more -->
-        <button class="aspect-square bg-base-100 rounded border-2 border-dashed border-base-300 flex items-center justify-center text-base-content/60">
+        <button class="aspect-square bg-base-100 rounded border-2 border-dashed border-neutral flex items-center justify-center text-base-content">
           <div class="flex flex-col items-center gap-1">
-            <div class="text-2xl">+</div>
-            <div class="text-[9px] uppercase tracking-wider">Add</div>
+            <div class="text-2xl font-bold">+</div>
+            <div class="text-[9px] uppercase tracking-wider font-bold">Add</div>
           </div>
         </button>
 
@@ -142,8 +135,8 @@
     <div class="max-w-md mx-auto fixed bottom-0 left-0 right-0 bg-base-200">
       <div class="px-4 pt-4 pb-3">
         <button class="btn btn-neutral w-full">Post Item</button>
-        <!-- OQ1: copy is market-state-aware. Post-drop (current wireframe state, market is LIVE): "Live instantly · Watchers get notified". Pre-drop: "Goes live when the market drops · Sat Apr 26, 6:00 PM". Actual wiring is Phase 3. -->
-        <p class="text-[10px] text-center text-base-content/60 mt-2 uppercase tracking-wider">Live instantly · Watchers get notified</p>
+        <!-- OQ1: copy is market-state-aware. Pre-drop (current wireframe state, market has not yet dropped): "Goes live when the market drops · Fri 6PM". Post-drop (market LIVE): "Live instantly · Watchers get notified". Actual wiring is Phase 3. -->
+        <p class="text-[10px] text-center text-base-content/60 mt-2 uppercase tracking-wider">Goes live when the market drops · Fri 6PM</p>
       </div>
       <nav class="flex bg-base-200">
         <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
