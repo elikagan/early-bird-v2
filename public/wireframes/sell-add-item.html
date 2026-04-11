@@ -87,8 +87,10 @@
 
     <div class="divider mx-4 my-0"></div>
 
-    <!-- Title -->
-    <section class="px-4 py-4">
+    <!-- Details -->
+    <section class="px-4 py-5 space-y-5">
+
+      <!-- Title -->
       <label class="form-control w-full">
         <div class="label">
           <span class="label-text text-xs uppercase tracking-widest text-base-content/60">Title *</span>
@@ -96,10 +98,8 @@
         </div>
         <input type="text" placeholder="Walnut Credenza" class="input input-bordered w-full" />
       </label>
-    </section>
 
-    <!-- Description -->
-    <section class="px-4 pb-4">
+      <!-- Description -->
       <label class="form-control w-full">
         <div class="label">
           <span class="label-text text-xs uppercase tracking-widest text-base-content/60">Description</span>
@@ -107,25 +107,22 @@
         </div>
         <textarea class="textarea textarea-bordered h-28" placeholder="Condition, era, dimensions, any notable features..."></textarea>
       </label>
-    </section>
 
-    <!-- Price -->
-    <section class="px-4 pb-4">
+      <!-- Price -->
       <label class="form-control w-full">
         <div class="label">
-          <span class="label-text text-xs uppercase tracking-widest text-base-content/60">Price</span>
+          <span class="label-text text-xs uppercase tracking-widest text-base-content/60">Price *</span>
+          <label class="label-text-alt cursor-pointer flex items-center gap-2">
+            <input type="checkbox" class="checkbox checkbox-xs" />
+            <span class="text-[10px] uppercase tracking-widest font-bold">Firm</span>
+          </label>
         </div>
         <label class="input input-bordered flex items-center gap-2">
           <span class="text-base-content/60 font-bold">$</span>
           <input type="number" class="grow" placeholder="450" />
         </label>
       </label>
-      <div class="form-control mt-3">
-        <label class="label cursor-pointer gap-3 justify-start">
-          <input type="checkbox" class="checkbox checkbox-sm" />
-          <span class="label-text font-bold">Price Firm</span>
-        </label>
-      </div>
+
     </section>
 
     <!-- Spacer for fixed bottom block -->
