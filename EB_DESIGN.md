@@ -298,7 +298,7 @@ Existing screens (revise in place):
 - [x] 03. onboarding (note 03.7 also asks for an `EB_DESIGN.md` update about buyer-onboarding preferences — handle inline)
 - [x] 04. buy-feed (note 04.3 proposes new screen `home-buyer` — do NOT build it in this session; it is a separate checklist item below)
 - [x] 05. watching
-- [ ] 06. item-detail-buyer → SPLIT into clean state + inquiry-drawer state (both files in one session — this is the only exception to the one-screen rule)
+- [x] 06. item-detail-buyer → SPLIT into clean state + inquiry-drawer state (both files in one session — this is the only exception to the one-screen rule)
 - [ ] 07. item-detail-dealer-own
 - [ ] 08. item-detail-dealer-browsing
 - [ ] 09. sell-booth-setup (note 09.2 proposes new screen `home-dealer` — do NOT build it in this session; note 09.4 asks for an `EB_DESIGN.md` policy update about payment handles — handle inline)
@@ -326,6 +326,7 @@ Note: `item-detail-buyer-inquiry` is NOT a separate checklist item. It is the sp
 - 2026-04-10 — partial 05. watching + cross-screen nav update — wired EARLY BIRD logo on `watching.html` to `home-buyer.html` (T8), replaced "Watching / 7 items you care about" header with eyebrow + market context line ("Downtown Modernism · Apr 26") so the screen tells you which market it's scoped to; bottom-nav Watching link now shows the count "Watching (7)" across all 12 screens with a bottom nav (buyer + dealer); `account-buyer.html` Watching stat updated 8 → 7 to match. Full 05 revision still queued for its own session.
 - 2026-04-10 — sell-add-item — removed Category form field (and the 10-option select) since v1 captures no category data and offers no category filter. Open Question 1 (Categories) marked deferred to v2 in EB_DESIGN.md.
 - 2026-04-10 — 05. watching — completed revision pass: hearts neutralized (text-error → text-base-content, 05.4 canonical), inquiry-sent rows now show the actual buyer message inline (05.2), bottom nav switched to bg-base-200 panel (T10). Deferred 05.1/05.3 (T2/T3 on PRICE DROP/HELD/SOLD) to a cross-screen pass. Flagged buy-feed.html as also needing red→neutral hearts.
+- 2026-04-10 — 06. item-detail-buyer SPLIT — clean buyer-view state revised in place; inquiry compose extracted into new item-detail-buyer-inquiry.html as a raw Tailwind bottom drawer with backdrop + drag handle (NOT DaisyUI modal, T12). Applied T1/T4/T5/T7/T8/T10 + neutralized hearts. Added new file to review.html WIREFRAMES (count N → N+1). Deferred T2/T3 on badges to cross-screen pass.
 
 ---
 
