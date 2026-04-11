@@ -63,7 +63,7 @@
     <div class="text-sm font-bold tracking-tight">EARLY BIRD</div>
     <div class="text-[10px] uppercase tracking-widest text-base-content/60">Wireframe Review</div>
     <div class="flex-1"></div>
-    <div id="progress" class="text-xs uppercase tracking-wider text-base-content/60">1 / 14</div>
+    <div id="progress" class="text-xs uppercase tracking-wider text-base-content/60">1 / 15</div>
     <div id="annotated-count" class="text-xs uppercase tracking-wider text-base-content/40">0 annotated</div>
     <div class="divider divider-horizontal mx-0"></div>
     <button id="prev-btn" class="btn btn-sm btn-outline">◀ Prev</button>
@@ -86,7 +86,7 @@
     <!-- Left: wireframe index -->
     <aside class="w-56 flex flex-col border-r border-base-300 bg-base-100 flex-shrink-0">
       <div class="px-3 py-2 text-[10px] uppercase tracking-widest text-base-content/60 border-b border-base-300 flex-shrink-0">
-        Wireframes (14)
+        Wireframes (15)
       </div>
       <ul id="wireframe-list" class="menu menu-sm p-2 w-full overflow-y-auto flex-1"></ul>
     </aside>
@@ -129,6 +129,7 @@
       'buy-feed',
       'watching',
       'item-detail-buyer',
+      'item-detail-buyer-inquiry',
       'item-detail-dealer-own',
       'item-detail-dealer-browsing',
       'sell-booth-setup',
@@ -286,7 +287,7 @@
     });
 
     clearBtn.addEventListener('click', () => {
-      if (!confirm('Clear ALL notes across all 14 wireframes? This cannot be undone.')) return;
+      if (!confirm('Clear ALL notes across all 15 wireframes? This cannot be undone.')) return;
       notes = {};
       try {
         localStorage.removeItem(NOTES_KEY);
