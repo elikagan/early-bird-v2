@@ -337,3 +337,4 @@ Note: `item-detail-buyer-inquiry` is NOT a separate checklist item. It is the sp
 3. **Shipping:** Local pickup only, or support shipping?
 4. **Scale:** 200 dealers, 5,000 items — algorithmic feed or chronological?
 5. **Font choice:** JetBrains Mono, IBM Plex Mono, Space Mono, or Roboto Mono?
+6. **Edit button on item-detail-dealer-own:** Currently the hero photo has an overlaid "Edit" button top-right, but what it routes to is unspecced. Options: (a) reuse `sell-add-item.html` as a unified add/edit form populated with existing values; (b) build a separate `item-detail-dealer-edit.html` screen; (c) make fields inline-editable in place on the dealer-own view. Decision needed before Phase 2 wiring.

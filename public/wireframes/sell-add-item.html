@@ -136,31 +136,31 @@
       </div>
     </section>
 
-    <!-- Spacer -->
-    <div class="h-32"></div>
+    <!-- Spacer for fixed bottom block -->
+    <div class="h-36"></div>
 
-    <!-- Sticky CTA -->
-    <div class="max-w-md mx-auto fixed bottom-16 left-0 right-0 bg-base-100 border-t border-base-300 px-4 py-4">
-      <button class="btn btn-neutral w-full">Post Item</button>
-      <p class="text-[10px] text-center text-base-content/60 mt-2 uppercase tracking-wider">Live instantly · Watchers get notified</p>
+    <!-- Sticky bottom: CTA + nav (single container, T1+T10) -->
+    <div class="max-w-md mx-auto fixed bottom-0 left-0 right-0 bg-base-200">
+      <div class="px-4 pt-4 pb-3">
+        <button class="btn btn-neutral w-full">Post Item</button>
+        <p class="text-[10px] text-center text-base-content/60 mt-2 uppercase tracking-wider">Live instantly · Watchers get notified</p>
+      </div>
+      <nav class="flex bg-base-100">
+        <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+          <span class="text-[10px] uppercase tracking-widest">Buy</span>
+        </a>
+        <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+          <span class="text-[10px] uppercase tracking-widest">Watching (7)</span>
+        </a>
+        <div class="w-px bg-base-300 my-2"></div>
+        <a class="flex-1 flex flex-col items-center py-3 text-base-content font-bold border-t-2 border-neutral">
+          <span class="text-[10px] uppercase tracking-widest">Sell</span>
+        </a>
+        <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+          <span class="text-[10px] uppercase tracking-widest">Account</span>
+        </a>
+      </nav>
     </div>
-
-    <!-- Bottom nav (dealer: 4 tabs) -->
-    <nav class="max-w-md mx-auto fixed bottom-0 left-0 right-0 bg-base-100 border-t border-base-300 flex">
-      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
-        <span class="text-[10px] uppercase tracking-widest">Buy</span>
-      </a>
-      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
-        <span class="text-[10px] uppercase tracking-widest">Watching (7)</span>
-      </a>
-      <div class="w-px bg-base-300 my-2"></div>
-      <a class="flex-1 flex flex-col items-center py-3 text-base-content font-bold border-t-2 border-neutral">
-        <span class="text-[10px] uppercase tracking-widest">Sell</span>
-      </a>
-      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
-        <span class="text-[10px] uppercase tracking-widest">Account</span>
-      </a>
-    </nav>
 
   </div>
 </body>
