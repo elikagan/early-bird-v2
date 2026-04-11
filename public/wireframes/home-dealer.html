@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Early Bird — Home (Dealer)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        fontFamily: {
+          sans: ['"JetBrains Mono"', 'monospace'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+          serif: ['"JetBrains Mono"', 'monospace'],
+        },
+      },
+    }
+  </script>
+  <style>
+    html, body { font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace; }
+  </style>
+</head>
+<body class="min-h-screen bg-base-300">
+  <div class="max-w-md mx-auto min-h-screen bg-base-100 flex flex-col">
+
+    <!-- Header -->
+    <!-- EARLY BIRD wordmark is intentionally NOT a link on this screen — this IS the home lobby. -->
+    <!-- On every other post-login dealer screen the wordmark routes here (T8); the self-route would be a no-op. -->
+    <!-- Header structure (logo left, 32px MF avatar right) is byte-identical to the canonical dealer pattern -->
+    <!-- on account-dealer.html, and mirrors home-buyer.html on the buyer side. See commit cross-refs. -->
+    <header class="px-4 pt-6 pb-3 border-b border-base-300">
+      <div class="flex items-center justify-between">
+        <div class="text-lg font-bold tracking-tight">EARLY BIRD</div>
+        <div class="avatar placeholder">
+          <div class="bg-neutral text-neutral-content w-8 rounded-full">
+            <span class="text-xs font-bold">MF</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="flex-1 pb-24">
+
+      <!-- HERO: the next market needing a booth setup owns the top of the screen. -->
+      <!-- Most actionable thing for a dealer logging in is "your next market needs a booth" — that gets the hero. -->
+      <!-- Big market name → muted metadata → full-width primary CTA. Generous padding (pt-8 pb-7) so it breathes. -->
+      <!-- No "NEXT MARKET" eyebrow pill — T2 outline-down by default, and the position + size already signal hero. -->
+      <!-- Mirrors home-buyer's hero structure exactly, but the action is "set up" instead of "browse". -->
+      <section class="px-4 pt-8 pb-7 border-b border-base-300">
+        <h1 class="text-3xl font-bold leading-tight tracking-tight mb-3">Rose Bowl Flea</h1>
+        <div class="text-xs text-base-content/60 leading-relaxed">Sun May 11 · ~80 dealers</div>
+        <div class="text-xs text-base-content/60 leading-relaxed mb-6">Opens to buyers Sat May 10, 6pm</div>
+        <a href="sell-booth-setup.html" class="btn btn-neutral btn-block">Set up your booth →</a>
+      </section>
+
+      <!-- Coming up — the rest of the dealer's calendar. -->
+      <!-- This section ALSO IS the market switcher, absorbed from the deleted sell-market-picker (PHASE_1 note 12). -->
+      <!-- Tapping any row routes to sell-booth-setup for that market — the dealer picks which market to prep -->
+      <!-- by tapping it here. No separate picker screen. The hero IS the most-imminent market by default; -->
+      <!-- the rows below let the dealer jump ahead to a later market if they want to set that one up first. -->
+      <!-- Bold weight is reserved for the market name (the only headline in each row). The "Opens in N days" -->
+      <!-- line is intentionally light so it reads as metadata, not as a sibling row (the hierarchy bug from -->
+      <!-- the first home-buyer pass where a countdown line read like a market name). -->
+      <section class="px-4 pt-7 pb-3">
+        <div class="text-xs uppercase tracking-widest text-base-content/60">Coming up</div>
+      </section>
+
+      <a href="sell-booth-setup.html" class="block px-4 py-4 border-t border-base-300">
+        <div class="text-base font-bold">PCC Flea</div>
+        <div class="text-xs text-base-content/60 mt-0.5">Sun May 18 · ~50 dealers</div>
+        <div class="text-xs text-base-content/60 mt-2">Opens in 36 days · Sat May 17, 6pm</div>
+      </a>
+
+      <a href="sell-booth-setup.html" class="block px-4 py-4 border-t border-base-300">
+        <div class="text-base font-bold">Long Beach Antique Market</div>
+        <div class="text-xs text-base-content/60 mt-0.5">Sun Jun 15 · ~120 dealers</div>
+        <div class="text-xs text-base-content/60 mt-2">Opens in 64 days · Sat Jun 14, 6pm</div>
+      </a>
+
+      <!-- Why set up early — flat prose, no accordion. -->
+      <!-- Spec calls this a "how the drop works explainer that persuades dealers to set up in advance". -->
+      <!-- Persuasion-first framing ("Why set up early") reads more dealer-specific than the buyer-side -->
+      <!-- "How it works" eyebrow. The substance is the same shape: 3 short paragraphs. -->
+      <!-- One functional "drop" reference in paragraph 1 ("days before the drop, not hours"). That's the -->
+      <!-- spice — the rest of the prose uses plain English to avoid hype-language saturation. -->
+      <!-- Anything longer (terms, dispute handling, dealer agreement) lives in Dealer Help, not here. -->
+      <section class="px-4 pt-7 pb-8 border-t border-base-300">
+        <div class="text-xs uppercase tracking-widest text-base-content/60 mb-4">Why set up early</div>
+        <div class="text-sm text-base-content/70 leading-relaxed space-y-3">
+          <p>Your items go in front of buyers the moment you publish, and they sit there until the market opens. Get set up days before the drop, not hours, and you'll hear from buyers before sunrise.</p>
+          <p>When a buyer is interested, you get a single text with their name, phone number, and message. From there you talk directly — call, text, or sort it out at the booth.</p>
+          <p>Buyers pay you in person, after you've confirmed the sale. Early Bird never holds payment.</p>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Bottom nav (dealer: 4 tabs) -->
+    <!-- No active tab on this screen — the home lobby sits ABOVE Buy / Watching / Sell / Account in the flow. -->
+    <!-- T10 panel treatment: bg-base-200, no border-t line above. Matches every other revised screen. -->
+    <!-- 4-tab structure (with the thin divider between Watching and Sell) is byte-identical to account-dealer.html. -->
+    <nav class="max-w-md mx-auto fixed bottom-0 left-0 right-0 bg-base-200 flex">
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+        <span class="text-[10px] uppercase tracking-widest">Buy</span>
+      </a>
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+        <span class="text-[10px] uppercase tracking-widest">Watching (7)</span>
+      </a>
+      <div class="w-px bg-base-300 my-2"></div>
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+        <span class="text-[10px] uppercase tracking-widest">Sell</span>
+      </a>
+      <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
+        <span class="text-[10px] uppercase tracking-widest">Account</span>
+      </a>
+    </nav>
+
+  </div>
+</body>
+</html>

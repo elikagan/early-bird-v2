@@ -331,7 +331,7 @@ Deletions:
 
 New screens (each is a dedicated session):
 - [x] home-buyer (from note 04.3 — buyer's logged-in lobby with markets list, countdown, FAQ, drop-alert opt-in)
-- [ ] home-dealer (from note 09.2 — dealer's logged-in lobby with upcoming markets and set-up-booth CTA)
+- [x] home-dealer (from note 09.2 — dealer's logged-in lobby with upcoming markets and set-up-booth CTA)
 
 Follow-up revisions (each is a dedicated session):
 - [ ] 07. item-detail-dealer-own — per-inquiry Hold/Sell buttons + transactional SMS receipts + confirm-drawer state. Adds Hold/Sell actions to each inquiry card in the Inquiry Log; taps open a confirm drawer (new file `item-detail-dealer-own-confirm.html`, same split pattern as 06 → 06-inquiry). On confirm, app sends a one-way transactional SMS (winner gets "sold to you" or "first dibs"; losers get "sold to another buyer"). Governance rule for per-inquiry ↔ global status coupling is specced in `## Communication: One-Touch Inquiry Handoff` → `### Per-Inquiry Transactional Receipts (Carve-Out)`. This session must: (a) add Hold/Sell buttons to each inquiry card in `item-detail-dealer-own.html`; (b) create `item-detail-dealer-own-confirm.html` as the confirm drawer state (bottom sheet, raw Tailwind, T12 rules — not a DaisyUI modal); (c) add the new file to `public/review.html` WIREFRAMES; (d) amend `CLAUDE.md`'s Communication Model section with a carve-out for transactional receipts. Phase 2 must add `status` field to `inquiries` table (`open | held | sold | lost`).
