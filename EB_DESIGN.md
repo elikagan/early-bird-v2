@@ -101,6 +101,10 @@ Post-login flow: landing → magic link → onboarding → **home lobby** → ta
 
 Post-login home base for buyers. Shows the markets the buyer follows with live drop countdowns, a short FAQ section, and a drop-alert opt-in toggle. The Early Bird logo in every buyer-side screen routes here — not to the Buy tab. This is the buyer's "home base" inside the app, sitting above the Buy/Watching/Account tabs in the post-login flow.
 
+### Home Lobby (Dealer)
+
+Post-login home base for dealers. Shows the upcoming markets the dealer is selling at, with a live drop countdown for each, a "set up your booth" CTA on the next market, and a short "how the drop works" explainer that persuades dealers to set up in advance (the earlier a booth is set up, the longer the items sit in front of buyers before the drop). The Early Bird logo in every dealer-side screen routes here — not to the Sell tab. This is the dealer's "home base" inside the app, sitting above the Buy/Watching/Sell/Account tabs in the post-login flow. Market switching happens here too — the dealer picks which market to set up for from this lobby instead of from a separate market-picker screen.
+
 ### Buy Tab (Feed)
 
 Scrollable grid of item cards. Each card shows photo, dealer avatar, favorite button, price, title, dealer name, and status if held/sold. "I'm Interested" button on every card.
@@ -127,7 +131,7 @@ The most important screen. Transforms based on who's looking.
 
 ### Sell Tab (Dealer's Booth)
 
-**Setup:** First time for this market. Booth location, payment preferences (Venmo/Zelle/Cash — inline on this page, not buried in Account). Persists across markets.
+**Setup:** First time for this market. Booth number plus a checkbox list of accepted payment methods (Cash, Venmo, Zelle, Apple Pay, Card). The app never stores payment handles — buyers pay the dealer directly at the booth after the dealer confirms the sale, which prevents pre-sale payments while a dealer is still deciding. Settings persist across markets.
 
 **Active booth:** Item list with status, prices, inquiry counts, action buttons. Countdown to drop. After drop: "Market is live."
 
@@ -137,7 +141,7 @@ The most important screen. Transforms based on who's looking.
 
 ### Account
 
-Buyer: name, avatar, preferences. Dealer: adds business name, payment methods, booth settings.
+Buyer: name, avatar, preferences. Dealer: adds business name, accepted payment methods (checkboxes only — no stored handles), booth settings.
 
 ---
 
@@ -232,6 +236,7 @@ Build every screen as static HTML using only DaisyUI classes. No JavaScript. No 
 - `landing-dealer.html`
 - `onboarding.html`
 - `home-buyer.html`
+- `home-dealer.html`
 - `buy-feed.html`
 - `watching.html`
 - `item-detail-buyer.html` (State 1)
@@ -319,7 +324,7 @@ Existing screens (revise in place):
 - [x] 06. item-detail-buyer → SPLIT into clean state + inquiry-drawer state (both files in one session — this is the only exception to the one-screen rule)
 - [x] 07. item-detail-dealer-own
 - [x] 08. item-detail-dealer-browsing
-- [ ] 09. sell-booth-setup (note 09.2 proposes new screen `home-dealer` — do NOT build it in this session; note 09.4 asks for an `EB_DESIGN.md` policy update about payment handles — handle inline)
+- [x] 09. sell-booth-setup (note 09.2 proposes new screen `home-dealer` — do NOT build it in this session; note 09.4 asks for an `EB_DESIGN.md` policy update about payment handles — handle inline)
 - [ ] 10. sell-booth-active
 - [ ] 11. sell-add-item
 - [ ] 13. account-buyer
@@ -353,6 +358,7 @@ Note: `item-detail-buyer-inquiry` is NOT a separate checklist item. It is the sp
 - 2026-04-10 — 07. item-detail-dealer-own follow-up — pulled 07.3 color-half and the 07.2 inquiries-pill fix OUT of the T2/T3 deferral because both controls are unique to this screen (no cross-screen consistency to protect). LIVE/HOLD/SOLD selector rebuilt from `tabs tabs-boxed` (which rendered the active tab in loud primary purple) to a `join` of `btn-sm` buttons with `btn-neutral` for the active state, matching the T6 segmented-control pattern used elsewhere in the app. "3 inquiries" badge dropped entirely; count folded into the section label as "Inquiries (3)" to match the `Watching (7)` pattern in the bottom nav. 07.2 market-LIVE pill in the "Listed In" card is still deferred — that one IS cross-screen.
 - 2026-04-10 — spec addition — new product concept: per-inquiry Hold/Sell buttons on each inquiry card in `item-detail-dealer-own`, with one-way transactional SMS receipts to the affected buyers. Full spec added to `## Communication: One-Touch Inquiry Handoff` → `### Per-Inquiry Transactional Receipts (Carve-Out)` including per-inquiry action behavior, SMS templates, the governance rule coupling per-inquiry actions to the global Live/Hold/Sold status (per-inquiry sets global; global change while a per-inquiry commitment is active triggers a confirm drawer), and the walk-up fallback. New follow-up checklist item added for the dedicated future session that will build it (wireframe revision + confirm-drawer split + review.html update + CLAUDE.md carve-out amendment). No wireframe changes this session.
 - 2026-04-10 — 08. item-detail-dealer-browsing — T5 state labels scrubbed: `<title>` tag now reads "Brass Desk Lamp" (was "Item Detail (Dealer Browsing)"), and the `<!-- dealer browsing another dealer's item -->` code comment renamed to `<!-- Buyer-context alert -->`; bottom nav switched from `bg-base-100` to `bg-base-200` so the CTA+nav sticky block is a single unified panel (T10). "Art deco" sub-style fix N/A — no category section exists in this file. T4 back affordance already addressed in 6363d2c (overlaid `← Back` text button on hero). T8 N/A — no logo element (edge-to-edge hero, same as 06/07). T1 N/A — CTA and bottom nav already live inside a single fixed `bg-base-200` wrapper; no gap to fix. Deferred: price-drop pill T2/T3 to cross-screen pass (same call as 05/06/07); LIVE market-status pill T13 to cross-screen pass.
+- 2026-04-10 — 09. sell-booth-setup — removed "Row / Area" select and "Landmark Hint" input (booth number alone); rebuilt Payment section as a 5-checkbox method list (Cash, Venmo, Zelle, Apple Pay, Card) with the Venmo @handle and Zelle phone/email inputs deleted, section retitled "Accepted Payment", and helper copy rewritten to spell out the in-person-after-confirmation policy (T11 canonical fix on this screen). T4 back affordance: tiny `btn-circle btn-ghost` `←` replaced with a labeled `← Back` text button in the header bar (form-screen variant of T4, not the hero-overlay pattern from 07/08). T10: nav switched `bg-base-100` → `bg-base-200` so the CTA+nav sticky block is a single unified panel. User feedback also addressed: "Switch" button removed from the Market card (back arrow → home-dealer covers it), "Booth Location" section header dropped (only one field — section header collapsed to "Booth Number"). EB_DESIGN.md: T11 policy rewritten in Sell Tab → Setup (line ~134) and clarified in Account → Dealer (line ~144); Tech Stack → Notifications grep-clean for handle refs; new Home Lobby (Dealer) section added to The Screens parallel to Home Lobby (Buyer); `home-dealer.html` added to Phase 1 wireframes file list (Navigation post-login flow text already covered both roles from the 04 session). New OQ7 added: dealer vetting + fraud / customer-complaint handling (the explicit no-payment-middleman stance leaves an unsolved adjacent question — needs an answer before any dealer-facing launch). T5 N/A — `<title>` tag and header text both already say "Booth Setup", no debug/state strings present. T7 N/A — grep clean, no pre-buy/preview language. T8 N/A — no EARLY BIRD logo element exists on this screen (header is back + title only); same call as 06/07/08, do not invent a logo to satisfy T8. T1 N/A — sticky CTA and bottom nav already live inside a single fixed `bg-base-200` wrapper, no gap to fix. T2/T3 N/A — no badges/pills on this screen at all. T13 N/A — no LIVE pill on this screen. The cross-screen PRICE DROP / DROPPED pill removal (commit 7976819) did not touch 09 — this screen had no PRICE DROP pill. home-dealer.html intentionally NOT built in this session (note 09.2 is its own checklist item).
 
 ---
 
@@ -364,3 +370,4 @@ Note: `item-detail-buyer-inquiry` is NOT a separate checklist item. It is the sp
 4. **Scale:** 200 dealers, 5,000 items — algorithmic feed or chronological?
 5. **Font choice:** JetBrains Mono, IBM Plex Mono, Space Mono, or Roboto Mono?
 6. **Edit button on item-detail-dealer-own:** Currently the hero photo has an overlaid "Edit" button top-right, but what it routes to is unspecced. Options: (a) reuse `sell-add-item.html` as a unified add/edit form populated with existing values; (b) build a separate `item-detail-dealer-edit.html` screen; (c) make fields inline-editable in place on the dealer-own view. Decision needed before Phase 2 wiring.
+7. **Dealer vetting + fraud/complaint handling:** T11 deliberately keeps the app out of the payment flow so we're not in the middle of bad transactions, but dealers can still ghost, misrepresent items, or scam buyers in person. We need (a) a vetting policy for which dealers we let onto the platform — application form, reference check, trial market, manual approval? — and (b) a complaint flow for when a dealer doesn't deliver: who reviews disputes, when do we deactivate a dealer, how do we communicate that to affected buyers? This is a "we don't want to do customer support for failed transactions" problem, and the answer probably starts with strict gatekeeping at signup. Decision needed before any dealer-facing launch.

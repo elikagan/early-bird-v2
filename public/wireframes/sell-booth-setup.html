@@ -29,9 +29,9 @@
 
     <!-- Top bar -->
     <header class="px-4 pt-6 pb-3 flex items-center justify-between border-b border-base-300">
-      <button class="btn btn-sm btn-circle btn-ghost">←</button>
+      <button class="btn btn-sm btn-ghost gap-1 -ml-2">← Back</button>
       <div class="text-sm font-bold uppercase tracking-wider">Set Up Booth</div>
-      <div class="w-8"></div>
+      <div class="w-16"></div>
     </header>
 
     <!-- Market context -->
@@ -39,12 +39,9 @@
       <div class="text-xs uppercase tracking-widest text-base-content/60 mb-2">Market</div>
       <div class="card card-compact bg-base-200">
         <div class="card-body">
-          <div class="flex items-center justify-between">
-            <div>
-              <div class="font-bold text-base">Downtown Modernism</div>
-              <div class="text-xs text-base-content/60 mt-0.5">Sat Apr 26 · Downtown LA</div>
-            </div>
-            <button class="btn btn-xs btn-outline">Switch</button>
+          <div>
+            <div class="font-bold text-base">Downtown Modernism</div>
+            <div class="text-xs text-base-content/60 mt-0.5">Sat Apr 26 · Downtown LA</div>
           </div>
           <div class="divider my-1"></div>
           <div class="flex items-center justify-between">
@@ -57,43 +54,18 @@
 
     <div class="divider mx-4 my-0"></div>
 
-    <!-- Booth location -->
+    <!-- Booth number -->
     <section class="px-4 py-5">
-      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-3">Booth Location</div>
-      <label class="form-control w-full mb-3">
-        <div class="label">
-          <span class="label-text text-xs uppercase tracking-wider">Booth Number</span>
-        </div>
-        <input type="text" placeholder="42" class="input input-bordered w-full" />
-      </label>
-      <label class="form-control w-full mb-3">
-        <div class="label">
-          <span class="label-text text-xs uppercase tracking-wider">Row / Area</span>
-        </div>
-        <select class="select select-bordered w-full">
-          <option disabled selected>Pick your row</option>
-          <option>Row A</option>
-          <option>Row B</option>
-          <option>Row C — Antiques</option>
-          <option>Row D — Vintage Clothing</option>
-          <option>Main Aisle</option>
-        </select>
-      </label>
-      <label class="form-control w-full">
-        <div class="label">
-          <span class="label-text text-xs uppercase tracking-wider">Landmark Hint</span>
-          <span class="label-text-alt text-base-content/60">Optional</span>
-        </div>
-        <input type="text" placeholder="Across from the food trucks" class="input input-bordered w-full" />
-      </label>
+      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-3">Booth Number</div>
+      <input type="text" placeholder="42" class="input input-bordered w-full" />
     </section>
 
     <div class="divider mx-4 my-0"></div>
 
     <!-- Payment preferences -->
     <section class="px-4 py-5">
-      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-1">Payment</div>
-      <div class="text-[11px] text-base-content/60 mb-4 leading-relaxed">Buyers see these on your booth so they know what to bring.</div>
+      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-1">Accepted Payment</div>
+      <div class="text-[11px] text-base-content/60 mb-4 leading-relaxed">Buyers see these on your booth so they know how to pay you. You collect payment in person after confirming the sale — the app never holds payment details.</div>
 
       <div class="form-control">
         <label class="label cursor-pointer gap-3 justify-start">
@@ -108,9 +80,6 @@
           <span class="label-text font-bold">Venmo</span>
         </label>
       </div>
-      <label class="form-control w-full pl-8 mb-2">
-        <input type="text" placeholder="@your-handle" class="input input-bordered input-sm w-full" />
-      </label>
 
       <div class="form-control">
         <label class="label cursor-pointer gap-3 justify-start">
@@ -118,14 +87,18 @@
           <span class="label-text font-bold">Zelle</span>
         </label>
       </div>
-      <label class="form-control w-full pl-8 mb-2">
-        <input type="text" placeholder="phone or email" class="input input-bordered input-sm w-full" disabled />
-      </label>
 
       <div class="form-control">
         <label class="label cursor-pointer gap-3 justify-start">
           <input type="checkbox" class="checkbox checkbox-sm" />
-          <span class="label-text font-bold">Apple Pay / Card</span>
+          <span class="label-text font-bold">Apple Pay</span>
+        </label>
+      </div>
+
+      <div class="form-control">
+        <label class="label cursor-pointer gap-3 justify-start">
+          <input type="checkbox" class="checkbox checkbox-sm" />
+          <span class="label-text font-bold">Card</span>
         </label>
       </div>
     </section>
@@ -150,7 +123,7 @@
       <div class="px-4 pt-4 pb-3">
         <button class="btn btn-neutral w-full">Save Booth &amp; Start Listing</button>
       </div>
-      <nav class="flex bg-base-100">
+      <nav class="flex bg-base-200">
         <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
           <span class="text-[10px] uppercase tracking-widest">Buy</span>
         </a>
