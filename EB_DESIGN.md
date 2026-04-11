@@ -328,7 +328,7 @@ Existing screens (revise in place):
 - [x] 10. sell-booth-active
 - [x] 11. sell-add-item
 - [x] 13. account-buyer
-- [ ] 14. account-dealer
+- [x] 14. account-dealer
 
 Deletions:
 - [ ] 12. sell-market-picker (notes 12.1–12.2 explicitly remove this page)

@@ -30,8 +30,12 @@
     <!-- Header -->
     <header class="px-4 pt-6 pb-3 border-b border-base-300">
       <div class="flex items-center justify-between">
-        <div class="text-lg font-bold tracking-tight">EARLY BIRD</div>
-        <div class="text-xs uppercase tracking-widest text-base-content/60">Account · Dealer</div>
+        <a href="home-dealer.html" class="text-lg font-bold tracking-tight">EARLY BIRD</a>
+        <div class="avatar placeholder">
+          <div class="bg-neutral text-neutral-content w-8 rounded-full">
+            <span class="text-xs font-bold">MF</span>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -63,23 +67,10 @@
       </label>
     </section>
 
-    <!-- Stats -->
-    <section class="px-4 pb-4">
-      <div class="stats stats-horizontal bg-base-200 w-full">
-        <div class="stat p-3">
-          <div class="stat-title text-[10px] uppercase tracking-wider">Listed</div>
-          <div class="stat-value text-xl">18</div>
-        </div>
-        <div class="stat p-3">
-          <div class="stat-title text-[10px] uppercase tracking-wider">Sold</div>
-          <div class="stat-value text-xl">142</div>
-        </div>
-        <div class="stat p-3">
-          <div class="stat-title text-[10px] uppercase tracking-wider">Markets</div>
-          <div class="stat-value text-xl">9</div>
-        </div>
-      </div>
-    </section>
+    <!-- Stats cards intentionally omitted (note 14.3). Listed/Sold/Markets metrics belong on the -->
+    <!-- dealer's Sell tab dashboard, not on the Account screen — Account is for identity + settings, -->
+    <!-- not performance reporting. Asymmetric with account-buyer (which keeps its stats block) by -->
+    <!-- design: the buyer-side metrics weren't flagged for removal in the per-screen review. -->
 
     <div class="divider mx-4 my-0"></div>
 
@@ -89,8 +80,8 @@
 
     <!-- Payment methods (T11: methods-only, no handles, no Edit/Connect — app is never the payment middleman) -->
     <section class="px-4 py-5">
-      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-3">Payment Methods</div>
-      <div class="text-[10px] text-base-content/60 mb-3 leading-relaxed">Buyers see which methods you accept. Payment happens in person at the booth.</div>
+      <div class="text-xs uppercase tracking-widest text-base-content/60 mb-1">Payment Methods</div>
+      <div class="text-[10px] text-base-content/60 mb-3 leading-relaxed max-w-[16rem]">Buyers see which methods you accept. Payment happens in person at the booth.</div>
 
       <div class="flex items-center gap-3 py-3 border-b border-base-300">
         <input type="checkbox" checked class="checkbox checkbox-sm" />
@@ -153,6 +144,8 @@
     <div class="divider mx-4 my-0"></div>
 
     <!-- Footer links -->
+    <!-- TODO: footer needs a redesign — current Help/Sales/Privacy/Terms + Sign Out + version stack reads as ghastly. -->
+    <!-- Deferred to a follow-up session that touches both account screens together (see EB_DESIGN.md "Follow-up revisions"). -->
     <section class="px-4 py-5 pb-8 flex flex-col gap-2">
       <a class="link link-hover text-xs uppercase tracking-wider">Dealer Help</a>
       <a class="link link-hover text-xs uppercase tracking-wider">Sales History</a>
@@ -167,7 +160,7 @@
     <div class="h-16"></div>
 
     <!-- Bottom nav (dealer: 4 tabs) -->
-    <nav class="max-w-md mx-auto fixed bottom-0 left-0 right-0 bg-base-100 border-t border-base-300 flex">
+    <nav class="max-w-md mx-auto fixed bottom-0 left-0 right-0 bg-base-200 flex">
       <a class="flex-1 flex flex-col items-center py-3 text-base-content/60">
         <span class="text-[10px] uppercase tracking-widest">Buy</span>
       </a>
