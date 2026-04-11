@@ -1,6 +1,6 @@
 # CLAUDE.md — Early Bird
 
-Read `EB_DESIGN.md` before doing anything. It is the source of truth for this project.
+Read `EB_DESIGN.md` before doing anything. It is the source of truth for this project. Do NOT read `REVISION_LOG.md` unless explicitly told to.
 
 ## Tech Stack
 
