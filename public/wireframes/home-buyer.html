@@ -45,100 +45,64 @@
 
     <main class="flex-1 pb-24">
 
-      <!-- Live Now -->
-      <!-- A market is "live" once its drop time has passed and inventory is visible to buyers. -->
-      <!-- The LIVE badge uses badge-success — T13 (lightning-bolt circle replacement) is deferred -->
-      <!-- to a cross-screen pass; this screen will be updated then alongside every other LIVE pill. -->
-      <section class="px-4 pt-5 pb-2">
-        <div class="text-xs uppercase tracking-widest text-base-content/60 mb-3">Live Now</div>
+      <!-- HERO: the live market owns the top of the screen. -->
+      <!-- LIVE eyebrow → big market name → muted metadata → full-width primary CTA. -->
+      <!-- The hero is the answer to "what's the most important thing on this page right now?" -->
+      <!-- T13 (lightning-bolt circle replacement for LIVE pill) still deferred to a cross-screen pass. -->
+      <section class="px-4 pt-8 pb-7 border-b border-base-300">
+        <div class="badge badge-success font-bold mb-4">LIVE NOW</div>
+        <h1 class="text-3xl font-bold leading-tight tracking-tight mb-3">Downtown Modernism</h1>
+        <div class="text-xs text-base-content/60 leading-relaxed">Saturday Apr 26 · 32 dealers · 487 items</div>
+        <div class="text-xs text-base-content/60 leading-relaxed mb-6">Open until 8pm tonight</div>
+        <a class="btn btn-neutral btn-block">Browse the market →</a>
       </section>
 
-      <a class="block px-4 py-4 border-y border-base-300">
-        <div class="flex items-center justify-between mb-1">
-          <div class="text-base font-bold">Downtown Modernism</div>
-          <div class="badge badge-success badge-sm font-bold">LIVE</div>
-        </div>
-        <div class="text-xs text-base-content/60">Sat Apr 26 · 32 dealers · 487 items</div>
-        <div class="flex items-center justify-between mt-3">
-          <div class="text-sm font-bold">Live now · Ends 8:00pm Sat</div>
-          <span class="text-xs font-bold uppercase tracking-wider">Shop the drop →</span>
-        </div>
-      </a>
-
-      <!-- Upcoming -->
-      <!-- No "UPCOMING" pill on these rows — T2 says outline-down by default, and the absence of a -->
-      <!-- LIVE badge already conveys upcoming. The countdown line carries the information. -->
-      <section class="px-4 pt-6 pb-2">
-        <div class="text-xs uppercase tracking-widest text-base-content/60 mb-3">Upcoming</div>
+      <!-- Upcoming markets -->
+      <!-- No "UPCOMING" pill — T2 outline-down by default, and the absence of a LIVE eyebrow is enough. -->
+      <!-- Bold weight is reserved for the market name (the only headline in each row). -->
+      <!-- The "Opens in N days" line is intentionally light so it reads as metadata about the market above it, -->
+      <!-- not as a sibling row. This was the bug in the first pass where "Drops in 29d 6h" looked like a market name. -->
+      <section class="px-4 pt-7 pb-3">
+        <div class="text-xs uppercase tracking-widest text-base-content/60">Upcoming markets</div>
       </section>
 
-      <a class="block px-4 py-4 border-y border-base-300">
+      <a class="block px-4 py-4 border-t border-base-300">
         <div class="text-base font-bold">Rose Bowl Flea</div>
-        <div class="text-xs text-base-content/60">Sun May 11 · ~80 dealers</div>
-        <div class="text-sm font-bold mt-2">Drops in 29d 6h</div>
-        <div class="text-[10px] text-base-content/60 uppercase tracking-wider mt-0.5">Sat May 10 · 6:00pm</div>
+        <div class="text-xs text-base-content/60 mt-0.5">Sun May 11 · ~80 dealers</div>
+        <div class="text-xs text-base-content/60 mt-2">Opens in 29 days · Sat May 10, 6pm</div>
       </a>
 
-      <a class="block px-4 py-4 border-b border-base-300">
+      <a class="block px-4 py-4 border-t border-base-300">
         <div class="text-base font-bold">PCC Flea</div>
-        <div class="text-xs text-base-content/60">Sun May 18 · ~50 dealers</div>
-        <div class="text-sm font-bold mt-2">Drops in 36d 6h</div>
-        <div class="text-[10px] text-base-content/60 uppercase tracking-wider mt-0.5">Sat May 17 · 6:00pm</div>
+        <div class="text-xs text-base-content/60 mt-0.5">Sun May 18 · ~50 dealers</div>
+        <div class="text-xs text-base-content/60 mt-2">Opens in 36 days · Sat May 17, 6pm</div>
       </a>
 
-      <!-- Drop Alerts opt-in -->
-      <!-- Single global toggle — texts the buyer when ANY market they follow goes live. -->
-      <!-- Per-market alert preferences live on Account (Notifications section), not here. -->
-      <section class="px-4 py-5">
+      <!-- Alerts opt-in — single global SMS toggle. -->
+      <!-- Per-market notification preferences live on Account → Notifications, not here. -->
+      <section class="px-4 pt-7 pb-7 border-t border-base-300">
         <div class="form-control">
-          <label class="label cursor-pointer justify-between p-0 py-3 gap-4">
+          <label class="label cursor-pointer justify-between p-0 gap-4">
             <div class="flex-1">
-              <div class="text-sm font-bold">Drop Alerts</div>
-              <div class="text-xs text-base-content/60 leading-tight mt-0.5">Text me when a market I follow goes live</div>
+              <div class="text-sm font-bold">Text me when a market opens</div>
+              <div class="text-xs text-base-content/60 leading-tight mt-1">One SMS the moment any market you follow goes live. Nothing else.</div>
             </div>
             <input type="checkbox" checked class="toggle" />
           </label>
         </div>
       </section>
 
-      <div class="divider mx-4 my-0"></div>
-
-      <!-- FAQ -->
-      <!-- DaisyUI collapse rows — pure HTML/CSS accordion, no JS needed for the wireframe. -->
-      <!-- Kept short (4 entries) per the spec. The longer help/policy content lives in Help & Support. -->
-      <section class="px-4 py-5">
-        <div class="text-xs uppercase tracking-widest text-base-content/60 mb-3">FAQ</div>
-
-        <div class="collapse collapse-arrow border border-base-300 mb-2">
-          <input type="checkbox" />
-          <div class="collapse-title text-sm font-bold">How does Early Bird work?</div>
-          <div class="collapse-content text-xs text-base-content/70 leading-relaxed">
-            <p>Dealers post photos and prices the night before a flea market. You browse from your couch, save the pieces you want, and reach out to dealers directly — before the crowd shows up at 4am.</p>
-          </div>
-        </div>
-
-        <div class="collapse collapse-arrow border border-base-300 mb-2">
-          <input type="checkbox" />
-          <div class="collapse-title text-sm font-bold">What's a "drop"?</div>
-          <div class="collapse-content text-xs text-base-content/70 leading-relaxed">
-            <p>Every market has a drop time, usually the evening before the market itself. At drop time, every dealer's booth goes live at once. Until then, the market is locked.</p>
-          </div>
-        </div>
-
-        <div class="collapse collapse-arrow border border-base-300 mb-2">
-          <input type="checkbox" />
-          <div class="collapse-title text-sm font-bold">How do I contact a dealer?</div>
-          <div class="collapse-content text-xs text-base-content/70 leading-relaxed">
-            <p>Tap "I'm Interested" on any item. Write a short message. The dealer gets a text with your name, phone number, and message. From there you talk directly — call, text, or meet at the booth.</p>
-          </div>
-        </div>
-
-        <div class="collapse collapse-arrow border border-base-300 mb-2">
-          <input type="checkbox" />
-          <div class="collapse-title text-sm font-bold">How do I pay?</div>
-          <div class="collapse-content text-xs text-base-content/70 leading-relaxed">
-            <p>You pay the dealer in person at the booth — cash, Venmo, Zelle, Apple Pay, or card, whichever the dealer accepts. Early Bird never handles payment.</p>
-          </div>
+      <!-- How it works — flat prose, no accordion. -->
+      <!-- The mechanism is short enough to just say it. Hiding ~60 words behind 4 toggles was the bug -->
+      <!-- in the first pass — DaisyUI collapse is for content that would otherwise overwhelm the page, -->
+      <!-- not for content that fits comfortably as three paragraphs. Anything longer (returns, dispute -->
+      <!-- handling, dealer agreement) lives in Help & Support, not here. -->
+      <section class="px-4 pt-7 pb-8 border-t border-base-300">
+        <div class="text-xs uppercase tracking-widest text-base-content/60 mb-4">How it works</div>
+        <div class="text-sm text-base-content/70 leading-relaxed space-y-3">
+          <p>Dealers post photos and prices the night before each flea market. You browse from your couch, save what you like, and reach out before the crowd shows up at 4am.</p>
+          <p>Tap "I'm Interested" on any item to send the dealer a single text with your name, number, and message. From there you talk directly — call, text, or meet at the booth.</p>
+          <p>You pay the dealer in person, however they take payment. Early Bird never handles money.</p>
         </div>
       </section>
 
