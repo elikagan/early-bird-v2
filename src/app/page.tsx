@@ -141,7 +141,7 @@ export default function LandingPage() {
                 <button
                   className={`btn btn-neutral w-full mt-3${sending ? " loading" : ""}`}
                   onClick={handleSend}
-                  disabled={!phone || sending}
+                  disabled={sending}
                 >
                   Send Magic Link
                 </button>
@@ -350,7 +350,7 @@ export default function LandingPage() {
                 <button
                   className={`btn btn-neutral w-full mt-4${sending ? " loading" : ""}`}
                   onClick={handleSend}
-                  disabled={!phone || sending}
+                  disabled={sending}
                 >
                   Send Magic Link
                 </button>

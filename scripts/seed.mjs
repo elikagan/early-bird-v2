@@ -69,17 +69,16 @@ async function seed() {
     await sql(`INSERT INTO dealer_payment_methods (id,dealer_id,method,enabled) VALUES ($1,$2,$3,$4)`, [id(), did, method, enabled]);
   }
 
-  // Markets
-  const now = Date.now();
-  const dtmDrop = new Date(now - 2*60*60*1000).toISOString();
-  const dtmStart = new Date(now + 10*60*60*1000).toISOString();
-  const rbfDrop = new Date(now + 14*24*60*60*1000).toISOString();
-  const rbfStart = new Date(now + 14.6*24*60*60*1000).toISOString();
-  const pccDrop = new Date(now + 21*24*60*60*1000).toISOString();
-  const pccStart = new Date(now + 21.6*24*60*60*1000).toISOString();
+  // Markets — real dates, drops at 7pm PT the night before
+  const dtmDrop  = "2026-04-26T02:00:00.000Z"; // Sat Apr 25 7pm PT
+  const dtmStart = "2026-04-26T15:00:00.000Z"; // Sun Apr 26 8am PT
+  const pccDrop  = "2026-05-03T02:00:00.000Z"; // Sat May 2  7pm PT
+  const pccStart = "2026-05-03T15:00:00.000Z"; // Sun May 3  8am PT
+  const rbfDrop  = "2026-05-10T02:00:00.000Z"; // Sat May 9  7pm PT
+  const rbfStart = "2026-05-10T16:00:00.000Z"; // Sun May 10 9am PT
 
   for (const [mid, name, loc, drop, start, status] of [
-    [dtmId, "Downtown Modernism", "Downtown LA", dtmDrop, dtmStart, "live"],
+    [dtmId, "Downtown Modernism", "Downtown LA", dtmDrop, dtmStart, "upcoming"],
     [rbfId, "Rose Bowl Flea", "Pasadena", rbfDrop, rbfStart, "upcoming"],
     [pccId, "PCC Flea", "Pasadena City College", pccDrop, pccStart, "upcoming"],
   ]) {
