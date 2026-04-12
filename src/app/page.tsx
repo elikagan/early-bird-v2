@@ -95,9 +95,7 @@ export default function LandingPage() {
           {/* Hero + Sign In */}
           <section className="px-6 pb-8">
             <h1 className="text-2xl font-bold leading-tight">
-              Shop the drop.
-              <br />
-              Before the market opens.
+              Shop before sunrise.
             </h1>
             <p className="text-sm text-base-content/70 mt-3 leading-relaxed">
               Dealers post what they&apos;re bringing the night before. Browse
