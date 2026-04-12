@@ -252,15 +252,14 @@ Dummy data hardcoded. Review visually in a browser. These files become the **sou
 
 **Current status:** Initial wireframes built. Review feedback captured in `PHASE_1_REVIEW_NOTES.md`. Revision pass follows the "Phase 1 Revision Workflow" section below — one screen per session.
 
-### Phase 2: Backend (1 session)
+### Phase 2: Backend (3 sessions)
 All API routes, data models, database setup. Pure logic, no UI.
 
-- Database schema: markets, dealers, items, inquiries, favorites, users
-- API routes: items (CRUD), markets, favorites, inquiries, auth (magic link)
-- Seed data for development
-- No frontend changes in this session
+- **2A (done):** Schema (13 tables) + DB client + seed data. `npm run db:seed` populates `local.db` with data matching every wireframe. Tables: users, dealers, dealer_payment_methods, notification_preferences, auth_tokens, sessions, markets, buyer_market_follows, booth_settings, items, item_photos, inquiries, favorites. Prices stored as integer cents.
+- **2B:** Core API routes — markets, items (CRUD + status changes), inquiries, favorites, accounts, booth. Auth middleware reads session token from Authorization header.
+- **2C:** Auth routes (magic link start/verify/me) + SMS abstraction (console stub, real provider swapped in later) + transactional receipt wiring (Hold/Sell sends SMS to affected buyers).
 
-**Definition of done:** Every API route returns correct JSON. Tested with curl or a REST client.
+**Definition of done:** Every API route returns correct JSON via curl. Auth flow works end-to-end. Inquiry and status-change routes log SMS to console.
 
 ### Phase 3: Wire Frontend to Backend (1–2 sessions)
 Screen by screen, replace hardcoded dummy data with real data fetching. The instruction for each screen is always the same shape:
