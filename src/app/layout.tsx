@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { JetBrains_Mono } from "next/font/google";
+import { AuthProvider } from "@/lib/auth-context";
 import "./globals.css";
 
 const jetbrainsMono = JetBrains_Mono({
@@ -18,8 +19,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${jetbrainsMono.variable} h-full`}>
-      <body className="min-h-full font-sans antialiased">{children}</body>
+    <html lang="en" data-theme="light" className={`${jetbrainsMono.variable} h-full`}>
+      <body className="min-h-screen bg-base-300 font-sans antialiased">
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   );
 }
