@@ -108,7 +108,7 @@ export default function LandingPage() {
                   <div>
                     <div className="font-bold text-sm">Check your texts</div>
                     <div className="text-xs text-base-content/60 mt-1">
-                      We sent a magic link to {phone}. Tap it to sign in.
+                      We texted a sign-in link to {phone}. Tap it to get in.
                     </div>
                   </div>
                 </div>
@@ -143,7 +143,7 @@ export default function LandingPage() {
                   onClick={handleSend}
                   disabled={sending}
                 >
-                  Send Magic Link
+                  Text Me a Sign-In Link
                 </button>
                 <p className="text-xs text-base-content/60 mt-2 text-center">
                   We&apos;ll text you a link. No passwords. No codes.
@@ -317,7 +317,7 @@ export default function LandingPage() {
                   <div>
                     <div className="font-bold text-sm">Check your texts</div>
                     <div className="text-xs text-base-content/60 mt-1">
-                      We sent a magic link to {phone}. Tap it to sign in.
+                      We texted a sign-in link to {phone}. Tap it to get in.
                     </div>
                   </div>
                 </div>
@@ -352,7 +352,7 @@ export default function LandingPage() {
                   onClick={handleSend}
                   disabled={sending}
                 >
-                  Send Magic Link
+                  Text Me a Sign-In Link
                 </button>
                 <p className="text-xs text-base-content/60 mt-3 text-center">
                   We&apos;ll text you a link. No passwords. No codes.
