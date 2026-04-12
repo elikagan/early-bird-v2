@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
+import { getInitials, formatPrice, formatDate } from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
 
 interface Item {
@@ -24,30 +25,6 @@ interface Market {
   status: string;
   dealer_count: number;
   item_count: number;
-}
-
-function getInitials(name: string): string {
-  if (!name) return "?";
-  return name
-    .replace(/['']/g, " ")
-    .split(/\s+/)
-    .filter((w) => w.length > 0 && w.toLowerCase() !== "s")
-    .map((w) => w[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-}
-
-function formatPrice(cents: number): string {
-  return `$${Math.floor(cents / 100).toLocaleString()}`;
-}
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
 }
 
 function BuyFeedContent() {

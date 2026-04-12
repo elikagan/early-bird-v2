@@ -60,6 +60,9 @@ export async function GET(
       args: [user.id, id],
     });
     (item as Record<string, unknown>).is_favorited = fav.rows.length > 0;
+    if (fav.rows.length > 0) {
+      (item as Record<string, unknown>).favorite_id = (fav.rows[0] as Record<string, unknown>).id;
+    }
   }
 
   // Payment methods for the dealer

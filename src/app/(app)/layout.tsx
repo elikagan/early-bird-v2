@@ -25,7 +25,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   if (!user) return null;
 
   return (
-    <div className="max-w-md mx-auto min-h-screen bg-base-100 flex flex-col">
+    <div className="max-w-md mx-auto min-h-screen bg-base-100 flex flex-col relative">
       {children}
     </div>
   );
