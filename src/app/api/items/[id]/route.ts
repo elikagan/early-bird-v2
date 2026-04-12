@@ -1,6 +1,8 @@
 import db from "@/lib/db";
 import { json, error } from "@/lib/api";
 import { getSession } from "@/lib/auth";
+import { sendSMS } from "@/lib/sms";
+import { composeHoldReceipt, composeSoldReceipt, composeLostReceipt } from "@/lib/sms-templates";
 
 export async function GET(
   request: Request,
@@ -132,12 +134,51 @@ export async function PATCH(
     args,
   });
 
-  // If status changed to hold/sold via per-inquiry action, update inquiry statuses
+  // Helper to look up context for SMS
+  async function getReceiptContext() {
+    const ctx = await db.execute({
+      sql: `
+        SELECT d.business_name, bs.booth_number, m.name as market_name,
+               m.starts_at
+        FROM items i
+        JOIN dealers d ON d.id = i.dealer_id
+        LEFT JOIN booth_settings bs ON bs.dealer_id = d.id AND bs.market_id = i.market_id
+        JOIN markets m ON m.id = i.market_id
+        WHERE i.id = ?
+      `,
+      args: [id],
+    });
+    const row = ctx.rows[0] as Record<string, unknown>;
+    const startDate = new Date(row.starts_at as string);
+    const dateStr = startDate.toLocaleDateString("en-US", {
+      weekday: "short", month: "short", day: "numeric",
+    });
+    return {
+      dealerName: row.business_name as string,
+      boothNumber: row.booth_number as string | null,
+      marketName: row.market_name as string,
+      marketDate: dateStr,
+    };
+  }
+
+  // If status changed to hold/sold via per-inquiry action, update inquiry statuses + send SMS
   if (body.status === "hold" && body.held_for) {
     await db.execute({
       sql: `UPDATE inquiries SET status = 'held' WHERE item_id = ? AND buyer_id = ?`,
       args: [id, body.held_for],
     });
+    // SMS: hold receipt to buyer
+    const buyer = await db.execute({
+      sql: `SELECT phone FROM users WHERE id = ?`,
+      args: [body.held_for],
+    });
+    if (buyer.rows.length > 0) {
+      const ctx = await getReceiptContext();
+      await sendSMS(
+        (buyer.rows[0] as Record<string, unknown>).phone as string,
+        composeHoldReceipt(ctx.dealerName, item.title as string, ctx.boothNumber, ctx.marketName, ctx.marketDate)
+      );
+    }
   }
   if (body.status === "sold" && body.sold_to) {
     await db.execute({
@@ -149,6 +190,29 @@ export async function PATCH(
       sql: `UPDATE inquiries SET status = 'lost' WHERE item_id = ? AND buyer_id != ? AND status IN ('open', 'held')`,
       args: [id, body.sold_to],
     });
+    // SMS: sold receipt to winner
+    const ctx = await getReceiptContext();
+    const winner = await db.execute({
+      sql: `SELECT phone FROM users WHERE id = ?`,
+      args: [body.sold_to],
+    });
+    if (winner.rows.length > 0) {
+      await sendSMS(
+        (winner.rows[0] as Record<string, unknown>).phone as string,
+        composeSoldReceipt(ctx.dealerName, item.title as string, ctx.boothNumber, ctx.marketName, ctx.marketDate)
+      );
+    }
+    // SMS: lost receipt to all other inquirers
+    const losers = await db.execute({
+      sql: `SELECT u.phone FROM inquiries q JOIN users u ON u.id = q.buyer_id WHERE q.item_id = ? AND q.buyer_id != ?`,
+      args: [id, body.sold_to],
+    });
+    for (const loser of losers.rows) {
+      await sendSMS(
+        (loser as Record<string, unknown>).phone as string,
+        composeLostReceipt(item.title as string, ctx.dealerName)
+      );
+    }
   }
   if (body.status === "sold" && !body.sold_to) {
     // Walk-up sale: all inquirers lose
@@ -156,6 +220,18 @@ export async function PATCH(
       sql: `UPDATE inquiries SET status = 'lost' WHERE item_id = ? AND status IN ('open', 'held')`,
       args: [id],
     });
+    // SMS: lost receipt to all inquirers
+    const ctx = await getReceiptContext();
+    const allInquirers = await db.execute({
+      sql: `SELECT u.phone FROM inquiries q JOIN users u ON u.id = q.buyer_id WHERE q.item_id = ?`,
+      args: [id],
+    });
+    for (const inq of allInquirers.rows) {
+      await sendSMS(
+        (inq as Record<string, unknown>).phone as string,
+        composeLostReceipt(item.title as string, ctx.dealerName)
+      );
+    }
   }
 
   const updated = await db.execute({ sql: `SELECT * FROM items WHERE id = ?`, args: [id] });

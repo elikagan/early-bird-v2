@@ -2,6 +2,8 @@ import db from "@/lib/db";
 import { json, error } from "@/lib/api";
 import { getSession } from "@/lib/auth";
 import { newId } from "@/lib/id";
+import { sendSMS } from "@/lib/sms";
+import { composeInquiryNotification } from "@/lib/sms-templates";
 
 export async function POST(request: Request) {
   const user = await getSession(request);
@@ -37,7 +39,19 @@ export async function POST(request: Request) {
     args: [newId(), user.id, item_id],
   });
 
-  // SMS to dealer would fire here (Session 2C)
+  // Send SMS to dealer
+  const dealerUser = await db.execute({
+    sql: `SELECT u.phone FROM users u JOIN dealers d ON d.user_id = u.id WHERE d.id = ?`,
+    args: [itemRow.dealer_id as string],
+  });
+  if (dealerUser.rows.length > 0) {
+    const dealerPhone = (dealerUser.rows[0] as Record<string, unknown>).phone as string;
+    const buyerName = user.display_name || user.first_name || "A buyer";
+    await sendSMS(
+      dealerPhone,
+      composeInquiryNotification(buyerName, user.phone, itemRow.title as string, message || "")
+    );
+  }
 
   const inquiry = await db.execute({
     sql: `SELECT * FROM inquiries WHERE id = ?`,
