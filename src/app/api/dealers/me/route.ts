@@ -1,4 +1,3 @@
-import type { InValue } from "@libsql/client";
 import db from "@/lib/db";
 import { json, error } from "@/lib/api";
 import { getSession } from "@/lib/auth";
@@ -11,7 +10,7 @@ export async function PATCH(request: Request) {
 
   const body = await request.json();
   const updates: string[] = [];
-  const args: InValue[] = [];
+  const args: unknown[] = [];
 
   if (body.business_name !== undefined) {
     updates.push("business_name = ?");

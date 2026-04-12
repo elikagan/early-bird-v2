@@ -1,11 +1,31 @@
--- Early Bird v2 — Database Schema (Postgres)
--- 13 tables, ordered by dependency
+-- Early Bird v2 — Drop v1 tables and create v2 schema
+
+-- Drop v1 tables (reverse dependency order)
+DROP TABLE IF EXISTS qa_notes CASCADE;
+DROP TABLE IF EXISTS admin_actions CASCADE;
+DROP TABLE IF EXISTS sms_blasts CASCADE;
+DROP TABLE IF EXISTS messages CASCADE;
+DROP TABLE IF EXISTS conversations CASCADE;
+DROP TABLE IF EXISTS favorites CASCADE;
+DROP TABLE IF EXISTS inquiries CASCADE;
+DROP TABLE IF EXISTS item_photos CASCADE;
+DROP TABLE IF EXISTS items CASCADE;
+DROP TABLE IF EXISTS market_booths CASCADE;
+DROP TABLE IF EXISTS booth_settings CASCADE;
+DROP TABLE IF EXISTS buyer_market_follows CASCADE;
+DROP TABLE IF EXISTS notification_preferences CASCADE;
+DROP TABLE IF EXISTS dealer_payment_methods CASCADE;
+DROP TABLE IF EXISTS sessions CASCADE;
+DROP TABLE IF EXISTS auth_tokens CASCADE;
+DROP TABLE IF EXISTS dealers CASCADE;
+DROP TABLE IF EXISTS markets CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
 
 -- ============================================================
 -- USERS & DEALERS
 -- ============================================================
 
-CREATE TABLE IF NOT EXISTS users (
+CREATE TABLE users (
   id           text PRIMARY KEY,
   phone        text UNIQUE NOT NULL,
   first_name   text,
@@ -16,7 +36,7 @@ CREATE TABLE IF NOT EXISTS users (
   created_at   timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE TABLE IF NOT EXISTS dealers (
+CREATE TABLE dealers (
   id               text PRIMARY KEY,
   user_id          text NOT NULL UNIQUE REFERENCES users(id),
   business_name    text NOT NULL,
@@ -25,7 +45,7 @@ CREATE TABLE IF NOT EXISTS dealers (
   created_at       timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE TABLE IF NOT EXISTS dealer_payment_methods (
+CREATE TABLE dealer_payment_methods (
   id        text PRIMARY KEY,
   dealer_id text NOT NULL REFERENCES dealers(id),
   method    text NOT NULL CHECK(method IN ('cash','venmo','zelle','apple_pay','card')),
@@ -33,7 +53,7 @@ CREATE TABLE IF NOT EXISTS dealer_payment_methods (
   UNIQUE(dealer_id, method)
 );
 
-CREATE TABLE IF NOT EXISTS notification_preferences (
+CREATE TABLE notification_preferences (
   id      text PRIMARY KEY,
   user_id text NOT NULL REFERENCES users(id),
   key     text NOT NULL,
@@ -45,7 +65,7 @@ CREATE TABLE IF NOT EXISTS notification_preferences (
 -- AUTH
 -- ============================================================
 
-CREATE TABLE IF NOT EXISTS auth_tokens (
+CREATE TABLE auth_tokens (
   id         text PRIMARY KEY,
   phone      text NOT NULL,
   token      text NOT NULL UNIQUE,
@@ -54,7 +74,7 @@ CREATE TABLE IF NOT EXISTS auth_tokens (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE TABLE IF NOT EXISTS sessions (
+CREATE TABLE sessions (
   id         text PRIMARY KEY,
   user_id    text NOT NULL REFERENCES users(id),
   token      text NOT NULL UNIQUE,
@@ -66,7 +86,7 @@ CREATE TABLE IF NOT EXISTS sessions (
 -- MARKETS
 -- ============================================================
 
-CREATE TABLE IF NOT EXISTS markets (
+CREATE TABLE markets (
   id         text PRIMARY KEY,
   name       text NOT NULL,
   location   text,
@@ -76,7 +96,7 @@ CREATE TABLE IF NOT EXISTS markets (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE TABLE IF NOT EXISTS buyer_market_follows (
+CREATE TABLE buyer_market_follows (
   id                  text PRIMARY KEY,
   buyer_id            text NOT NULL REFERENCES users(id),
   market_id           text NOT NULL REFERENCES markets(id),
@@ -85,10 +105,10 @@ CREATE TABLE IF NOT EXISTS buyer_market_follows (
 );
 
 -- ============================================================
--- BOOTH SETTINGS (dealer x market)
+-- BOOTH SETTINGS
 -- ============================================================
 
-CREATE TABLE IF NOT EXISTS booth_settings (
+CREATE TABLE booth_settings (
   id           text PRIMARY KEY,
   dealer_id    text NOT NULL REFERENCES dealers(id),
   market_id    text NOT NULL REFERENCES markets(id),
@@ -101,7 +121,7 @@ CREATE TABLE IF NOT EXISTS booth_settings (
 -- ITEMS
 -- ============================================================
 
-CREATE TABLE IF NOT EXISTS items (
+CREATE TABLE items (
   id             text PRIMARY KEY,
   dealer_id      text NOT NULL REFERENCES dealers(id),
   market_id      text NOT NULL REFERENCES markets(id),
@@ -116,7 +136,7 @@ CREATE TABLE IF NOT EXISTS items (
   created_at     timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE TABLE IF NOT EXISTS item_photos (
+CREATE TABLE item_photos (
   id       text PRIMARY KEY,
   item_id  text NOT NULL REFERENCES items(id) ON DELETE CASCADE,
   url      text NOT NULL,
@@ -128,7 +148,7 @@ CREATE TABLE IF NOT EXISTS item_photos (
 -- INQUIRIES & FAVORITES
 -- ============================================================
 
-CREATE TABLE IF NOT EXISTS inquiries (
+CREATE TABLE inquiries (
   id         text PRIMARY KEY,
   item_id    text NOT NULL REFERENCES items(id),
   buyer_id   text NOT NULL REFERENCES users(id),
@@ -137,10 +157,76 @@ CREATE TABLE IF NOT EXISTS inquiries (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE TABLE IF NOT EXISTS favorites (
+CREATE TABLE favorites (
   id         text PRIMARY KEY,
   buyer_id   text NOT NULL REFERENCES users(id),
   item_id    text NOT NULL REFERENCES items(id),
   created_at timestamptz NOT NULL DEFAULT now(),
   UNIQUE(buyer_id, item_id)
 );
+
+-- ============================================================
+-- RPC: run parameterized SQL from the app layer
+-- Replaces $1..$N with quote_literal(params[N])
+-- ============================================================
+
+CREATE OR REPLACE FUNCTION run_sql(query_text text, params text[] DEFAULT ARRAY[]::text[])
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  result jsonb;
+  safe_query text;
+  i int;
+  n int;
+BEGIN
+  safe_query := query_text;
+  n := coalesce(array_length(params, 1), 0);
+
+  -- Replace in reverse order so $10 is replaced before $1
+  FOR i IN REVERSE n..1 LOOP
+    IF params[i] IS NULL THEN
+      safe_query := replace(safe_query, '$' || i, 'NULL');
+    ELSE
+      safe_query := replace(safe_query, '$' || i, quote_literal(params[i]));
+    END IF;
+  END LOOP;
+
+  EXECUTE format(
+    'SELECT coalesce(jsonb_agg(row_to_json(t)), ''[]''::jsonb) FROM (%s) t',
+    safe_query
+  ) INTO result;
+
+  RETURN result;
+END;
+$$;
+
+-- RPC: run mutation SQL (INSERT/UPDATE/DELETE), returns empty array
+CREATE OR REPLACE FUNCTION run_sql_mut(query_text text, params text[] DEFAULT ARRAY[]::text[])
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  safe_query text;
+  i int;
+  n int;
+BEGIN
+  safe_query := query_text;
+  n := coalesce(array_length(params, 1), 0);
+
+  FOR i IN REVERSE n..1 LOOP
+    IF params[i] IS NULL THEN
+      safe_query := replace(safe_query, '$' || i, 'NULL');
+    ELSE
+      safe_query := replace(safe_query, '$' || i, quote_literal(params[i]));
+    END IF;
+  END LOOP;
+
+  EXECUTE safe_query;
+  RETURN '[]'::jsonb;
+END;
+$$;

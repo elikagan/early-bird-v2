@@ -1,4 +1,3 @@
-import type { InValue } from "@libsql/client";
 import db from "@/lib/db";
 import { json, error } from "@/lib/api";
 import { getSession } from "@/lib/auth";
@@ -94,7 +93,7 @@ export async function PATCH(
   const body = await request.json();
   const item = existing.rows[0] as Record<string, unknown>;
   const updates: string[] = [];
-  const args: InValue[] = [];
+  const args: unknown[] = [];
 
   if (body.title !== undefined) {
     updates.push("title = ?");
@@ -108,7 +107,7 @@ export async function PATCH(
     // Track price drops: if new price < current price, record original
     if (body.price < (item.price as number) && !item.original_price) {
       updates.push("original_price = ?");
-      args.push(item.price as InValue);
+      args.push(item.price as unknown);
     }
     updates.push("price = ?");
     args.push(body.price);

@@ -35,7 +35,7 @@ export async function POST(request: Request) {
 
   // Auto-favorite the item (watching tab shows inquired items)
   await db.execute({
-    sql: `INSERT OR IGNORE INTO favorites (id, buyer_id, item_id) VALUES (?, ?, ?)`,
+    sql: `INSERT INTO favorites (id, buyer_id, item_id) VALUES (?, ?, ?) ON CONFLICT (buyer_id, item_id) DO NOTHING`,
     args: [newId(), user.id, item_id],
   });
 

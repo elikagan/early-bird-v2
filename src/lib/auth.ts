@@ -35,7 +35,7 @@ export async function getSession(
       FROM sessions s
       JOIN users u ON u.id = s.user_id
       LEFT JOIN dealers d ON d.user_id = u.id
-      WHERE s.token = ? AND s.expires_at > datetime('now')
+      WHERE s.token = ? AND s.expires_at > now()
     `,
     args: [token],
   });

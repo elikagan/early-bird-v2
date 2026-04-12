@@ -11,7 +11,7 @@ export async function POST(request: Request) {
 
   // Look up token
   const result = await db.execute({
-    sql: `SELECT * FROM auth_tokens WHERE token = ? AND used = 0 AND expires_at > datetime('now')`,
+    sql: `SELECT * FROM auth_tokens WHERE token = ? AND used = 0 AND expires_at > now()`,
     args: [token],
   });
 
