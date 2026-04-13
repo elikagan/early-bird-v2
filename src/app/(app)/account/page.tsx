@@ -59,7 +59,7 @@ export default function AccountPage() {
     return (
       <>
         <div className="flex-1 flex items-center justify-center">
-          <span className="loading loading-spinner loading-md"></span>
+          <span className="eb-spinner" />
         </div>
         <BottomNav active="account" />
       </>
@@ -74,317 +74,276 @@ export default function AccountPage() {
   return (
     <>
       {/* Header */}
-      <header className="px-4 pt-6 pb-3 border-b border-base-300">
-        <div className="flex items-center justify-between">
-          <Link href="/home" className="text-lg font-bold tracking-tight">
-            EARLY BIRD
-          </Link>
-          <div className="avatar placeholder">
-            <div className="bg-neutral text-neutral-content w-8 rounded-full">
-              <span className="text-xs font-bold">
-                {getInitials(displayName)}
-              </span>
-            </div>
-          </div>
-        </div>
+      <header className="eb-masthead">
+        <Link href="/home">
+          <h1>EARLY BIRD</h1>
+        </Link>
       </header>
 
       {/* Profile */}
-      <section className="px-4 pt-6 pb-4">
+      <section className="px-5 pt-6 pb-4">
         <div className="flex items-center gap-4">
-          <div className="avatar placeholder">
-            <div className="bg-neutral text-neutral-content w-16 rounded-full">
-              <span className="text-xl font-bold">
-                {getInitials(displayName)}
-              </span>
-            </div>
-          </div>
+          <span className="eb-avatar eb-avatar-xl">
+            {getInitials(displayName)}
+          </span>
           <div className="flex-1">
-            <div className="font-bold text-lg">{displayName}</div>
-            <div className="text-xs text-base-content/60">
+            <div className="text-eb-body font-bold text-eb-black">
+              {displayName}
+            </div>
+            <div className="text-eb-meta text-eb-muted">
               {formatPhone(profile.phone)}
             </div>
           </div>
-          <button className="btn btn-ghost btn-xs rounded-full gap-1 text-base-content/60">
-            Edit ✎
-          </button>
+          <button className="text-eb-meta text-eb-muted">Edit</button>
         </div>
       </section>
 
       {/* Dealer: Business name + Instagram */}
       {isDealer && (
         <>
-          <section className="px-4 pb-4">
-            <label className="form-control w-full">
-              <div className="label">
-                <span className="label-text text-xs uppercase tracking-widest text-base-content/60">
-                  Business Name
-                </span>
-              </div>
-              <input
-                type="text"
-                defaultValue={profile.business_name || ""}
-                className="input input-bordered w-full"
-                readOnly
-              />
-            </label>
+          <section className="px-5 pb-4">
+            <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-1.5">
+              Business Name
+            </div>
+            <input
+              type="text"
+              defaultValue={profile.business_name || ""}
+              className="eb-input"
+              readOnly
+            />
           </section>
-          <section className="px-4 pb-4">
-            <label className="form-control w-full">
-              <div className="label">
-                <span className="label-text text-xs uppercase tracking-widest text-base-content/60">
-                  Instagram
-                </span>
-                <span className="label-text-alt text-xs text-base-content/40">
-                  Optional
-                </span>
-              </div>
-              <input
-                type="text"
-                defaultValue={profile.instagram_handle || ""}
-                placeholder="@yourhandle"
-                className="input input-bordered w-full"
-                readOnly
-              />
-            </label>
+          <section className="px-5 pb-4">
+            <div className="flex justify-between items-center mb-1.5">
+              <span className="text-eb-meta uppercase tracking-widest text-eb-muted">
+                Instagram
+              </span>
+              <span className="text-eb-meta text-eb-light">Optional</span>
+            </div>
+            <input
+              type="text"
+              defaultValue={profile.instagram_handle || ""}
+              placeholder="@yourhandle"
+              className="eb-input"
+              readOnly
+            />
           </section>
         </>
       )}
 
       {/* Buyer: Stats */}
       {!isDealer && (
-        <section className="px-4 pb-4">
-          <div className="stats stats-horizontal bg-base-200 w-full">
-            <div className="stat p-3">
-              <div className="stat-title text-[10px] uppercase tracking-wider">
-                Watching
-              </div>
-              <div className="stat-value text-xl">—</div>
-            </div>
-            <div className="stat p-3">
-              <div className="stat-title text-[10px] uppercase tracking-wider">
-                Inquiries
-              </div>
-              <div className="stat-value text-xl">—</div>
-            </div>
-            <div className="stat p-3">
-              <div className="stat-title text-[10px] uppercase tracking-wider">
-                Bought
-              </div>
-              <div className="stat-value text-xl">—</div>
-            </div>
+        <div className="eb-stats border-y border-eb-border">
+          <div className="eb-stat">
+            <div className="eb-stat-num">&mdash;</div>
+            <div className="eb-stat-label">Watching</div>
           </div>
-        </section>
+          <div className="eb-stat">
+            <div className="eb-stat-num">&mdash;</div>
+            <div className="eb-stat-label">Inquiries</div>
+          </div>
+          <div className="eb-stat">
+            <div className="eb-stat-num">&mdash;</div>
+            <div className="eb-stat-label">Bought</div>
+          </div>
+        </div>
       )}
 
-      <div className="divider mx-4 my-0"></div>
+      <div className="border-t border-eb-border mx-5" />
 
       {/* Dealer: Payment methods */}
       {isDealer && (
         <>
-          <section className="px-4 py-5">
-            <div className="text-xs uppercase tracking-widest text-base-content/60 mb-1">
+          <section className="px-5 py-5">
+            <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-1">
               Payment Methods
             </div>
-            <div className="text-[10px] text-base-content/60 mb-3 leading-relaxed max-w-[22rem]">
+            <div className="text-eb-micro text-eb-muted mb-3 leading-relaxed max-w-[22rem]">
               Buyers see which methods you accept. Payment happens in person at
               the booth.
             </div>
             {PAYMENT_METHODS.map((pm, i) => (
               <div
                 key={pm.key}
-                className={`flex items-center gap-3 py-3${i < PAYMENT_METHODS.length - 1 ? " border-b border-base-300" : ""}`}
+                className={`flex items-center gap-3 py-3${i < PAYMENT_METHODS.length - 1 ? " border-b border-eb-border" : ""}`}
               >
                 <input
                   type="checkbox"
                   checked={getPayment(pm.key)}
-                  className="checkbox checkbox-sm"
+                  className="eb-check"
                   readOnly
                 />
-                <div className="font-bold text-sm">{pm.label}</div>
+                <div className="text-eb-body font-bold text-eb-black">
+                  {pm.label}
+                </div>
               </div>
             ))}
           </section>
-          <div className="divider mx-4 my-0"></div>
+          <div className="border-t border-eb-border mx-5" />
         </>
       )}
 
       {/* Notifications */}
-      <section className="px-4 py-5">
-        <div className="text-xs uppercase tracking-widest text-base-content/60 mb-3">
+      <section className="px-5 py-5">
+        <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-3">
           Notifications
         </div>
         {isDealer ? (
           <>
-            <div className="form-control">
-              <label className="label cursor-pointer justify-between p-0 py-3 gap-4 border-b border-base-300">
+            {[
+              {
+                key: "new_inquiries",
+                title: "New Inquiries",
+                desc: "Text me when a buyer sends an inquiry",
+              },
+              {
+                key: "drop_reminders",
+                title: "Drop Reminders",
+                desc: "Text me the day before a drop",
+              },
+              {
+                key: "watcher_milestones",
+                title: "Watcher Milestones",
+                desc: "Text me when items hit 10+ watchers",
+              },
+            ].map((n, i, arr) => (
+              <label
+                key={n.key}
+                className={`flex items-center justify-between py-3 gap-4 cursor-pointer${i < arr.length - 1 ? " border-b border-eb-border" : ""}`}
+              >
                 <div className="flex-1">
-                  <div className="text-sm font-bold">New Inquiries</div>
-                  <div className="text-xs text-base-content/60 leading-tight mt-0.5">
-                    Text me when a buyer sends an inquiry
+                  <div className="text-eb-body font-bold text-eb-black">
+                    {n.title}
+                  </div>
+                  <div className="text-eb-meta text-eb-muted leading-tight mt-0.5">
+                    {n.desc}
                   </div>
                 </div>
                 <input
                   type="checkbox"
-                  checked={getPref("new_inquiries")}
-                  className="toggle"
+                  checked={getPref(n.key)}
+                  className="eb-toggle"
                   readOnly
                 />
               </label>
-            </div>
-            <div className="form-control">
-              <label className="label cursor-pointer justify-between p-0 py-3 gap-4 border-b border-base-300">
-                <div className="flex-1">
-                  <div className="text-sm font-bold">Drop Reminders</div>
-                  <div className="text-xs text-base-content/60 leading-tight mt-0.5">
-                    Text me the day before a drop
-                  </div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={getPref("drop_reminders")}
-                  className="toggle"
-                  readOnly
-                />
-              </label>
-            </div>
-            <div className="form-control">
-              <label className="label cursor-pointer justify-between p-0 py-3 gap-4">
-                <div className="flex-1">
-                  <div className="text-sm font-bold">Watcher Milestones</div>
-                  <div className="text-xs text-base-content/60 leading-tight mt-0.5">
-                    Text me when items hit 10+ watchers
-                  </div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={getPref("watcher_milestones")}
-                  className="toggle"
-                  readOnly
-                />
-              </label>
-            </div>
+            ))}
           </>
         ) : (
           <>
-            <div className="form-control">
-              <label className="label cursor-pointer justify-between p-0 py-3 gap-4 border-b border-base-300">
+            {[
+              {
+                key: "drop_alerts",
+                title: "Drop Alerts",
+                desc: "Text me when markets I follow go live",
+              },
+              {
+                key: "price_drops",
+                title: "Price Drops",
+                desc: "Text me when watched items drop in price",
+              },
+              {
+                key: "new_markets",
+                title: "New Markets",
+                desc: "Text me when new LA markets are added",
+              },
+            ].map((n, i, arr) => (
+              <label
+                key={n.key}
+                className={`flex items-center justify-between py-3 gap-4 cursor-pointer${i < arr.length - 1 ? " border-b border-eb-border" : ""}`}
+              >
                 <div className="flex-1">
-                  <div className="text-sm font-bold">Drop Alerts</div>
-                  <div className="text-xs text-base-content/60 leading-tight mt-0.5">
-                    Text me when markets I follow go live
+                  <div className="text-eb-body font-bold text-eb-black">
+                    {n.title}
+                  </div>
+                  <div className="text-eb-meta text-eb-muted leading-tight mt-0.5">
+                    {n.desc}
                   </div>
                 </div>
                 <input
                   type="checkbox"
-                  checked={getPref("drop_alerts")}
-                  className="toggle"
+                  checked={getPref(n.key)}
+                  className="eb-toggle"
                   readOnly
                 />
               </label>
-            </div>
-            <div className="form-control">
-              <label className="label cursor-pointer justify-between p-0 py-3 gap-4 border-b border-base-300">
-                <div className="flex-1">
-                  <div className="text-sm font-bold">Price Drops</div>
-                  <div className="text-xs text-base-content/60 leading-tight mt-0.5">
-                    Text me when watched items drop in price
-                  </div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={getPref("price_drops")}
-                  className="toggle"
-                  readOnly
-                />
-              </label>
-            </div>
-            <div className="form-control">
-              <label className="label cursor-pointer justify-between p-0 py-3 gap-4">
-                <div className="flex-1">
-                  <div className="text-sm font-bold">New Markets</div>
-                  <div className="text-xs text-base-content/60 leading-tight mt-0.5">
-                    Text me when new LA markets are added
-                  </div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={getPref("new_markets")}
-                  className="toggle"
-                  readOnly
-                />
-              </label>
-            </div>
+            ))}
           </>
         )}
       </section>
 
-      <div className="divider mx-4 my-0"></div>
+      <div className="border-t border-eb-border mx-5" />
 
       {/* Buyer: Become a seller */}
       {!isDealer && (
         <>
-          <section className="px-4 py-5">
-            <div className="text-xs uppercase tracking-widest text-base-content/60 mb-3">
+          <section className="px-5 py-5">
+            <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-3">
               Become A Seller
             </div>
-            <div className="text-sm leading-relaxed">
+            <div className="text-eb-body text-eb-text leading-relaxed">
               Are you selling at an upcoming market and wanna post here for
               free?{" "}
-              <a href="#" className="link font-bold">
+              <a href="#" className="font-bold text-eb-pop">
                 Learn more →
               </a>
             </div>
           </section>
-          <div className="divider mx-4 my-0"></div>
+          <div className="border-t border-eb-border mx-5" />
         </>
       )}
 
       {/* More */}
-      <section className="px-4 py-5 pb-8">
-        <div className="text-xs uppercase tracking-widest text-base-content/60 mb-3">
+      <section className="px-5 py-5 pb-8">
+        <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-3">
           More
         </div>
 
         {isDealer && (
           <>
-            <a className="flex items-center justify-between py-3 border-b border-base-300">
-              <div className="text-sm font-bold">Dealer Help</div>
-              <div className="text-sm text-base-content/40">›</div>
+            <a className="flex items-center justify-between py-3 border-b border-eb-border">
+              <div className="text-eb-body font-bold text-eb-black">
+                Dealer Help
+              </div>
+              <div className="text-eb-body text-eb-light">&rsaquo;</div>
             </a>
-            <a className="flex items-center justify-between py-3 border-b border-base-300">
-              <div className="text-sm font-bold">Sales History</div>
-              <div className="text-sm text-base-content/40">›</div>
+            <a className="flex items-center justify-between py-3 border-b border-eb-border">
+              <div className="text-eb-body font-bold text-eb-black">
+                Sales History
+              </div>
+              <div className="text-eb-body text-eb-light">&rsaquo;</div>
             </a>
           </>
         )}
         {!isDealer && (
-          <a className="flex items-center justify-between py-3 border-b border-base-300">
-            <div className="text-sm font-bold">Help &amp; Support</div>
-            <div className="text-sm text-base-content/40">›</div>
+          <a className="flex items-center justify-between py-3 border-b border-eb-border">
+            <div className="text-eb-body font-bold text-eb-black">
+              Help &amp; Support
+            </div>
+            <div className="text-eb-body text-eb-light">&rsaquo;</div>
           </a>
         )}
-        <a className="flex items-center justify-between py-3 border-b border-base-300">
-          <div className="text-sm font-bold">Privacy Policy</div>
-          <div className="text-sm text-base-content/40">›</div>
+        <a className="flex items-center justify-between py-3 border-b border-eb-border">
+          <div className="text-eb-body font-bold text-eb-black">
+            Privacy Policy
+          </div>
+          <div className="text-eb-body text-eb-light">&rsaquo;</div>
         </a>
-        <a className="flex items-center justify-between py-3 border-b border-base-300">
-          <div className="text-sm font-bold">Terms</div>
-          <div className="text-sm text-base-content/40">›</div>
+        <a className="flex items-center justify-between py-3 border-b border-eb-border">
+          <div className="text-eb-body font-bold text-eb-black">Terms</div>
+          <div className="text-eb-body text-eb-light">&rsaquo;</div>
         </a>
 
         <button
-          className="btn btn-sm btn-outline w-full mt-6"
+          className="w-full mt-6 py-2.5 text-eb-caption font-bold border-2 border-eb-black text-eb-black uppercase tracking-wider"
           onClick={logout}
         >
           Sign Out
         </button>
-        <div className="text-xs text-base-content/60 text-center mt-4">
+        <div className="text-eb-meta text-eb-muted text-center mt-4">
           Early Bird v1.0 · LA{isDealer ? " · Dealer Account" : ""}
         </div>
       </section>
 
-      <div className="h-16"></div>
+      <div className="h-16" />
       <BottomNav active="account" />
     </>
   );
