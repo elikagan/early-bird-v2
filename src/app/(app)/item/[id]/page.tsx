@@ -516,7 +516,7 @@ export default function ItemDetailPage() {
               Send Inquiry
             </h3>
             <p className="text-eb-caption text-eb-muted mb-4 leading-relaxed">
-              We&apos;ll text {item.dealer_name} your message and number.
+              We&apos;ll text {item.dealer_name}{" "}your message and number.
               They&apos;ll contact you directly — no in-app messaging.
             </p>
             <div className="mb-4">

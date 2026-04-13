@@ -45,3 +45,4 @@ local.db
 next-env.d.ts
 supabase/.temp/
 public/_scratch/
+.gstack/
