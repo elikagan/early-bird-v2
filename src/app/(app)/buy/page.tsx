@@ -7,6 +7,9 @@ import { apiFetch } from "@/lib/api-client";
 import { getInitials, formatPrice, formatDate } from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
 
+const PROMO_IMAGES = ["/promo/hero.png", "/promo/2.png", "/promo/3.png"];
+const CYCLE_INTERVAL = 5000; // 5s per image
+
 interface Item {
   id: string;
   title: string;
@@ -20,6 +23,7 @@ interface Item {
 interface Market {
   id: string;
   name: string;
+  drop_at: string;
   starts_at: string;
   status: string;
   dealer_count: number;
@@ -63,6 +67,25 @@ function BuyFeedContent() {
     load();
   }, [marketId, router]);
 
+  // Countdown timer (ticks every second for pre-drop)
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    if (!market || market.status === "live") return;
+    const interval = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(interval);
+  }, [market]);
+
+  // Image slideshow
+  const [promoIndex, setPromoIndex] = useState(0);
+  useEffect(() => {
+    if (!market || market.status === "live") return;
+    const interval = setInterval(
+      () => setPromoIndex((i) => (i + 1) % PROMO_IMAGES.length),
+      CYCLE_INTERVAL
+    );
+    return () => clearInterval(interval);
+  }, [market]);
+
   if (loading || !market) {
     return (
       <>
@@ -70,6 +93,99 @@ function BuyFeedContent() {
           <span className="eb-spinner" />
         </div>
         <BottomNav active="buy" />
+      </>
+    );
+  }
+
+  // Pre-drop view
+  if (market.status !== "live") {
+    const dropTime = new Date(market.drop_at).getTime();
+    const diff = Math.max(0, dropTime - now);
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+    const pad = (n: number) => n.toString().padStart(2, "0");
+
+    return (
+      <>
+        <header className="eb-masthead">
+          <Link href="/home">
+            <h1>EARLY BIRD</h1>
+          </Link>
+          <div className="eb-sub">{market.name}</div>
+        </header>
+
+        <main className="pb-24">
+          {/* Countdown */}
+          <section className="px-5 pt-10 pb-8 text-center">
+            <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-5">
+              Dropping in
+            </div>
+            <div className="flex justify-center items-start gap-3">
+              <div className="text-center">
+                <div className="text-eb-hero text-eb-black tabular-nums">
+                  {pad(days)}
+                </div>
+                <div className="text-eb-micro text-eb-muted uppercase tracking-widest mt-1">
+                  Days
+                </div>
+              </div>
+              <div className="text-eb-hero text-eb-light leading-none">:</div>
+              <div className="text-center">
+                <div className="text-eb-hero text-eb-black tabular-nums">
+                  {pad(hours)}
+                </div>
+                <div className="text-eb-micro text-eb-muted uppercase tracking-widest mt-1">
+                  Hrs
+                </div>
+              </div>
+              <div className="text-eb-hero text-eb-light leading-none">:</div>
+              <div className="text-center">
+                <div className="text-eb-hero text-eb-black tabular-nums">
+                  {pad(minutes)}
+                </div>
+                <div className="text-eb-micro text-eb-muted uppercase tracking-widest mt-1">
+                  Min
+                </div>
+              </div>
+              <div className="text-eb-hero text-eb-light leading-none">:</div>
+              <div className="text-center">
+                <div className="text-eb-hero text-eb-black tabular-nums">
+                  {pad(seconds)}
+                </div>
+                <div className="text-eb-micro text-eb-muted uppercase tracking-widest mt-1">
+                  Sec
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Promo slideshow */}
+          <div className="eb-promo">
+            {PROMO_IMAGES.map((src, i) => (
+              <img
+                key={src}
+                src={src}
+                alt=""
+                className={i === promoIndex ? "eb-promo-active" : ""}
+              />
+            ))}
+          </div>
+
+          {/* Teaser (only show counts when substantial) */}
+          {items.length >= 50 && market.dealer_count >= 10 && (
+            <div className="text-center py-6 text-eb-caption text-eb-muted">
+              {items.length} items · {market.dealer_count} dealers
+              <br />
+              <span className="text-eb-meta">
+                {formatDate(market.starts_at)}
+              </span>
+            </div>
+          )}
+        </main>
+
+        <BottomNav active="buy" watchingCount={favCount} />
       </>
     );
   }
@@ -89,13 +205,7 @@ function BuyFeedContent() {
       {/* Drop bar */}
       <div className="eb-drop-bar">
         <div>
-          {market.status === "live" ? (
-            <>
-              Drop is <span className="eb-live">LIVE</span>
-            </>
-          ) : (
-            "Coming soon"
-          )}
+          Drop is <span className="eb-live">LIVE</span>
         </div>
         <span className="eb-cd">{items.length} items</span>
       </div>

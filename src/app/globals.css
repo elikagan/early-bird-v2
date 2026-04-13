@@ -521,6 +521,26 @@
     transform: translate(-50%, -50%);
   }
 
+  /* ---- Promo slideshow ---- */
+  .eb-promo {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+  }
+  .eb-promo img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 1.5s ease;
+  }
+  .eb-promo img.eb-promo-active {
+    opacity: 1;
+  }
+
   /* ---- Loading spinner ---- */
   .eb-spinner {
     display: inline-block;
