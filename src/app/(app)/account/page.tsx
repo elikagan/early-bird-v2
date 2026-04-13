@@ -419,9 +419,9 @@ export default function AccountPage() {
                       setPhoneSent(false);
                       setEditingPhone(true);
                     }}
-                    className="text-eb-micro font-bold text-eb-pop border border-eb-pop rounded-full px-2.5 py-0.5"
+                    className="text-eb-micro text-eb-light underline"
                   >
-                    Change
+                    change
                   </button>
                 )}
               </div>
@@ -432,9 +432,9 @@ export default function AccountPage() {
                 setEditingName(true);
                 setNameError(null);
               }}
-              className="text-eb-micro font-bold text-eb-pop border border-eb-pop rounded-full px-2.5 py-0.5"
+              className="text-eb-micro text-eb-light underline"
             >
-              Edit
+              edit
             </button>
           </div>
         ) : (
