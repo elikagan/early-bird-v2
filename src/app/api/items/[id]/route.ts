@@ -2,7 +2,9 @@ import db from "@/lib/db";
 import { json, error } from "@/lib/api";
 import { getSession } from "@/lib/auth";
 import { sendSMS } from "@/lib/sms";
-import { composeHoldReceipt, composeSoldReceipt, composeLostReceipt } from "@/lib/sms-templates";
+import { composeHoldReceipt, composeSoldReceipt, composeLostReceipt, composePriceDropNotification } from "@/lib/sms-templates";
+import { shouldNotify } from "@/lib/notifications";
+import { formatPrice } from "@/lib/format";
 
 export async function GET(
   request: Request,
@@ -190,6 +192,49 @@ export async function PATCH(
       sql: `UPDATE items SET ${updates.join(", ")} WHERE id = ?`,
       args,
     });
+  }
+
+  // Price drop: notify watchers who have price_drops pref enabled
+  if (body.price !== undefined) {
+    const newPrice = Number(body.price);
+    const oldPrice = item.price as number;
+    if (newPrice < oldPrice) {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+      const itemUrl = `${appUrl}/item/${id}`;
+
+      // Get all watchers (favorites) except the dealer themselves
+      const watchers = await db.execute({
+        sql: `SELECT u.id, u.phone FROM favorites f JOIN users u ON u.id = f.buyer_id WHERE f.item_id = ?`,
+        args: [id],
+      });
+
+      // Send in parallel batches of 5 to avoid overwhelming the SMS provider
+      const batch: Promise<void>[] = [];
+      for (const row of watchers.rows) {
+        const watcher = row as Record<string, unknown>;
+        batch.push(
+          (async () => {
+            const canNotify = await shouldNotify(watcher.id as string, "price_drops");
+            if (canNotify) {
+              await sendSMS(
+                watcher.phone as string,
+                composePriceDropNotification(
+                  item.title as string,
+                  formatPrice(oldPrice),
+                  formatPrice(newPrice),
+                  itemUrl
+                )
+              );
+            }
+          })()
+        );
+        if (batch.length >= 5) {
+          await Promise.all(batch);
+          batch.length = 0;
+        }
+      }
+      if (batch.length > 0) await Promise.all(batch);
+    }
   }
 
   // Helper to look up context for SMS

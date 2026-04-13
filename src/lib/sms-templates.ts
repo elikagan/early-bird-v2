@@ -49,6 +49,18 @@ export function composeLostReceipt(
 }
 
 /**
+ * SMS sent to watchers when a dealer drops the price on an item.
+ */
+export function composePriceDropNotification(
+  itemTitle: string,
+  oldPrice: string,
+  newPrice: string,
+  url: string
+): string {
+  return `Early Bird: ${itemTitle} just dropped from ${oldPrice} to ${newPrice}.\n\n${url}`;
+}
+
+/**
  * SMS with magic link for auth.
  */
 export function composeMagicLink(url: string): string {
