@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
-import { getInitials, formatPrice, timeAgo } from "@/lib/format";
+import { getInitials, formatPrice } from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
 
 interface FavItem {
@@ -24,7 +23,6 @@ interface FavItem {
 }
 
 export default function WatchingPage() {
-  const { user } = useAuth();
   const [items, setItems] = useState<FavItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -41,140 +39,106 @@ export default function WatchingPage() {
     return (
       <>
         <div className="flex-1 flex items-center justify-center">
-          <span className="loading loading-spinner loading-md"></span>
+          <span className="eb-spinner" />
         </div>
         <BottomNav active="watching" />
       </>
     );
   }
 
-  const marketName = items[0]?.market_name;
-
   return (
     <>
-      {/* Header */}
-      <header className="px-4 pt-6 pb-3 border-b border-base-300">
-        <div className="flex items-center justify-between mb-3">
-          <Link href="/home" className="text-lg font-bold tracking-tight">
-            EARLY BIRD
-          </Link>
-          <div className="avatar placeholder">
-            <div className="bg-neutral text-neutral-content w-8 rounded-full">
-              <span className="text-xs font-bold">
-                {getInitials(user?.display_name || user?.first_name || "?")}
-              </span>
-            </div>
-          </div>
-        </div>
-        <div className="text-[10px] uppercase tracking-widest text-base-content/60">
-          Watching
-        </div>
-        {marketName && (
-          <div className="text-sm font-bold mt-1">{marketName}</div>
-        )}
+      <header className="eb-masthead">
+        <Link href="/home">
+          <h1>EARLY BIRD</h1>
+        </Link>
+        <div className="eb-sub">Your watchlist</div>
       </header>
 
-      {/* Items list */}
-      <main className="flex-1 pb-24">
-        {items.map((item) => {
-          const isSold = item.status === "sold";
-          const isHeld = item.status === "hold";
-          const hasInquiry = !!item.my_inquiry_status;
-
-          return (
-            <Link
-              key={item.favorite_id}
-              href={`/item/${item.id}`}
-              className={`flex items-start gap-3 px-4 py-4 border-b border-base-300${isSold ? " opacity-60" : ""}`}
-            >
-              {item.photo_url ? (
-                <img
-                  src={item.photo_url}
-                  alt={item.title}
-                  className="w-20 h-20 bg-base-200 rounded flex-shrink-0 object-cover"
-                />
-              ) : (
-                <div className="w-20 h-20 bg-base-200 rounded flex-shrink-0 flex items-center justify-center text-[9px] uppercase tracking-widest text-base-content/30">
-                  Photo
-                </div>
-              )}
-              <div className="flex-1 min-w-0">
-                {/* Status/time header */}
-                <div className="flex items-center gap-2 mb-1">
-                  {isHeld && (
-                    <div className="badge badge-warning badge-sm font-bold">
-                      HELD
-                    </div>
-                  )}
-                  {isSold && (
-                    <div className="badge badge-neutral badge-sm font-bold">
-                      SOLD
-                    </div>
-                  )}
-                  {!isHeld && !isSold && (
-                    <span className="text-[10px] text-base-content/60 uppercase tracking-wider">
-                      {hasInquiry ? `Asked ` : `Saved `}
-                      {timeAgo(item.favorited_at)}
-                    </span>
-                  )}
-                </div>
-
-                <div
-                  className={`text-sm font-bold leading-tight truncate${isSold ? " line-through" : ""}`}
-                >
-                  {item.title}
-                </div>
-                <div className="text-xs text-base-content/60 truncate">
-                  {item.dealer_name} · {item.market_name}
-                </div>
-
-                {/* Price */}
-                <div className="flex items-center gap-2 mt-1.5">
-                  <span
-                    className={`font-bold text-sm${isSold ? " line-through" : ""}`}
-                  >
-                    {formatPrice(item.price)}
-                  </span>
-                  {item.original_price && (
-                    <span className="text-xs text-base-content/40 line-through">
-                      {formatPrice(item.original_price)}
-                    </span>
-                  )}
-                </div>
-
-                {/* Heart + inquiry status */}
-                <div className="flex items-center gap-2 mt-2">
-                  <span className="text-base-content text-xs">♥</span>
-                  {hasInquiry && (
-                    <span className="text-[10px] uppercase tracking-wider text-base-content/60">
-                      Inquiry Sent
-                    </span>
-                  )}
-                </div>
-
-                {/* Inquiry message */}
-                {item.my_inquiry_message && (
-                  <div className="text-xs text-base-content/70 italic mt-1 leading-snug">
-                    &ldquo;{item.my_inquiry_message}&rdquo;
-                  </div>
-                )}
-              </div>
-            </Link>
-          );
-        })}
-
-        {items.length === 0 && (
-          <div className="flex-1 flex flex-col items-center justify-center px-6 py-16 text-center">
-            <div className="text-base-content/30 text-4xl mb-4">♡</div>
-            <div className="text-sm font-bold mb-2">Nothing watched yet</div>
-            <div className="text-xs text-base-content/60">
-              Tap the heart on any item to save it here.
+      <main className="pb-24">
+        {items.length > 0 ? (
+          <>
+            <div className="eb-section">
+              <span>{items.length} items</span>
             </div>
+            <div className="eb-grid">
+              {items.map((item) => {
+                const isSold = item.status === "sold";
+                const isHeld = item.status === "hold";
+
+                return (
+                  <Link
+                    key={item.favorite_id}
+                    href={`/item/${item.id}`}
+                    className={`eb-grid-card${isSold ? " eb-sold" : ""}`}
+                  >
+                    {item.photo_url ? (
+                      <img
+                        src={item.photo_url}
+                        alt={item.title}
+                        className="eb-photo"
+                      />
+                    ) : (
+                      <div className="eb-photo bg-eb-border" />
+                    )}
+                    <div className="eb-body">
+                      <div className="eb-title">{item.title}</div>
+                      <div className="eb-price">
+                        {formatPrice(item.price)}
+                        {item.original_price &&
+                          item.original_price > item.price && (
+                            <span className="eb-price-was">
+                              {formatPrice(item.original_price)}
+                            </span>
+                          )}
+                      </div>
+                      <div className="eb-dealer">
+                        <span className="eb-avatar eb-avatar-sm">
+                          {getInitials(item.dealer_name)}
+                        </span>
+                        <span className="eb-dealer-name">
+                          {item.dealer_name}
+                        </span>
+                      </div>
+                      {isHeld && (
+                        <div className="eb-status">
+                          <span className="eb-dot eb-dot-green" />
+                          <span>On hold</span>
+                        </div>
+                      )}
+                      {isSold && (
+                        <div className="eb-status">
+                          <span className="eb-dot eb-dot-red" />
+                          <span>Sold</span>
+                        </div>
+                      )}
+                      {!isHeld &&
+                        !isSold &&
+                        item.my_inquiry_status && (
+                          <div className="eb-status">
+                            <span className="eb-dot eb-dot-amber" />
+                            <span>Inquiry sent</span>
+                          </div>
+                        )}
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </>
+        ) : (
+          <div className="eb-empty">
+            <div className="eb-icon">♡</div>
+            <p>
+              Nothing watched yet.
+              <br />
+              Tap the heart on any item to save it here.
+            </p>
+            <Link href="/buy">Browse the drop →</Link>
           </div>
         )}
       </main>
 
-      {/* Bottom nav */}
       <BottomNav active="watching" watchingCount={items.length} />
     </>
   );
