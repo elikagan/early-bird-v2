@@ -1,6 +1,7 @@
 import db from "@/lib/db";
 import { json, error } from "@/lib/api";
 import { getSession } from "@/lib/auth";
+import { newId } from "@/lib/id";
 
 export async function GET(request: Request) {
   const user = await getSession(request);
@@ -36,6 +37,25 @@ export async function GET(request: Request) {
     result.payment_methods = methods.rows;
   }
 
+  // Buyer stats
+  const watchingRes = await db.execute({
+    sql: `SELECT COUNT(*) as count FROM favorites WHERE buyer_id = ?`,
+    args: [user.id],
+  });
+  result.watching_count = Number(watchingRes.rows[0]?.count ?? 0);
+
+  const inquiriesRes = await db.execute({
+    sql: `SELECT COUNT(*) as count FROM inquiries WHERE buyer_id = ?`,
+    args: [user.id],
+  });
+  result.inquiries_count = Number(inquiriesRes.rows[0]?.count ?? 0);
+
+  const boughtRes = await db.execute({
+    sql: `SELECT COUNT(*) as count FROM items WHERE sold_to = ?`,
+    args: [user.id],
+  });
+  result.bought_count = Number(boughtRes.rows[0]?.count ?? 0);
+
   return json(result);
 }
 
@@ -44,55 +64,101 @@ export async function PATCH(request: Request) {
   if (!user) return error("Unauthorized", 401);
 
   const body = await request.json();
-  const updates: string[] = [];
-  const args: unknown[] = [];
 
+  // ── User fields ──
+  const userUpdates: string[] = [];
+  const userArgs: unknown[] = [];
+
+  if (body.display_name !== undefined) {
+    const name = String(body.display_name).trim();
+    if (!name || name.length > 30) {
+      return error("Display name must be 1-30 characters");
+    }
+    userUpdates.push("display_name = ?");
+    userArgs.push(name);
+  }
   if (body.first_name !== undefined) {
-    updates.push("first_name = ?");
-    args.push(body.first_name);
+    userUpdates.push("first_name = ?");
+    userArgs.push(body.first_name);
   }
   if (body.last_name !== undefined) {
-    updates.push("last_name = ?");
-    args.push(body.last_name);
-  }
-  if (body.display_name !== undefined) {
-    updates.push("display_name = ?");
-    args.push(body.display_name);
+    userUpdates.push("last_name = ?");
+    userArgs.push(body.last_name);
   }
   if (body.avatar_url !== undefined) {
-    updates.push("avatar_url = ?");
-    args.push(body.avatar_url);
+    userUpdates.push("avatar_url = ?");
+    userArgs.push(body.avatar_url);
   }
 
-  if (updates.length > 0) {
-    args.push(user.id);
+  if (userUpdates.length > 0) {
+    userArgs.push(user.id);
     await db.execute({
-      sql: `UPDATE users SET ${updates.join(", ")} WHERE id = ?`,
-      args,
+      sql: `UPDATE users SET ${userUpdates.join(", ")} WHERE id = ?`,
+      args: userArgs,
     });
   }
 
-  // Notification preferences (array of {key, enabled})
+  // ── Dealer fields ──
+  if (user.dealer_id) {
+    const dealerUpdates: string[] = [];
+    const dealerArgs: unknown[] = [];
+
+    if (body.business_name !== undefined) {
+      const biz = String(body.business_name).trim();
+      if (!biz || biz.length > 50) {
+        return error("Business name must be 1-50 characters");
+      }
+      dealerUpdates.push("business_name = ?");
+      dealerArgs.push(biz);
+    }
+    if (body.instagram_handle !== undefined) {
+      let handle = String(body.instagram_handle || "").trim();
+      if (handle.startsWith("@")) handle = handle.slice(1);
+      if (handle && !/^[a-zA-Z0-9._]{1,30}$/.test(handle)) {
+        return error("Invalid Instagram handle");
+      }
+      dealerUpdates.push("instagram_handle = ?");
+      dealerArgs.push(handle || null);
+    }
+
+    if (dealerUpdates.length > 0) {
+      dealerArgs.push(user.dealer_id);
+      await db.execute({
+        sql: `UPDATE dealers SET ${dealerUpdates.join(", ")} WHERE id = ?`,
+        args: dealerArgs,
+      });
+    }
+
+    // Payment methods (array of {method, enabled})
+    if (Array.isArray(body.payment_methods)) {
+      for (const pm of body.payment_methods) {
+        await db.execute({
+          sql: `INSERT INTO dealer_payment_methods (id, dealer_id, method, enabled)
+                VALUES (?, ?, ?, ?)
+                ON CONFLICT(dealer_id, method) DO UPDATE SET enabled = excluded.enabled`,
+          args: [newId(), user.dealer_id, pm.method, pm.enabled ? 1 : 0],
+        });
+      }
+    }
+  }
+
+  // ── Notification preferences ──
   if (Array.isArray(body.notification_preferences)) {
     for (const pref of body.notification_preferences) {
       await db.execute({
         sql: `INSERT INTO notification_preferences (id, user_id, key, enabled)
               VALUES (?, ?, ?, ?)
               ON CONFLICT(user_id, key) DO UPDATE SET enabled = excluded.enabled`,
-        args: [
-          (await import("@/lib/id")).newId(),
-          user.id,
-          pref.key,
-          pref.enabled ? 1 : 0,
-        ],
+        args: [newId(), user.id, pref.key, pref.enabled ? 1 : 0],
       });
     }
   }
 
-  // Market follows (array of {market_id, drop_alerts_enabled})
+  // ── Market follows ──
   if (Array.isArray(body.market_follows)) {
-    // Remove unfollowed markets
-    const followedIds = body.market_follows.map((f: { market_id: string }) => f.market_id);
+    const followedIds = body.market_follows.map(
+      (f: { market_id: string }) => f.market_id
+    );
     if (followedIds.length > 0) {
       const placeholders = followedIds.map(() => "?").join(",");
       await db.execute({
@@ -105,12 +171,7 @@ export async function PATCH(request: Request) {
         sql: `INSERT INTO buyer_market_follows (id, buyer_id, market_id, drop_alerts_enabled)
               VALUES (?, ?, ?, ?)
               ON CONFLICT(buyer_id, market_id) DO UPDATE SET drop_alerts_enabled = excluded.drop_alerts_enabled`,
-        args: [
-          (await import("@/lib/id")).newId(),
-          user.id,
-          follow.market_id,
-          follow.drop_alerts_enabled ? 1 : 0,
-        ],
+        args: [newId(), user.id, follow.market_id, follow.drop_alerts_enabled ? 1 : 0],
       });
     }
   }
