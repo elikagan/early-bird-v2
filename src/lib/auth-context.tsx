@@ -41,8 +41,14 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  // Initialize token from localStorage synchronously to avoid flash-redirect
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("eb_token");
+    }
+    return null;
+  });
   const [loading, setLoading] = useState(true);
 
   const logout = useCallback(() => {

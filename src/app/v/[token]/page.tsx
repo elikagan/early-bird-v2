@@ -1,17 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 
-export default function VerifyPage() {
+export default function VerifyShortPage() {
+  const params = useParams();
+  const token = params.token as string;
   const [error, setError] = useState<string | null>(() => {
-    if (typeof window === "undefined") return null;
-    const params = new URLSearchParams(window.location.search);
-    return params.get("token") ? null : "No token provided";
+    // Validate token presence synchronously (avoids setState-in-effect lint error)
+    if (!token) return "No token provided";
+    return null;
   });
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get("token");
     if (!token) return;
 
     let cancelled = false;
@@ -41,7 +42,7 @@ export default function VerifyPage() {
 
     verify();
     return () => { cancelled = true; };
-  }, []);
+  }, [token]);
 
   if (error) {
     return (

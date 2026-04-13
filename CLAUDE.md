@@ -49,13 +49,55 @@ Dealers: Buy · Watching | Sell | Account
 
 Everything is monospace. The Tailwind config overrides `fontFamily.sans` to `JetBrains Mono`. No per-component font decisions.
 
-## QA Checklist (Run Before Every Commit)
+## Quality Enforcement
 
-- [ ] `grep -r 'style="' src/` returns nothing
-- [ ] No hardcoded color values, font sizes, or spacing outside Tailwind config
-- [ ] Every visible element uses a design system class (`eb-*`) or Tailwind utility
-- [ ] Screen matches the design mockups (https://eb-designs.vercel.app)
-- [ ] No files outside the current phase were modified
+Three layers. All three must pass before deploying.
+
+### Layer 1: Pre-commit hook (automatic)
+Blocks commits that contain: inline styles, console.log, dead links (href="#"), unexplained readOnly, TypeScript errors. You cannot skip this.
+
+### Layer 2: QA gate script (run before every deploy)
+```bash
+bash scripts/qa-gate.sh
+```
+Checks: build, lint, dead links, console.log, TODO/FIXME, buttons without handlers, links without href, unexplained readOnly, bare fetch without error handling, images without alt text. Errors block deploy. Warnings must be reviewed.
+
+### Layer 3: Production checklist (answer before declaring a feature done)
+For every feature you build, answer YES to all of these or document why it doesn't apply:
+
+**Input & Data**
+- [ ] Every user input has validation (type, length, format) with a visible error message
+- [ ] Every form has submit-disabled state while saving
+- [ ] Every form has double-submit protection
+- [ ] Price inputs use inputmode="numeric" and validate positive values
+- [ ] Phone inputs use inputmode="tel"
+- [ ] File inputs validate type and size with clear error on rejection
+
+**Loading & Errors**
+- [ ] Every async action shows a loading indicator (spinner, disabled button, skeleton)
+- [ ] Every fetch/API call has an error path the user can see and recover from
+- [ ] Network failure doesn't leave the UI in a broken state
+- [ ] Optimistic updates revert on failure
+
+**Mobile & Real-World**
+- [ ] All touch targets are 44px minimum
+- [ ] Tested on iPhone Safari (not just desktop Chrome)
+- [ ] Works on slow network (what happens if upload takes 30 seconds?)
+- [ ] Images from iPhone cameras work (HEIC format, EXIF orientation, 4-12MB files)
+- [ ] No hover-only interactions (everything works with tap)
+
+**Completeness**
+- [ ] No placeholder text, dummy data, or "coming soon" UI in production
+- [ ] No buttons/links that don't do anything
+- [ ] No readOnly inputs without a reason
+- [ ] No console.log or debug code
+- [ ] Feature works end-to-end: create → read → update → delete (where applicable)
+- [ ] What happens if two users do conflicting things at the same time?
+
+**After building, run:**
+```bash
+bash scripts/qa-gate.sh && vercel --prod --yes
+```
 
 ## Design System Reference
 

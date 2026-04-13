@@ -68,7 +68,7 @@ function BuyFeedContent() {
   }, [marketId, router]);
 
   // Countdown timer (ticks every second for pre-drop)
-  const [now, setNow] = useState(Date.now());
+  const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     if (!market || market.status === "live") return;
     const interval = setInterval(() => setNow(Date.now()), 1000);

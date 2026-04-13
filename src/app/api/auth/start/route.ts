@@ -24,8 +24,8 @@ export async function POST(request: Request) {
     });
   }
 
-  // Generate magic link token (URL-safe, 32 chars)
-  const token = nanoid(32);
+  // Generate magic link token (URL-safe, 16 chars — short so SMS link fits on one line)
+  const token = nanoid(16);
   const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
 
   await db.execute({
@@ -33,8 +33,8 @@ export async function POST(request: Request) {
     args: [newId(), phone, token, expiresAt],
   });
 
-  // "Send" the magic link via SMS (console stub)
-  const url = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/auth/verify?token=${token}`;
+  // Short path so the full URL stays on one tappable line in SMS
+  const url = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/v/${token}`;
   await sendSMS(phone, composeMagicLink(url));
 
   return json({ ok: true });

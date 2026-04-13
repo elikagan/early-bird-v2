@@ -109,7 +109,7 @@ export default function AccountPage() {
               type="text"
               defaultValue={profile.business_name || ""}
               className="eb-input"
-              readOnly
+              readOnly // readOnly: will be editable in Session 2
             />
           </section>
           <section className="px-5 pb-4">
@@ -124,7 +124,7 @@ export default function AccountPage() {
               defaultValue={profile.instagram_handle || ""}
               placeholder="@yourhandle"
               className="eb-input"
-              readOnly
+              readOnly // readOnly: will be editable in Session 2
             />
           </section>
         </>
@@ -170,7 +170,7 @@ export default function AccountPage() {
                   type="checkbox"
                   checked={getPayment(pm.key)}
                   className="eb-check"
-                  readOnly
+                  readOnly // readOnly: will be toggleable in Session 2
                 />
                 <div className="text-eb-body font-bold text-eb-black">
                   {pm.label}
@@ -222,7 +222,7 @@ export default function AccountPage() {
                   type="checkbox"
                   checked={getPref(n.key)}
                   className="eb-toggle"
-                  readOnly
+                  readOnly // readOnly: will be toggleable in Session 2
                 />
               </label>
             ))}
@@ -262,7 +262,7 @@ export default function AccountPage() {
                   type="checkbox"
                   checked={getPref(n.key)}
                   className="eb-toggle"
-                  readOnly
+                  readOnly // readOnly: will be toggleable in Session 2
                 />
               </label>
             ))}
@@ -281,10 +281,7 @@ export default function AccountPage() {
             </div>
             <div className="text-eb-body text-eb-text leading-relaxed">
               Are you selling at an upcoming market and wanna post here for
-              free?{" "}
-              <a href="#" className="font-bold text-eb-pop">
-                Learn more →
-              </a>
+              free? Reach out to us — we&apos;ll get you set up.
             </div>
           </section>
           <div className="border-t border-eb-border mx-5" />
@@ -297,40 +294,16 @@ export default function AccountPage() {
           More
         </div>
 
-        {isDealer && (
-          <>
-            <a className="flex items-center justify-between py-3 border-b border-eb-border">
-              <div className="text-eb-body font-bold text-eb-black">
-                Dealer Help
-              </div>
-              <div className="text-eb-body text-eb-light">&rsaquo;</div>
-            </a>
-            <a className="flex items-center justify-between py-3 border-b border-eb-border">
-              <div className="text-eb-body font-bold text-eb-black">
-                Sales History
-              </div>
-              <div className="text-eb-body text-eb-light">&rsaquo;</div>
-            </a>
-          </>
-        )}
-        {!isDealer && (
-          <a className="flex items-center justify-between py-3 border-b border-eb-border">
-            <div className="text-eb-body font-bold text-eb-black">
-              Help &amp; Support
-            </div>
-            <div className="text-eb-body text-eb-light">&rsaquo;</div>
-          </a>
-        )}
-        <a className="flex items-center justify-between py-3 border-b border-eb-border">
+        <div className="flex items-center justify-between py-3 border-b border-eb-border">
           <div className="text-eb-body font-bold text-eb-black">
             Privacy Policy
           </div>
           <div className="text-eb-body text-eb-light">&rsaquo;</div>
-        </a>
-        <a className="flex items-center justify-between py-3 border-b border-eb-border">
+        </div>
+        <div className="flex items-center justify-between py-3 border-b border-eb-border">
           <div className="text-eb-body font-bold text-eb-black">Terms</div>
           <div className="text-eb-body text-eb-light">&rsaquo;</div>
-        </a>
+        </div>
 
         <button
           className="w-full mt-6 py-2.5 text-eb-caption font-bold border-2 border-eb-black text-eb-black uppercase tracking-wider"

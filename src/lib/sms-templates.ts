@@ -52,5 +52,5 @@ export function composeLostReceipt(
  * SMS with magic link for auth.
  */
 export function composeMagicLink(url: string): string {
-  return `Early Bird: Tap to sign in: ${url}`;
+  return `Early Bird\n\n${url}`;
 }

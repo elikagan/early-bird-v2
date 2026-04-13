@@ -30,7 +30,10 @@ export default function OnboardingPage() {
   // Redirect if not logged in
   useEffect(() => {
     if (!authLoading && !user) {
-      router.replace("/");
+      const stored = localStorage.getItem("eb_token");
+      if (!stored) {
+        router.replace("/");
+      }
     }
   }, [authLoading, user, router]);
 
@@ -41,7 +44,6 @@ export default function OnboardingPage() {
       if (res.ok) {
         const data = await res.json();
         setMarkets(data);
-        // Pre-check first two markets
         const initial = new Set<string>();
         data.slice(0, 2).forEach((m: Market) => initial.add(m.id));
         setFollowedMarkets(initial);
@@ -102,42 +104,23 @@ export default function OnboardingPage() {
       </div>
 
       {/* Intro */}
-      <section className="px-6 pt-8 pb-6">
+      <section className="px-6 pt-8 pb-4">
         <h2 className="text-eb-display text-eb-black">
-          Get set up
-          <br />
-          to shop the drop.
+          Get set up.
         </h2>
-        <p className="mt-3 text-eb-body text-eb-muted">
-          Set your profile and pick the markets you want to shop.
+        <p className="mt-2 text-eb-body text-eb-muted">
+          Takes 30 seconds. Then you can start shopping.
         </p>
       </section>
 
-      {/* Selfie */}
-      <section className="px-6 pb-6">
-        <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-3">
-          Selfie
+      {/* Step 1: Display Name */}
+      <section className="px-6 py-5 border-t-2 border-eb-black">
+        <div className="flex items-baseline gap-3 mb-3">
+          <span className="text-eb-body font-bold text-eb-pop">01</span>
+          <span className="text-eb-meta uppercase tracking-widest text-eb-muted">
+            Your name
+          </span>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="w-20 h-20 rounded-full bg-eb-border flex items-center justify-center">
-            <span className="text-eb-display text-eb-light">?</span>
-          </div>
-          <div className="flex-1">
-            <button className="w-full py-2.5 text-eb-body font-bold border-2 border-eb-black text-eb-black">
-              Take Selfie
-            </button>
-            <p className="text-eb-meta text-eb-muted mt-2">
-              So dealers can spot you at the booth.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Display Name */}
-      <section className="px-6 pb-6">
-        <label className="text-eb-meta uppercase tracking-widest text-eb-muted block mb-1.5">
-          Display Name
-        </label>
         <input
           type="text"
           placeholder="John C."
@@ -146,88 +129,105 @@ export default function OnboardingPage() {
           onChange={(e) => setDisplayName(e.target.value)}
         />
         <p className="text-eb-meta text-eb-muted mt-1.5">
-          Whatever you type is what dealers see.
+          This is what dealers see when you message them.
         </p>
       </section>
 
-      {/* Phone (readonly) */}
-      <section className="px-6 pb-6">
-        <div className="flex justify-between items-center mb-1.5">
-          <label className="text-eb-meta uppercase tracking-widest text-eb-muted">
-            Phone
-          </label>
-          <span className="text-eb-micro uppercase tracking-widest text-eb-green">
-            VERIFIED
-          </span>
+      {/* Step 2: Phone (readonly) */}
+      <section className="px-6 py-5 border-t border-eb-border">
+        <div className="flex items-baseline gap-3 mb-3">
+          <span className="text-eb-body font-bold text-eb-pop">02</span>
+          <div className="flex-1 flex justify-between items-center">
+            <span className="text-eb-meta uppercase tracking-widest text-eb-muted">
+              Phone
+            </span>
+            <span className="text-eb-micro uppercase tracking-widest text-eb-green font-bold">
+              VERIFIED
+            </span>
+          </div>
         </div>
         <input
           type="tel"
           value={formatPhone(user.phone)}
-          readOnly
+          readOnly // readOnly: phone is verified, not editable
           className="eb-input text-eb-muted"
         />
       </section>
 
-      {/* Follow Markets */}
+      {/* Step 3: Follow Markets */}
       {markets.length > 0 && (
-        <section className="px-6 pb-6">
-          <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-3">
-            Follow Markets
+        <section className="px-6 py-5 border-t border-eb-border">
+          <div className="flex items-baseline gap-3 mb-3">
+            <span className="text-eb-body font-bold text-eb-pop">03</span>
+            <span className="text-eb-meta uppercase tracking-widest text-eb-muted">
+              Follow markets
+            </span>
           </div>
           <div className="space-y-2">
             {markets.map((m) => (
               <label
                 key={m.id}
-                className="flex items-center gap-3 p-3 border border-eb-border cursor-pointer"
+                className={`flex items-center gap-3 p-3 border-2 cursor-pointer ${
+                  followedMarkets.has(m.id)
+                    ? "border-eb-black bg-eb-white"
+                    : "border-eb-border"
+                }`}
               >
                 <input
                   type="checkbox"
                   checked={followedMarkets.has(m.id)}
                   onChange={() => toggleMarket(m.id)}
-                  className="w-4 h-4 accent-eb-black"
+                  className="eb-check"
                 />
-                <span className="text-eb-body">{m.name}</span>
+                <span className="text-eb-body font-bold">{m.name}</span>
               </label>
             ))}
           </div>
         </section>
       )}
 
-      {/* Notifications */}
-      <section className="px-6 pb-6">
-        <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-3">
-          Notifications
+      {/* Step 4: Notifications */}
+      <section className="px-6 py-5 border-t border-eb-border">
+        <div className="flex items-baseline gap-3 mb-3">
+          <span className="text-eb-body font-bold text-eb-pop">04</span>
+          <span className="text-eb-meta uppercase tracking-widest text-eb-muted">
+            Notifications
+          </span>
         </div>
         <div className="space-y-2">
           {[
             {
               key: "drop_alerts",
               label: "Drop alerts",
-              desc: "SMS when a followed market\u2019s drop goes live.",
+              desc: "Text me when a market\u2019s drop goes live.",
             },
             {
               key: "price_drops",
               label: "Price drops",
-              desc: "SMS when an item you\u2019re watching drops price.",
+              desc: "Text me when something I\u2019m watching gets cheaper.",
             },
             {
               key: "new_markets",
               label: "New markets",
-              desc: "When a new flea market is added near you.",
+              desc: "Text me when a new market is added.",
             },
           ].map((n) => (
             <label
               key={n.key}
-              className="flex items-start gap-3 p-3 border border-eb-border cursor-pointer"
+              className={`flex items-start gap-3 p-3 border-2 cursor-pointer ${
+                notifPrefs[n.key]
+                  ? "border-eb-black bg-eb-white"
+                  : "border-eb-border"
+              }`}
             >
               <input
                 type="checkbox"
                 checked={notifPrefs[n.key]}
                 onChange={() => toggleNotif(n.key)}
-                className="w-4 h-4 mt-0.5 accent-eb-black"
+                className="eb-check mt-0.5"
               />
               <div className="flex-1">
-                <div className="text-eb-body">{n.label}</div>
+                <div className="text-eb-body font-bold">{n.label}</div>
                 <div className="text-eb-meta text-eb-muted mt-0.5">
                   {n.desc}
                 </div>
@@ -238,13 +238,13 @@ export default function OnboardingPage() {
       </section>
 
       {/* Continue */}
-      <footer className="px-6 py-6 mt-auto border-t border-eb-border">
+      <footer className="px-6 py-6 mt-auto border-t-2 border-eb-black">
         <button
-          className="eb-btn"
+          className="eb-cta"
           onClick={handleContinue}
           disabled={!displayName || saving}
         >
-          {saving ? "SAVING…" : "CONTINUE"}
+          {saving ? "SAVING…" : "START SHOPPING"}
         </button>
       </footer>
     </div>

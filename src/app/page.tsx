@@ -80,18 +80,20 @@ export default function LandingPage() {
   // Phone form — shared between buyer and dealer modes
   const phoneForm = sent ? (
     <div>
-      <p className="text-eb-body font-bold text-eb-black">Check your texts</p>
-      <p className="text-eb-caption text-eb-muted mt-1">
-        We texted a sign-in link to {phone}. Tap it to get in.
+      <p className="text-eb-display font-bold text-eb-black">Check your texts</p>
+      <p className="text-eb-body text-eb-muted mt-2">
+        We texted a sign-in link to {phone}.
+        <br />
+        Tap it to get in.
       </p>
       <button
         onClick={() => {
           setSent(false);
           setPhone("");
         }}
-        className="text-eb-caption text-eb-pop font-bold mt-4"
+        className="text-eb-meta text-eb-light mt-6"
       >
-        Use a different number
+        Didn&apos;t get it? Try again
       </button>
     </div>
   ) : (

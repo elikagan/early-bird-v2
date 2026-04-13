@@ -10,7 +10,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.replace("/");
+      // Double-check localStorage before bouncing — token may exist
+      // but user hasn't hydrated yet from /api/auth/me
+      const stored = localStorage.getItem("eb_token");
+      if (!stored) {
+        router.replace("/");
+      }
     }
   }, [loading, user, router]);
 
