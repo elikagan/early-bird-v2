@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
+import { processImage } from "@/lib/image-processing";
 import { getInitials, formatPhone } from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
 
@@ -13,6 +14,7 @@ interface UserProfile {
   first_name: string | null;
   last_name: string | null;
   display_name: string | null;
+  avatar_url: string | null;
   is_dealer: number;
   dealer_id: string | null;
   business_name: string | null;
@@ -49,6 +51,9 @@ export default function AccountPage() {
   const [igSaving, setIgSaving] = useState(false);
 
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
+
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const isDealer = user?.is_dealer === 1;
 
@@ -216,6 +221,40 @@ export default function AccountPage() {
     [profile]
   );
 
+  const uploadAvatar = useCallback(
+    async (file: File) => {
+      if (!file.type.startsWith("image/") && !file.name.toLowerCase().endsWith(".heic")) {
+        return;
+      }
+      setAvatarUploading(true);
+      try {
+        const processed = await processImage(file);
+        const formData = new FormData();
+        formData.append("file", processed.blob, "avatar.jpg");
+        const uploadRes = await apiFetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+        if (!uploadRes.ok) throw new Error("Upload failed");
+        const { url } = await uploadRes.json();
+
+        const patchRes = await apiFetch("/api/users/me", {
+          method: "PATCH",
+          body: JSON.stringify({ avatar_url: url }),
+        });
+        if (!patchRes.ok) throw new Error("Save failed");
+        setProfile((p) => (p ? { ...p, avatar_url: url } : p));
+        refreshUser();
+      } catch {
+        // Silent fail — avatar stays as initials
+      } finally {
+        setAvatarUploading(false);
+        if (avatarInputRef.current) avatarInputRef.current.value = "";
+      }
+    },
+    [refreshUser]
+  );
+
   // ── Derived ──
 
   const getPref = (key: string): boolean => {
@@ -291,19 +330,57 @@ export default function AccountPage() {
         </Link>
       </header>
 
+      {/* Hidden avatar file input */}
+      <input
+        ref={avatarInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) uploadAvatar(file);
+        }}
+      />
+
       {/* Profile */}
       <section className="px-5 pt-6 pb-4">
         {!editingName ? (
           <div className="flex items-center gap-4">
-            <span className="eb-avatar eb-avatar-xl">
-              {getInitials(displayName)}
-            </span>
+            <button
+              onClick={() => avatarInputRef.current?.click()}
+              disabled={avatarUploading}
+              className="relative shrink-0"
+            >
+              {profile.avatar_url ? (
+                <img
+                  src={profile.avatar_url}
+                  alt={displayName}
+                  className="eb-avatar eb-avatar-xl object-cover"
+                />
+              ) : (
+                <span className="eb-avatar eb-avatar-xl">
+                  {getInitials(displayName)}
+                </span>
+              )}
+              {avatarUploading ? (
+                <span className="absolute inset-0 flex items-center justify-center bg-eb-black/40 rounded-full">
+                  <span className="eb-spinner-sm" />
+                </span>
+              ) : (
+                <span className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-eb-black text-white rounded-full flex items-center justify-center text-eb-micro font-bold leading-none">
+                  +
+                </span>
+              )}
+            </button>
             <div className="flex-1">
               <div className="text-eb-body font-bold text-eb-black">
                 {displayName}
               </div>
               <div className="text-eb-meta text-eb-muted">
                 {formatPhone(profile.phone)}
+              </div>
+              <div className="text-eb-micro text-eb-light mt-0.5">
+                Phone number can&apos;t be changed
               </div>
             </div>
             <button
@@ -320,9 +397,17 @@ export default function AccountPage() {
         ) : (
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <span className="eb-avatar eb-avatar-xl">
-                {getInitials(nameValue || "?")}
-              </span>
+              {profile.avatar_url ? (
+                <img
+                  src={profile.avatar_url}
+                  alt={nameValue || "?"}
+                  className="eb-avatar eb-avatar-xl object-cover shrink-0"
+                />
+              ) : (
+                <span className="eb-avatar eb-avatar-xl shrink-0">
+                  {getInitials(nameValue || "?")}
+                </span>
+              )}
               <input
                 type="text"
                 className="eb-input flex-1"
@@ -516,16 +601,22 @@ export default function AccountPage() {
           More
         </div>
 
-        <div className="flex items-center justify-between py-3 border-b border-eb-border">
+        <Link
+          href="/privacy"
+          className="flex items-center justify-between py-3 border-b border-eb-border"
+        >
           <div className="text-eb-body font-bold text-eb-black">
             Privacy Policy
           </div>
           <div className="text-eb-body text-eb-light">&rsaquo;</div>
-        </div>
-        <div className="flex items-center justify-between py-3 border-b border-eb-border">
+        </Link>
+        <Link
+          href="/terms"
+          className="flex items-center justify-between py-3 border-b border-eb-border"
+        >
           <div className="text-eb-body font-bold text-eb-black">Terms</div>
           <div className="text-eb-body text-eb-light">&rsaquo;</div>
-        </div>
+        </Link>
 
         {/* Sign Out with confirmation */}
         {!showSignOutConfirm ? (
