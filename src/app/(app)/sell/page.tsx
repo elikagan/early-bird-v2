@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState, useCallback, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
-import { getInitials, formatPrice } from "@/lib/format";
+import { formatPrice } from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
 
 interface Item {
@@ -30,7 +30,6 @@ interface Market {
 
 function SellContent() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const { user } = useAuth();
   const [items, setItems] = useState<Item[]>([]);
   const [market, setMarket] = useState<Market | null>(null);
@@ -44,7 +43,6 @@ function SellContent() {
     async function load() {
       let mktId = marketId;
 
-      // If no market param, fetch markets and pick the first one
       if (!mktId) {
         const marketsRes = await apiFetch("/api/markets");
         if (marketsRes.ok) {
@@ -93,7 +91,7 @@ function SellContent() {
     return (
       <>
         <div className="flex-1 flex items-center justify-center">
-          <span className="loading loading-spinner loading-md"></span>
+          <span className="eb-spinner" />
         </div>
         <BottomNav active="sell" />
       </>
@@ -108,186 +106,159 @@ function SellContent() {
 
   return (
     <>
-      {/* Header */}
-      <header className="px-4 pt-6 pb-3 border-b border-base-300">
-        <div className="flex items-center justify-between mb-3">
-          <Link href="/home" className="text-lg font-bold tracking-tight">
-            EARLY BIRD
-          </Link>
-          <div className="avatar placeholder">
-            <div className="bg-neutral text-neutral-content w-8 rounded-full">
-              <span className="text-xs font-bold">
-                {getInitials(user?.display_name || user?.first_name || "?")}
-              </span>
-            </div>
-          </div>
-        </div>
-        {market && (
-          <div className="flex items-center justify-between">
-            <div className="text-sm font-bold">{market.name}</div>
-            <div className="badge badge-outline">
-              {market.item_count} ITEMS
-            </div>
-          </div>
-        )}
+      {/* Masthead */}
+      <header className="eb-masthead">
+        <Link href="/home">
+          <h1>EARLY BIRD</h1>
+        </Link>
+        {market && <div className="eb-sub">{market.name}</div>}
       </header>
 
-      {/* Live stats */}
-      <section className="px-4 py-4 bg-base-200">
-        <div className="stats stats-horizontal w-full bg-base-100">
-          <div className="stat p-3">
-            <div className="stat-title text-[10px] uppercase tracking-wider">
-              Listed
-            </div>
-            <div className="stat-value text-xl">{items.length}</div>
-          </div>
-          <div className="stat p-3">
-            <div className="stat-title text-[10px] uppercase tracking-wider">
-              Watchers
-            </div>
-            <div className="stat-value text-xl">{totalWatchers}</div>
-          </div>
-          <div className="stat p-3">
-            <div className="stat-title text-[10px] uppercase tracking-wider">
-              Inquiries
-            </div>
-            <div className="stat-value text-xl">{totalInquiries}</div>
-          </div>
+      {/* Stats */}
+      <div className="eb-stats border-b border-eb-border">
+        <div className="eb-stat">
+          <div className="eb-stat-num">{items.length}</div>
+          <div className="eb-stat-label">Listed</div>
         </div>
-      </section>
+        <div className="eb-stat">
+          <div className="eb-stat-num">{totalWatchers}</div>
+          <div className="eb-stat-label">Watchers</div>
+        </div>
+        <div className="eb-stat">
+          <div className="eb-stat-num">{totalInquiries}</div>
+          <div className="eb-stat-label">Inquiries</div>
+        </div>
+      </div>
 
-      {/* Action bar */}
-      <div className="px-4 py-3 border-b border-base-300">
+      {/* Add listing */}
+      <div className="px-3 py-3 border-b border-eb-border">
         <Link
           href={`/sell/add${market ? `?market=${market.id}` : ""}`}
-          className="btn btn-sm btn-neutral"
+          className="inline-block text-eb-caption font-bold bg-eb-black text-white px-4 py-2 tracking-wider uppercase"
         >
           + Add Listing
         </Link>
       </div>
 
       {/* Items grid */}
-      <main className="flex-1 px-4 py-4 pb-32">
-        <div className="grid grid-cols-2 gap-3">
-          {items.map((item) => {
-            const isSold = item.status === "sold";
-            const isHeld = item.status === "hold";
+      <main className="pb-32">
+        {items.length > 0 ? (
+          <div className="eb-grid mt-3">
+            {items.map((item) => {
+              const isSold = item.status === "sold";
+              const isHeld = item.status === "hold";
 
-            return (
-              <Link
-                key={item.id}
-                href={`/item/${item.id}`}
-                className={`card card-compact bg-base-100 border border-base-300 overflow-hidden${isSold ? " opacity-60" : ""}`}
-              >
-                <figure className="aspect-square bg-base-200 relative">
+              return (
+                <Link
+                  key={item.id}
+                  href={`/item/${item.id}`}
+                  className={`eb-grid-card${isSold ? " eb-sold" : ""}`}
+                >
                   {item.photo_url ? (
                     <img
                       src={item.photo_url}
                       alt={item.title}
-                      className="absolute inset-0 w-full h-full object-cover"
+                      className="eb-photo"
                     />
                   ) : (
-                    <div className="absolute inset-0 flex items-center justify-center text-[10px] uppercase tracking-widest text-base-content/30">
-                      Photo
-                    </div>
+                    <div className="eb-photo bg-eb-border" />
                   )}
-                </figure>
-                <div className="card-body">
-                  <div
-                    className={`text-xs font-bold leading-tight line-clamp-2${isSold ? " line-through" : ""}`}
-                  >
-                    {item.title}
-                  </div>
-                  {item.original_price ? (
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`font-bold text-sm${isSold ? " line-through" : ""}`}
-                      >
-                        {formatPrice(item.price)}
-                      </span>
-                      <span className="text-xs text-base-content/40 line-through">
-                        {formatPrice(item.original_price)}
-                      </span>
-                    </div>
-                  ) : (
-                    <div
-                      className={`font-bold text-sm${isSold ? " line-through" : ""}`}
-                    >
+                  <div className="eb-body">
+                    <div className="eb-title">{item.title}</div>
+                    <div className="eb-price">
                       {formatPrice(item.price)}
+                      {item.original_price && (
+                        <span className="eb-price-was">
+                          {formatPrice(item.original_price)}
+                        </span>
+                      )}
                     </div>
-                  )}
-                  {!isSold && (item.watcher_count > 0 || item.inquiry_count > 0) && (
-                    <div className="text-[10px] text-base-content/60 truncate">
-                      {[
-                        item.watcher_count > 0 &&
-                          `${item.watcher_count} watchers`,
-                        item.inquiry_count > 0 &&
-                          `${item.inquiry_count} ${item.inquiry_count === 1 ? "inquiry" : "inquiries"}`,
-                      ]
-                        .filter(Boolean)
-                        .join(" · ")}
+                    {!isSold &&
+                      (item.watcher_count > 0 ||
+                        item.inquiry_count > 0) && (
+                        <div className="text-eb-meta text-eb-muted mt-1 truncate">
+                          {[
+                            item.watcher_count > 0 &&
+                              `${item.watcher_count} watchers`,
+                            item.inquiry_count > 0 &&
+                              `${item.inquiry_count} ${item.inquiry_count === 1 ? "inquiry" : "inquiries"}`,
+                          ]
+                            .filter(Boolean)
+                            .join(" · ")}
+                        </div>
+                      )}
+                    <div className="flex flex-col gap-1 mt-2">
+                      {isSold ? (
+                        <span className="text-eb-meta text-eb-muted">
+                          Sold
+                        </span>
+                      ) : isHeld ? (
+                        <>
+                          <span className="eb-tag-hold inline-block">
+                            HELD
+                          </span>
+                          <button
+                            className="text-eb-caption font-bold border border-eb-border px-2 py-0.5 text-eb-text text-left"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              updateItemStatus(item.id, "sold");
+                            }}
+                          >
+                            Mark Sold
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            className="text-eb-caption font-bold border border-eb-border px-2 py-0.5 text-eb-text text-left"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              updateItemStatus(item.id, "hold");
+                            }}
+                          >
+                            Hold
+                          </button>
+                          <button
+                            className="text-eb-caption font-bold border border-eb-border px-2 py-0.5 text-eb-text text-left"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              updateItemStatus(item.id, "sold");
+                            }}
+                          >
+                            Mark Sold
+                          </button>
+                        </>
+                      )}
                     </div>
-                  )}
-                  {isSold && (
-                    <div className="text-[10px] text-base-content/60 truncate">
-                      Sold
-                    </div>
-                  )}
-                  <div className="flex flex-col gap-1 mt-1">
-                    {isSold ? (
-                      <button className="btn btn-xs btn-neutral" disabled>
-                        SOLD
-                      </button>
-                    ) : isHeld ? (
-                      <>
-                        <button className="btn btn-xs btn-neutral">HELD</button>
-                        <button
-                          className="btn btn-xs btn-outline"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            updateItemStatus(item.id, "sold");
-                          }}
-                        >
-                          Mark Sold
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <button
-                          className="btn btn-xs btn-outline"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            updateItemStatus(item.id, "hold");
-                          }}
-                        >
-                          Hold
-                        </button>
-                        <button
-                          className="btn btn-xs btn-outline"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            updateItemStatus(item.id, "sold");
-                          }}
-                        >
-                          Mark Sold
-                        </button>
-                      </>
-                    )}
                   </div>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
+                </Link>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="eb-empty">
+            <div className="eb-icon">○</div>
+            <p>
+              No items listed yet.
+              <br />
+              Add your first listing to get started.
+            </p>
+            <Link
+              href={`/sell/add${market ? `?market=${market.id}` : ""}`}
+            >
+              Add a listing →
+            </Link>
+          </div>
+        )}
       </main>
 
       {/* FAB */}
       <Link
         href={`/sell/add${market ? `?market=${market.id}` : ""}`}
-        className="max-w-md mx-auto fixed bottom-20 right-4 left-auto btn btn-circle btn-lg btn-neutral shadow-lg z-10"
+        className="fixed bottom-20 right-4 w-14 h-14 rounded-full bg-eb-black text-white flex items-center justify-center text-2xl font-bold shadow-lg z-10"
       >
         +
       </Link>
@@ -302,7 +273,7 @@ export default function SellPage() {
     <Suspense
       fallback={
         <div className="flex-1 flex items-center justify-center">
-          <span className="loading loading-spinner loading-md"></span>
+          <span className="eb-spinner" />
         </div>
       }
     >
