@@ -256,11 +256,17 @@
     margin: 0 auto;
     background: var(--eb-bg);
     border-top: 1px solid var(--eb-border);
-    padding: 14px 20px;
+    padding: 0 12px;
     font-size: 12px;
     display: flex;
     justify-content: space-around;
     z-index: 10;
+  }
+  .eb-bnav a {
+    display: flex;
+    align-items: center;
+    padding: 14px 8px;
+    text-decoration: none;
   }
   .eb-bnav span {
     color: var(--eb-muted);
@@ -306,6 +312,9 @@
     background: #fff;
     outline: none;
   }
+  .eb-input:focus-visible {
+    border-color: var(--eb-pop);
+  }
   .eb-input::placeholder {
     color: var(--eb-light);
   }
@@ -347,6 +356,51 @@
     color: var(--eb-pop);
     font-weight: 700;
     text-decoration: none;
+  }
+
+  /* ---- Interaction states ---- */
+  .eb-btn:hover {
+    background: var(--eb-text);
+  }
+  .eb-btn:active {
+    opacity: 0.85;
+  }
+  .eb-btn:focus-visible {
+    outline: 2px solid var(--eb-pop);
+    outline-offset: 2px;
+  }
+
+  .eb-cta:hover {
+    opacity: 0.9;
+  }
+  .eb-cta:active {
+    opacity: 0.8;
+  }
+  .eb-cta:focus-visible {
+    outline: 2px solid var(--eb-black);
+    outline-offset: 2px;
+  }
+
+  .eb-grid-card:hover .eb-photo {
+    opacity: 0.85;
+  }
+
+  .eb-bnav a:hover span {
+    color: var(--eb-black);
+  }
+
+  .eb-empty a:hover {
+    text-decoration: underline;
+  }
+
+  .eb-toggle:focus-visible {
+    outline: 2px solid var(--eb-pop);
+    outline-offset: 2px;
+  }
+
+  .eb-check:focus-visible {
+    outline: 2px solid var(--eb-pop);
+    outline-offset: 2px;
   }
 
   /* ---- Button disabled state ---- */
