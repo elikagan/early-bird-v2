@@ -4,7 +4,7 @@ import { getSession } from "@/lib/auth";
 import { isAdmin } from "@/lib/admin";
 import { newId } from "@/lib/id";
 import { sendSMS } from "@/lib/sms";
-import { composeMagicLink } from "@/lib/sms-templates";
+import { getBaseUrl } from "@/lib/url";
 import { nanoid } from "nanoid";
 
 export async function POST(
@@ -60,7 +60,7 @@ export async function POST(
     args: [newId(), phone, token, expiresAt],
   });
 
-  const url = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/v/${token}`;
+  const url = `${getBaseUrl(request)}/v/${token}`;
   await sendSMS(
     phone,
     `Early Bird: You're approved as a dealer! Tap to get started.\n\n${url}`

@@ -3,6 +3,7 @@ import { json, error } from "@/lib/api";
 import { getSession } from "@/lib/auth";
 import { newId } from "@/lib/id";
 import { sendSMS } from "@/lib/sms";
+import { getBaseUrl } from "@/lib/url";
 import { nanoid } from "nanoid";
 
 /**
@@ -53,7 +54,7 @@ export async function POST(request: Request) {
     args: [newId(), normalized, token, expiresAt, user.id],
   });
 
-  const url = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/v/${token}`;
+  const url = `${getBaseUrl(request)}/v/${token}`;
   await sendSMS(normalized, `Early Bird: Tap to confirm your new number.\n\n${url}`);
 
   return json({ ok: true });

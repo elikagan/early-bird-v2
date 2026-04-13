@@ -3,6 +3,7 @@ import { json, error } from "@/lib/api";
 import { getSession } from "@/lib/auth";
 import { isAdmin } from "@/lib/admin";
 import { newId } from "@/lib/id";
+import { getBaseUrl } from "@/lib/url";
 import { nanoid } from "nanoid";
 
 export async function POST(request: Request) {
@@ -18,8 +19,7 @@ export async function POST(request: Request) {
     args: [id, code],
   });
 
-  const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").trim();
-  const url = `${baseUrl}/invite/${code}`;
+  const url = `${getBaseUrl(request)}/invite/${code}`;
 
   return json({ code, url });
 }

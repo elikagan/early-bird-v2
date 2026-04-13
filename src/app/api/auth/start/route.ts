@@ -3,6 +3,7 @@ import { json, error } from "@/lib/api";
 import { newId } from "@/lib/id";
 import { sendSMS } from "@/lib/sms";
 import { composeMagicLink } from "@/lib/sms-templates";
+import { getBaseUrl } from "@/lib/url";
 import { nanoid } from "nanoid";
 
 export async function POST(request: Request) {
@@ -34,7 +35,7 @@ export async function POST(request: Request) {
   });
 
   // Short path so the full URL stays on one tappable line in SMS
-  const url = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/v/${token}`;
+  const url = `${getBaseUrl(request)}/v/${token}`;
   await sendSMS(phone, composeMagicLink(url));
 
   return json({ ok: true });

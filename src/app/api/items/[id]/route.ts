@@ -211,8 +211,9 @@ export async function PATCH(
     const newPrice = Number(body.price);
     const oldPrice = item.price as number;
     if (newPrice < oldPrice) {
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-      const itemUrl = `${appUrl}/item/${id}`;
+      const proto = request.headers.get("x-forwarded-proto") || "https";
+      const host = request.headers.get("host") || "earlybird.la";
+      const itemUrl = `${proto}://${host}/item/${id}`;
 
       // Get all watchers (favorites) except the dealer themselves
       const watchers = await db.execute({
