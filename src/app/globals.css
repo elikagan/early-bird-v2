@@ -348,4 +348,11 @@
     font-weight: 700;
     text-decoration: none;
   }
+
+  /* ---- Button disabled state ---- */
+  .eb-btn:disabled,
+  .eb-cta:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 }

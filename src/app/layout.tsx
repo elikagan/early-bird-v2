@@ -19,8 +19,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" data-theme="light" className={`${jetbrainsMono.variable} h-full`}>
-      <body className="min-h-screen bg-base-300 font-sans antialiased">
+    <html lang="en" className={jetbrainsMono.variable}>
+      <body className="font-sans antialiased">
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

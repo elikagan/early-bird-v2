@@ -88,47 +88,45 @@ export default function OnboardingPage() {
 
   if (authLoading || !user) {
     return (
-      <div className="max-w-md mx-auto min-h-screen bg-base-100 flex items-center justify-center">
-        <span className="loading loading-spinner loading-md"></span>
+      <div className="min-h-screen flex items-center justify-center">
+        <span className="text-eb-body text-eb-muted">Loading…</span>
       </div>
     );
   }
 
   return (
-    <div className="max-w-md mx-auto min-h-screen bg-base-100 flex flex-col">
-      {/* Header */}
-      <header className="px-6 pt-10 pb-6">
-        <div className="text-xl font-bold tracking-tight">EARLY BIRD</div>
-      </header>
+    <div className="min-h-screen flex flex-col">
+      {/* Masthead */}
+      <div className="eb-masthead">
+        <h1>EARLY BIRD</h1>
+      </div>
 
       {/* Intro */}
-      <section className="px-6 pb-8">
-        <h1 className="text-2xl font-bold leading-tight">
+      <section className="px-6 pt-8 pb-6">
+        <h2 className="text-eb-display text-eb-black">
           Get set up
           <br />
           to shop the drop.
-        </h1>
-        <p className="text-sm text-base-content/70 mt-4 leading-relaxed">
+        </h2>
+        <p className="mt-3 text-eb-body text-eb-muted">
           Set your profile and pick the markets you want to shop.
         </p>
       </section>
 
-      {/* Selfie (placeholder) */}
-      <section className="px-6 pb-8">
-        <div className="text-xs uppercase tracking-widest text-base-content/60 mb-3">
+      {/* Selfie */}
+      <section className="px-6 pb-6">
+        <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-3">
           Selfie
         </div>
         <div className="flex items-center gap-4">
-          <div className="avatar placeholder">
-            <div className="bg-base-200 text-base-content/40 w-20 rounded-full border border-base-300">
-              <span className="text-2xl font-bold">?</span>
-            </div>
+          <div className="w-20 h-20 rounded-full bg-eb-border flex items-center justify-center">
+            <span className="text-eb-display text-eb-light">?</span>
           </div>
           <div className="flex-1">
-            <button className="btn btn-sm btn-outline w-full">
+            <button className="w-full py-2.5 text-eb-body font-bold border-2 border-eb-black text-eb-black">
               Take Selfie
             </button>
-            <p className="text-xs text-base-content/60 mt-2">
+            <p className="text-eb-meta text-eb-muted mt-2">
               So dealers can spot you at the booth.
             </p>
           </div>
@@ -136,132 +134,117 @@ export default function OnboardingPage() {
       </section>
 
       {/* Display Name */}
-      <section className="px-6 pb-8">
-        <label className="form-control w-full">
-          <div className="label">
-            <span className="label-text text-xs uppercase tracking-widest text-base-content/60">
-              Display Name
-            </span>
-          </div>
-          <input
-            type="text"
-            placeholder="John C."
-            className="input input-bordered w-full"
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-          />
-          <div className="label">
-            <span className="label-text-alt text-xs text-base-content/60">
-              Whatever you type is what dealers see.
-            </span>
-          </div>
+      <section className="px-6 pb-6">
+        <label className="text-eb-meta uppercase tracking-widest text-eb-muted block mb-1.5">
+          Display Name
         </label>
+        <input
+          type="text"
+          placeholder="John C."
+          className="eb-input"
+          value={displayName}
+          onChange={(e) => setDisplayName(e.target.value)}
+        />
+        <p className="text-eb-meta text-eb-muted mt-1.5">
+          Whatever you type is what dealers see.
+        </p>
       </section>
 
       {/* Phone (readonly) */}
-      <section className="px-6 pb-8">
-        <label className="form-control w-full">
-          <div className="label">
-            <span className="label-text text-xs uppercase tracking-widest text-base-content/60">
-              Phone
-            </span>
-            <span className="label-text-alt badge badge-outline px-3 py-2">
-              Verified
-            </span>
-          </div>
-          <input
-            type="tel"
-            value={formatPhone(user.phone)}
-            readOnly
-            className="input input-bordered w-full"
-          />
-        </label>
+      <section className="px-6 pb-6">
+        <div className="flex justify-between items-center mb-1.5">
+          <label className="text-eb-meta uppercase tracking-widest text-eb-muted">
+            Phone
+          </label>
+          <span className="text-eb-micro uppercase tracking-widest text-eb-green">
+            VERIFIED
+          </span>
+        </div>
+        <input
+          type="tel"
+          value={formatPhone(user.phone)}
+          readOnly
+          className="eb-input text-eb-muted"
+        />
       </section>
 
       {/* Follow Markets */}
       {markets.length > 0 && (
-        <section className="px-6 pb-8">
-          <div className="text-xs uppercase tracking-widest text-base-content/60 mb-3">
+        <section className="px-6 pb-6">
+          <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-3">
             Follow Markets
           </div>
           <div className="space-y-2">
             {markets.map((m) => (
               <label
                 key={m.id}
-                className="flex items-center gap-3 p-3 border border-base-300 rounded-md cursor-pointer"
+                className="flex items-center gap-3 p-3 border border-eb-border cursor-pointer"
               >
                 <input
                   type="checkbox"
                   checked={followedMarkets.has(m.id)}
                   onChange={() => toggleMarket(m.id)}
-                  className="checkbox checkbox-sm"
+                  className="w-4 h-4 accent-eb-black"
                 />
-                <span className="text-sm flex-1">{m.name}</span>
+                <span className="text-eb-body">{m.name}</span>
               </label>
             ))}
           </div>
         </section>
       )}
 
-      {/* Notification Preferences */}
-      <section className="px-6 pb-8">
-        <div className="text-xs uppercase tracking-widest text-base-content/60 mb-3">
+      {/* Notifications */}
+      <section className="px-6 pb-6">
+        <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-3">
           Notifications
         </div>
         <div className="space-y-2">
-          <label className="flex items-start gap-3 p-3 border border-base-300 rounded-md cursor-pointer">
-            <input
-              type="checkbox"
-              checked={notifPrefs.drop_alerts}
-              onChange={() => toggleNotif("drop_alerts")}
-              className="checkbox checkbox-sm mt-0.5"
-            />
-            <div className="flex-1">
-              <div className="text-sm">Drop alerts</div>
-              <div className="text-xs text-base-content/60 mt-0.5">
-                SMS when a followed market&apos;s drop goes live.
+          {[
+            {
+              key: "drop_alerts",
+              label: "Drop alerts",
+              desc: "SMS when a followed market\u2019s drop goes live.",
+            },
+            {
+              key: "price_drops",
+              label: "Price drops",
+              desc: "SMS when an item you\u2019re watching drops price.",
+            },
+            {
+              key: "new_markets",
+              label: "New markets",
+              desc: "When a new flea market is added near you.",
+            },
+          ].map((n) => (
+            <label
+              key={n.key}
+              className="flex items-start gap-3 p-3 border border-eb-border cursor-pointer"
+            >
+              <input
+                type="checkbox"
+                checked={notifPrefs[n.key]}
+                onChange={() => toggleNotif(n.key)}
+                className="w-4 h-4 mt-0.5 accent-eb-black"
+              />
+              <div className="flex-1">
+                <div className="text-eb-body">{n.label}</div>
+                <div className="text-eb-meta text-eb-muted mt-0.5">
+                  {n.desc}
+                </div>
               </div>
-            </div>
-          </label>
-          <label className="flex items-start gap-3 p-3 border border-base-300 rounded-md cursor-pointer">
-            <input
-              type="checkbox"
-              checked={notifPrefs.price_drops}
-              onChange={() => toggleNotif("price_drops")}
-              className="checkbox checkbox-sm mt-0.5"
-            />
-            <div className="flex-1">
-              <div className="text-sm">Price drops</div>
-              <div className="text-xs text-base-content/60 mt-0.5">
-                SMS when an item you&apos;re watching drops price.
-              </div>
-            </div>
-          </label>
-          <label className="flex items-start gap-3 p-3 border border-base-300 rounded-md cursor-pointer">
-            <input
-              type="checkbox"
-              checked={notifPrefs.new_markets}
-              onChange={() => toggleNotif("new_markets")}
-              className="checkbox checkbox-sm mt-0.5"
-            />
-            <div className="flex-1">
-              <div className="text-sm">New markets</div>
-              <div className="text-xs text-base-content/60 mt-0.5">
-                When a new flea market is added near you.
-              </div>
-            </div>
-          </label>
+            </label>
+          ))}
         </div>
       </section>
 
       {/* Continue */}
-      <footer className="px-6 py-6 mt-auto bg-base-200">
+      <footer className="px-6 py-6 mt-auto border-t border-eb-border">
         <button
-          className={`btn btn-neutral w-full${saving ? " loading" : ""}`}
+          className="eb-btn"
           onClick={handleContinue}
           disabled={!displayName || saving}
         >
-          Continue
+          {saving ? "SAVING…" : "CONTINUE"}
         </button>
       </footer>
     </div>

@@ -16,8 +16,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   if (loading) {
     return (
-      <div className="max-w-md mx-auto min-h-screen bg-base-100 flex items-center justify-center">
-        <span className="loading loading-spinner loading-md"></span>
+      <div className="min-h-screen flex items-center justify-center">
+        <span className="text-eb-body text-eb-muted">Loading…</span>
       </div>
     );
   }
@@ -25,7 +25,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   if (!user) return null;
 
   return (
-    <div className="max-w-md mx-auto min-h-screen bg-base-100 flex flex-col relative">
+    <div className="min-h-screen flex flex-col relative">
       {children}
     </div>
   );

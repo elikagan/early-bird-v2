@@ -5,25 +5,6 @@ import { useAuth } from "@/lib/auth-context";
 
 type Tab = "buy" | "watching" | "sell" | "account" | null;
 
-function NavItem({
-  href,
-  label,
-  active,
-}: {
-  href: string;
-  label: string;
-  active: boolean;
-}) {
-  const cls = active
-    ? "flex-1 flex flex-col items-center py-3 text-base-content font-bold border-t-2 border-neutral"
-    : "flex-1 flex flex-col items-center py-3 text-base-content/60";
-  return (
-    <Link href={href} className={cls}>
-      <span className="text-[10px] uppercase tracking-widest">{label}</span>
-    </Link>
-  );
-}
-
 export function BottomNav({
   active,
   watchingCount,
@@ -39,22 +20,29 @@ export function BottomNav({
       : "Watching";
 
   return (
-    <nav className="max-w-md mx-auto fixed bottom-0 left-0 right-0 bg-base-200 flex">
-      <NavItem href="/buy" label="Buy" active={active === "buy"} />
-      <NavItem
-        href="/watching"
-        label={watchLabel}
-        active={active === "watching"}
-      />
-      <div className="w-px bg-base-300 my-2"></div>
+    <nav className="eb-bnav">
+      <Link href="/buy">
+        <span className={active === "buy" ? "eb-active" : ""}>
+          Buy{active === "buy" && <span className="eb-bnav-dot" />}
+        </span>
+      </Link>
+      <Link href="/watching">
+        <span className={active === "watching" ? "eb-active" : ""}>
+          {watchLabel}{active === "watching" && <span className="eb-bnav-dot" />}
+        </span>
+      </Link>
       {isDealer && (
-        <NavItem href="/sell" label="Sell" active={active === "sell"} />
+        <Link href="/sell">
+          <span className={active === "sell" ? "eb-active" : ""}>
+            Sell{active === "sell" && <span className="eb-bnav-dot" />}
+          </span>
+        </Link>
       )}
-      <NavItem
-        href="/account"
-        label="Account"
-        active={active === "account"}
-      />
+      <Link href="/account">
+        <span className={active === "account" ? "eb-active" : ""}>
+          Account{active === "account" && <span className="eb-bnav-dot" />}
+        </span>
+      </Link>
     </nav>
   );
 }

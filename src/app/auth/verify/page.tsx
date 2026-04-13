@@ -48,25 +48,21 @@ function VerifyContent() {
 
   if (error) {
     return (
-      <div className="max-w-md mx-auto min-h-screen bg-base-100 flex flex-col items-center justify-center px-6">
-        <div className="text-xl font-bold tracking-tight mb-4">EARLY BIRD</div>
-        <div className="text-sm text-base-content/70 text-center mb-6">
-          {error}
+      <div className="min-h-screen flex flex-col items-center justify-center px-6">
+        <div className="text-eb-title tracking-widest text-eb-black mb-2">
+          EARLY BIRD
         </div>
-        <button
-          className="btn btn-neutral"
-          onClick={() => router.push("/")}
-        >
-          Back to sign in
+        <p className="text-eb-body text-eb-muted text-center mb-6">{error}</p>
+        <button className="eb-btn" onClick={() => router.push("/")}>
+          BACK TO SIGN IN
         </button>
       </div>
     );
   }
 
   return (
-    <div className="max-w-md mx-auto min-h-screen bg-base-100 flex flex-col items-center justify-center">
-      <span className="loading loading-spinner loading-md mb-4"></span>
-      <div className="text-sm text-base-content/60">Signing you in…</div>
+    <div className="min-h-screen flex flex-col items-center justify-center">
+      <span className="text-eb-body text-eb-muted">Signing you in…</span>
     </div>
   );
 }
@@ -75,8 +71,8 @@ export default function VerifyPage() {
   return (
     <Suspense
       fallback={
-        <div className="max-w-md mx-auto min-h-screen bg-base-100 flex items-center justify-center">
-          <span className="loading loading-spinner loading-md"></span>
+        <div className="min-h-screen flex items-center justify-center">
+          <span className="text-eb-body text-eb-muted">Loading…</span>
         </div>
       }
     >
