@@ -33,7 +33,11 @@ export default function VerifyShortPage() {
         const data = await res.json();
         localStorage.setItem("eb_token", data.session_token);
 
-        const dest = data.user.needs_onboarding ? "/onboarding" : "/home";
+        const dest = data.phone_changed
+          ? "/account"
+          : data.user.needs_onboarding
+            ? "/onboarding"
+            : "/home";
         window.location.href = dest;
       } catch {
         if (!cancelled) setError("Something went wrong. Please try again.");

@@ -55,6 +55,12 @@ export default function AccountPage() {
   const [avatarUploading, setAvatarUploading] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
+  const [editingPhone, setEditingPhone] = useState(false);
+  const [phoneValue, setPhoneValue] = useState("");
+  const [phoneSending, setPhoneSending] = useState(false);
+  const [phoneSent, setPhoneSent] = useState(false);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
+
   const isDealer = user?.is_dealer === 1;
 
   const loadProfile = useCallback(async () => {
@@ -231,7 +237,7 @@ export default function AccountPage() {
         const processed = await processImage(file);
         const formData = new FormData();
         formData.append("file", processed.blob, "avatar.jpg");
-        const uploadRes = await apiFetch("/api/upload", {
+        const uploadRes = await apiFetch("/api/upload/avatar", {
           method: "POST",
           body: formData,
         });
@@ -254,6 +260,31 @@ export default function AccountPage() {
     },
     [refreshUser]
   );
+
+  const sendPhoneChange = useCallback(async () => {
+    const digits = phoneValue.replace(/\D/g, "");
+    if (digits.length < 10) {
+      setPhoneError("Enter a valid phone number");
+      return;
+    }
+    setPhoneSending(true);
+    setPhoneError(null);
+    try {
+      const res = await apiFetch("/api/auth/change-phone", {
+        method: "POST",
+        body: JSON.stringify({ phone: phoneValue }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to send verification");
+      }
+      setPhoneSent(true);
+    } catch (err) {
+      setPhoneError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setPhoneSending(false);
+    }
+  }, [phoneValue]);
 
   // ── Derived ──
 
@@ -372,15 +403,27 @@ export default function AccountPage() {
                 </span>
               )}
             </button>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <div className="text-eb-body font-bold text-eb-black">
                 {displayName}
               </div>
-              <div className="text-eb-meta text-eb-muted">
-                {formatPhone(profile.phone)}
-              </div>
-              <div className="text-eb-micro text-eb-light mt-0.5">
-                Phone number can&apos;t be changed
+              <div className="flex items-center gap-2">
+                <span className="text-eb-meta text-eb-muted">
+                  {formatPhone(profile.phone)}
+                </span>
+                {!editingPhone && (
+                  <button
+                    onClick={() => {
+                      setPhoneValue("");
+                      setPhoneError(null);
+                      setPhoneSent(false);
+                      setEditingPhone(true);
+                    }}
+                    className="text-eb-micro text-eb-pop font-bold"
+                  >
+                    Change
+                  </button>
+                )}
               </div>
             </div>
             <button
@@ -444,6 +487,73 @@ export default function AccountPage() {
           </div>
         )}
       </section>
+
+      {/* Phone change form */}
+      {editingPhone && (
+        <section className="px-5 pb-4">
+          {!phoneSent ? (
+            <div className="border-2 border-eb-border p-4">
+              <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-2">
+                Change Phone Number
+              </div>
+              <p className="text-eb-micro text-eb-muted mb-3 leading-relaxed">
+                We&apos;ll text a verification link to your new number.
+              </p>
+              <input
+                type="tel"
+                inputMode="tel"
+                className="eb-input mb-2"
+                value={phoneValue}
+                onChange={(e) =>
+                  setPhoneValue(e.target.value.replace(/[^\d()\-\s+]/g, "").slice(0, 16))
+                }
+                placeholder="(555) 123-4567"
+                autoFocus
+              />
+              {phoneError && (
+                <p className="text-eb-meta text-eb-red mb-2">{phoneError}</p>
+              )}
+              <div className="flex gap-2">
+                <button
+                  onClick={sendPhoneChange}
+                  disabled={phoneSending || phoneValue.replace(/\D/g, "").length < 10}
+                  className="eb-btn flex-1"
+                >
+                  {phoneSending ? "Sending\u2026" : "Send Verification"}
+                </button>
+                <button
+                  onClick={() => {
+                    setEditingPhone(false);
+                    setPhoneError(null);
+                  }}
+                  className="flex-1 py-2.5 text-eb-caption font-bold border-2 border-eb-border text-eb-muted uppercase tracking-wider"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="border-2 border-eb-black p-4">
+              <div className="text-eb-body font-bold text-eb-black mb-1">
+                Check your new phone
+              </div>
+              <p className="text-eb-meta text-eb-muted leading-relaxed mb-3">
+                We sent a verification link to {phoneValue}. Tap it to confirm
+                the change.
+              </p>
+              <button
+                onClick={() => {
+                  setEditingPhone(false);
+                  setPhoneSent(false);
+                }}
+                className="text-eb-meta text-eb-pop font-bold"
+              >
+                Done
+              </button>
+            </div>
+          )}
+        </section>
+      )}
 
       {/* Dealer: Business name + Instagram */}
       {isDealer && (
