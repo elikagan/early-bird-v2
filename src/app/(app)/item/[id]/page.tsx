@@ -42,6 +42,7 @@ interface ItemDetail {
   dealer_instagram: string | null;
   dealer_display_name: string | null;
   dealer_user_id: string;
+  view_count: number;
   watcher_count: number;
   inquiry_count: number;
   booth_number: string | null;
@@ -678,7 +679,7 @@ export default function ItemDetailPage() {
           {isOwner && (
             <div className="eb-stats mx-5 mb-4 border border-eb-border">
               <div className="eb-stat">
-                <div className="eb-stat-num">&mdash;</div>
+                <div className="eb-stat-num">{item.view_count || 0}</div>
                 <div className="eb-stat-label">Views</div>
               </div>
               <div className="eb-stat">

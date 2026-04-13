@@ -73,6 +73,18 @@ export async function GET(
   });
   (item as Record<string, unknown>).dealer_payment_methods = methods.rows;
 
+  // Increment view count (non-owner views only, fire-and-forget)
+  const isOwner = user && user.id === (item.dealer_user_id as string);
+  if (!isOwner) {
+    db.execute({
+      sql: `UPDATE items SET view_count = view_count + 1 WHERE id = ?`,
+      args: [id],
+    }).catch(() => {}); // non-critical, don't block response
+    // Return incremented count in response
+    (item as Record<string, unknown>).view_count =
+      ((item.view_count as number) || 0) + 1;
+  }
+
   return json(item);
 }
 

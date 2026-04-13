@@ -15,6 +15,7 @@ interface Item {
   original_price: number | null;
   status: string;
   photo_url: string | null;
+  view_count: number;
   watcher_count: number;
   inquiry_count: number;
   sold_to: string | null;
@@ -129,6 +130,7 @@ function SellContent() {
     );
   }
 
+  const totalViews = items.reduce((s, i) => s + (i.view_count || 0), 0);
   const totalWatchers = items.reduce((s, i) => s + (i.watcher_count || 0), 0);
   const totalInquiries = items.reduce(
     (s, i) => s + (i.inquiry_count || 0),
@@ -150,6 +152,10 @@ function SellContent() {
         <div className="eb-stat">
           <div className="eb-stat-num">{items.length}</div>
           <div className="eb-stat-label">Listed</div>
+        </div>
+        <div className="eb-stat">
+          <div className="eb-stat-num">{totalViews}</div>
+          <div className="eb-stat-label">Views</div>
         </div>
         <div className="eb-stat">
           <div className="eb-stat-num">{totalWatchers}</div>
