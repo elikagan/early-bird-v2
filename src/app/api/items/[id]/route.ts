@@ -92,25 +92,40 @@ export async function PATCH(
 
   const body = await request.json();
   const item = existing.rows[0] as Record<string, unknown>;
+
+  // Concurrent edit safety: reject edits to sold items (status changes still allowed)
+  const isStatusOnly = Object.keys(body).every((k) =>
+    ["status", "held_for", "sold_to"].includes(k)
+  );
+  if (!isStatusOnly && item.status === "sold") {
+    return error("Cannot edit a sold item", 409);
+  }
+
   const updates: string[] = [];
   const args: unknown[] = [];
 
   if (body.title !== undefined) {
+    const title = String(body.title).trim();
+    if (!title || title.length > 60) return error("Title must be 1-60 characters");
     updates.push("title = ?");
-    args.push(body.title);
+    args.push(title);
   }
   if (body.description !== undefined) {
+    const desc = String(body.description || "").trim();
+    if (desc.length > 500) return error("Description max 500 characters");
     updates.push("description = ?");
-    args.push(body.description);
+    args.push(desc || null);
   }
   if (body.price !== undefined) {
+    const price = Number(body.price);
+    if (!Number.isFinite(price) || price < 100) return error("Price must be at least $1");
     // Track price drops: if new price < current price, record original
-    if (body.price < (item.price as number) && !item.original_price) {
+    if (price < (item.price as number) && !item.original_price) {
       updates.push("original_price = ?");
       args.push(item.price as unknown);
     }
     updates.push("price = ?");
-    args.push(body.price);
+    args.push(price);
   }
   if (body.price_firm !== undefined) {
     updates.push("price_firm = ?");
@@ -129,13 +144,53 @@ export async function PATCH(
     args.push(body.sold_to);
   }
 
-  if (updates.length === 0) return error("No fields to update");
+  const hasFieldUpdates = updates.length > 0;
 
-  args.push(id);
-  await db.execute({
-    sql: `UPDATE items SET ${updates.join(", ")} WHERE id = ?`,
-    args,
-  });
+  // Photo management
+  if (Array.isArray(body.add_photo_urls) && body.add_photo_urls.length > 0) {
+    // Get current max position
+    const posRes = await db.execute({
+      sql: `SELECT COALESCE(MAX(position), -1) as max_pos FROM item_photos WHERE item_id = ?`,
+      args: [id],
+    });
+    let pos = Number((posRes.rows[0] as Record<string, unknown>).max_pos) + 1;
+    for (const url of body.add_photo_urls) {
+      await db.execute({
+        sql: `INSERT INTO item_photos (id, item_id, url, position) VALUES (?, ?, ?, ?)`,
+        args: [(await import("@/lib/id")).newId(), id, url, pos++],
+      });
+    }
+  }
+
+  if (Array.isArray(body.remove_photo_ids) && body.remove_photo_ids.length > 0) {
+    // Check that at least 1 photo will remain
+    const totalRes = await db.execute({
+      sql: `SELECT COUNT(*) as count FROM item_photos WHERE item_id = ?`,
+      args: [id],
+    });
+    const total = Number((totalRes.rows[0] as Record<string, unknown>).count);
+    const addCount = Array.isArray(body.add_photo_urls) ? body.add_photo_urls.length : 0;
+    const remaining = total - body.remove_photo_ids.length + addCount;
+    if (remaining < 1) return error("Item must have at least 1 photo");
+
+    const placeholders = body.remove_photo_ids.map(() => "?").join(",");
+    await db.execute({
+      sql: `DELETE FROM item_photos WHERE item_id = ? AND id IN (${placeholders})`,
+      args: [id, ...body.remove_photo_ids],
+    });
+  }
+
+  if (!hasFieldUpdates && !body.add_photo_urls?.length && !body.remove_photo_ids?.length) {
+    return error("No fields to update");
+  }
+
+  if (hasFieldUpdates) {
+    args.push(id);
+    await db.execute({
+      sql: `UPDATE items SET ${updates.join(", ")} WHERE id = ?`,
+      args,
+    });
+  }
 
   // Helper to look up context for SMS
   async function getReceiptContext() {
