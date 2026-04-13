@@ -1,22 +1,23 @@
 # CLAUDE.md — Early Bird
 
-Read `EB_DESIGN.md` before doing anything. It is the source of truth for this project. Do NOT read `REVISION_LOG.md` unless explicitly told to.
+Read `EB_DESIGN.md` before doing anything. It is the source of truth for product decisions. Read `DESIGN_SYSTEM.md` for all visual/styling decisions. Read `RESKIN_PLAN.md` for the current session's scope. Do NOT read `REVISION_LOG.md` unless explicitly told to.
 
 ## Tech Stack
 
 - Next.js (App Router)
-- DaisyUI + Tailwind CSS
-- SQLite via Turso
+- Tailwind CSS (no DaisyUI — removed during reskin)
+- Supabase Postgres (migrated from Turso)
 - Monospace font globally (JetBrains Mono)
+- SMS: Pingram API (falls back to console stub without PINGRAM_API_KEY)
 
 ## Rules
 
-1. **No inline styles.** Never write `style=""` on any element. The pre-commit hook will reject it. Use DaisyUI classes and Tailwind utilities only.
-2. **No new HTML elements beyond the wireframe.** If a screen was built in Phase 1, do not add elements that aren't already there. If something is missing, ask — don't invent.
-3. **No class name changes.** Do not rename, remove, or override DaisyUI classes from the wireframes unless explicitly told to.
-4. **One job per session.** Each session has a single phase or task. Do not bleed into other phases. If the task is "build API routes," do not touch frontend files.
-5. **Commit after every completed unit.** A unit is one screen, one route, or one feature. Commit and push immediately. Do not batch.
-6. **Never read REVISION_LOG.md.** It exceeds the token limit and is not needed for any session. If a task requires revision history, ask the user to provide the specific entry.
+1. **No inline styles.** Never write `style=""` on any element. The pre-commit hook will reject it. Use design system classes (`eb-*`) and Tailwind utilities only.
+2. **Design system is law.** All colors, font sizes, and spacing come from `DESIGN_SYSTEM.md` tokens. No hardcoded hex values. No arbitrary Tailwind values like `text-[14px]` — use the defined scale.
+3. **One job per session.** Each session has a single phase or task. Do not bleed into other phases. Read `RESKIN_PLAN.md` for your session's scope.
+4. **Commit after every completed unit.** A unit is one screen, one route, or one feature. Commit and push immediately. Do not batch.
+5. **Never read REVISION_LOG.md.** It exceeds the token limit and is not needed for any session. If a task requires revision history, ask the user to provide the specific entry.
+6. **Rollback tag:** `pre-reskin` — everything before the visual redesign lives here.
 
 ## Build Phases
 
