@@ -18,7 +18,7 @@ export async function POST(request: Request) {
     args: [id, code],
   });
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").trim();
   const url = `${baseUrl}/invite/${code}`;
 
   return json({ code, url });
