@@ -302,7 +302,7 @@ export default function AccountPage() {
 
   const getPref = (key: string): boolean => {
     const p = profile?.notification_preferences?.find((n) => n.key === key);
-    return p ? p.enabled === 1 : false;
+    return p ? p.enabled === 1 : true; // default ON — matches backend shouldNotify()
   };
 
   const getPayment = (method: string): boolean => {
