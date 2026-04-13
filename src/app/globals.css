@@ -1,3 +1,351 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    --eb-black: #1a1a1a;
+    --eb-text: #2a2a2a;
+    --eb-muted: #888888;
+    --eb-light: #bbbbbb;
+    --eb-border: #e0e0e0;
+    --eb-bg: #FAFAF6;
+    --eb-white: #ffffff;
+    --eb-pop: #D64000;
+    --eb-pop-bg: #FEF7F2;
+    --eb-pop-light: #FFF0E8;
+    --eb-green: #22C55E;
+    --eb-amber: #EAB308;
+    --eb-red: #DC2626;
+  }
+
+  body {
+    background: var(--eb-bg);
+    color: var(--eb-text);
+    max-width: 430px;
+    margin: 0 auto;
+    padding-bottom: 56px;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@layer components {
+  /* ---- Masthead ---- */
+  .eb-masthead {
+    padding: 16px 20px 12px;
+    border-bottom: 2px solid var(--eb-black);
+  }
+  .eb-masthead h1 {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--eb-black);
+  }
+  .eb-masthead .eb-sub {
+    font-size: 10px;
+    color: var(--eb-muted);
+    letter-spacing: 0.04em;
+    margin-top: 2px;
+  }
+
+  /* ---- Section label ---- */
+  .eb-section {
+    padding: 16px 20px 8px;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--eb-muted);
+    display: flex;
+    justify-content: space-between;
+  }
+
+  /* ---- Drop bar ---- */
+  .eb-drop-bar {
+    background: var(--eb-black);
+    color: #fff;
+    padding: 10px 20px;
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .eb-drop-bar .eb-live {
+    font-weight: 700;
+    color: var(--eb-pop);
+    letter-spacing: 0.06em;
+  }
+  .eb-drop-bar .eb-cd {
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
+  /* ---- Drop box (market detail) ---- */
+  .eb-drop-box {
+    margin-top: 16px;
+    padding: 14px 16px;
+    border: 2px solid var(--eb-pop);
+    background: var(--eb-pop-bg);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .eb-drop-box .eb-drop-label {
+    font-size: 11px;
+    color: var(--eb-pop);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .eb-drop-box .eb-drop-sub {
+    font-size: 11px;
+    color: var(--eb-muted);
+    margin-top: 2px;
+  }
+  .eb-drop-box .eb-drop-time {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--eb-pop);
+  }
+
+  /* ---- 2-column grid ---- */
+  .eb-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 0 12px 12px;
+  }
+  .eb-grid-card {}
+  .eb-grid-card .eb-photo {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    display: block;
+  }
+  .eb-grid-card .eb-body {
+    padding: 8px 10px 10px;
+  }
+  .eb-grid-card .eb-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--eb-black);
+    line-height: 1.3;
+  }
+  .eb-grid-card .eb-price {
+    font-size: 13px;
+    font-weight: 700;
+    margin-top: 2px;
+  }
+  .eb-grid-card .eb-price-was {
+    font-size: 10px;
+    color: var(--eb-muted);
+    text-decoration: line-through;
+    font-weight: 400;
+    margin-left: 3px;
+  }
+  .eb-grid-card .eb-dealer {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 5px;
+  }
+  .eb-grid-card .eb-dealer-face {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+  }
+  .eb-grid-card .eb-dealer-name {
+    font-size: 9px;
+    color: var(--eb-muted);
+    line-height: 1.3;
+  }
+  .eb-grid-card .eb-status {
+    font-size: 10px;
+    margin-top: 5px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--eb-muted);
+  }
+
+  /* ---- Tags ---- */
+  .eb-tag-firm {
+    display: inline-block;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 1px 4px;
+    border: 1.5px solid var(--eb-black);
+    color: var(--eb-black);
+    vertical-align: middle;
+    margin-top: 4px;
+  }
+  .eb-tag-drop {
+    display: inline-block;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 1px 4px;
+    border: 1.5px solid var(--eb-pop);
+    color: var(--eb-pop);
+    transform: rotate(-1.5deg);
+    vertical-align: middle;
+    margin-top: 4px;
+  }
+  .eb-tag-new {
+    display: inline-block;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 1px 4px;
+    color: var(--eb-pop);
+    background: var(--eb-pop-light);
+    border: 1.5px solid transparent;
+    vertical-align: middle;
+    margin-left: 3px;
+  }
+  .eb-tag-hold {
+    display: inline-block;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 1px 4px;
+    background: var(--eb-pop);
+    color: #fff;
+    vertical-align: middle;
+    margin-left: 3px;
+  }
+
+  /* ---- Status dots ---- */
+  .eb-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+  .eb-dot-green  { background: var(--eb-green); }
+  .eb-dot-amber  { background: var(--eb-amber); }
+  .eb-dot-red    { background: var(--eb-red); }
+
+  /* ---- Sold state ---- */
+  .eb-sold .eb-photo {
+    opacity: 0.4;
+    filter: grayscale(100%);
+  }
+  .eb-sold .eb-title {
+    text-decoration: line-through;
+    color: var(--eb-muted);
+  }
+  .eb-sold .eb-price {
+    text-decoration: line-through;
+    color: var(--eb-muted);
+  }
+
+  /* ---- Bottom nav ---- */
+  .eb-bnav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-width: 430px;
+    margin: 0 auto;
+    background: var(--eb-bg);
+    border-top: 1px solid var(--eb-border);
+    padding: 14px 20px;
+    font-size: 12px;
+    display: flex;
+    justify-content: space-around;
+    z-index: 10;
+  }
+  .eb-bnav span {
+    color: var(--eb-muted);
+  }
+  .eb-bnav .eb-active {
+    color: var(--eb-black);
+    font-weight: 700;
+  }
+  .eb-bnav-dot {
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    background: var(--eb-pop);
+    border-radius: 50%;
+    vertical-align: super;
+    margin-left: 2px;
+  }
+
+  /* ---- CTA button ---- */
+  .eb-cta {
+    display: block;
+    width: calc(100% - 40px);
+    margin: 0 20px 16px;
+    padding: 16px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    background: var(--eb-pop);
+    color: #fff;
+    border: none;
+    text-align: center;
+    cursor: pointer;
+  }
+
+  /* ---- Form input ---- */
+  .eb-input {
+    width: 100%;
+    padding: 14px 16px;
+    font-family: inherit;
+    font-size: 16px;
+    border: 2px solid var(--eb-black);
+    background: #fff;
+    outline: none;
+  }
+  .eb-input::placeholder {
+    color: var(--eb-light);
+  }
+
+  /* ---- Primary button (form submit, black bg) ---- */
+  .eb-btn {
+    display: block;
+    width: 100%;
+    padding: 16px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    background: var(--eb-black);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+  }
+
+  /* ---- Empty state ---- */
+  .eb-empty {
+    padding: 48px 20px;
+    text-align: center;
+  }
+  .eb-empty .eb-icon {
+    font-size: 28px;
+    margin-bottom: 12px;
+    color: var(--eb-muted);
+  }
+  .eb-empty p {
+    font-size: 12px;
+    color: var(--eb-muted);
+    line-height: 1.6;
+  }
+  .eb-empty a {
+    display: inline-block;
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--eb-pop);
+    font-weight: 700;
+    text-decoration: none;
+  }
+}

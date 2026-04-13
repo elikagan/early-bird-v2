@@ -21,7 +21,7 @@ Read `EB_DESIGN.md` before doing anything. It is the source of truth for product
 
 ## Build Phases
 
-- **Phase 1 — Wireframes:** Static HTML pages with DaisyUI classes and hardcoded dummy data. No JS logic. No data fetching. One file per screen/state.
+- **Phase 1 — Wireframes:** Static HTML pages with hardcoded dummy data. No JS logic. No data fetching. One file per screen/state.
 - **Phase 2 — Backend:** Database schema, API routes, seed data. No frontend changes.
 - **Phase 3 — Wiring:** Connect wireframes to API. Replace dummy data with real fetches. Do not change classes or add elements.
 - **Phase 4 — Polish:** Loading/empty/error states, transitions, edge cases. Still no inline styles.
@@ -52,25 +52,17 @@ Everything is monospace. The Tailwind config overrides `fontFamily.sans` to `Jet
 ## QA Checklist (Run Before Every Commit)
 
 - [ ] `grep -r 'style="' src/` returns nothing
-- [ ] No hardcoded color values, font sizes, or spacing outside Tailwind/DaisyUI
-- [ ] Every visible element uses a DaisyUI class or Tailwind utility
-- [ ] Screen still matches the Phase 1 wireframe visually
+- [ ] No hardcoded color values, font sizes, or spacing outside Tailwind config
+- [ ] Every visible element uses a design system class (`eb-*`) or Tailwind utility
+- [ ] Screen matches the design mockups (https://eb-designs.vercel.app)
 - [ ] No files outside the current phase were modified
 
-## Session 1 Setup (Do This First)
+## Design System Reference
 
-1. Initialize Next.js project with App Router
-2. Install and configure Tailwind + DaisyUI
-3. Configure `tailwind.config.js` with JetBrains Mono as the global font
-4. Install `@libsql/client` (Turso)
-5. Install the pre-commit hook:
-   ```bash
-   cp pre-commit .git/hooks/pre-commit
-   chmod +x .git/hooks/pre-commit
-   ```
-6. Verify the hook works: create a test file with `style=""`, try to commit, confirm it's blocked, then delete the test file
-7. `npm run dev` should show a blank page with monospace font and DaisyUI working
-8. Commit and push
+- **Tokens:** `tailwind.config.js` (`eb` color palette + `eb-*` fontSize scale)
+- **Component classes:** `globals.css` (`eb-masthead`, `eb-grid`, `eb-cta`, etc.)
+- **Visual reference:** `public/design-system.html` (all tokens + components rendered)
+- **Design mockups:** https://eb-designs.vercel.app (source in `/tmp/eb-designs/`)
 
 ## Server Commands
 

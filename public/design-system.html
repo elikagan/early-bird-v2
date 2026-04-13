@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Early Bird — Design System</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --eb-black:#1a1a1a;--eb-text:#2a2a2a;--eb-muted:#888888;--eb-light:#bbbbbb;
+    --eb-border:#e0e0e0;--eb-bg:#FAFAF6;--eb-white:#ffffff;
+    --eb-pop:#D64000;--eb-pop-bg:#FEF7F2;--eb-pop-light:#FFF0E8;
+    --eb-green:#22C55E;--eb-amber:#EAB308;--eb-red:#DC2626;
+  }
+  body{font-family:'JetBrains Mono',monospace;background:#f5f5f0;color:var(--eb-text);padding:32px 24px 64px;-webkit-font-smoothing:antialiased}
+  h1{font-size:24px;font-weight:700;color:var(--eb-black);margin-bottom:8px}
+  .intro{font-size:12px;color:var(--eb-muted);margin-bottom:40px;line-height:1.6}
+  h2{font-size:14px;font-weight:700;color:var(--eb-black);letter-spacing:0.06em;text-transform:uppercase;margin:48px 0 16px;padding-bottom:8px;border-bottom:2px solid var(--eb-black)}
+  h3{font-size:11px;font-weight:700;color:var(--eb-muted);letter-spacing:0.1em;text-transform:uppercase;margin:24px 0 12px}
+
+  /* Swatches */
+  .swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px}
+  .swatch{border:1px solid var(--eb-border);background:#fff}
+  .swatch-color{height:56px}
+  .swatch-info{padding:8px 10px}
+  .swatch-name{font-size:10px;font-weight:700;color:var(--eb-black)}
+  .swatch-val{font-size:9px;color:var(--eb-muted);margin-top:2px}
+  .swatch-tw{font-size:8px;color:var(--eb-light);margin-top:1px}
+
+  /* Type scale */
+  .type-row{margin-bottom:16px;padding:12px 16px;background:#fff;border:1px solid var(--eb-border)}
+  .type-label{font-size:9px;color:var(--eb-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px}
+
+  /* Spacing */
+  .spacing-row{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+  .spacing-bar{height:12px;background:var(--eb-pop);opacity:0.6}
+  .spacing-label{font-size:9px;color:var(--eb-muted);white-space:nowrap;min-width:40px}
+
+  /* Component demos */
+  .demo{background:var(--eb-bg);max-width:430px;margin:12px 0 24px;border:1px solid var(--eb-border);overflow:hidden}
+  .demo-label{font-size:9px;color:var(--eb-light);letter-spacing:0.08em;text-transform:uppercase;margin:16px 0 4px}
+
+  /* Inline component styles (mirror globals.css) */
+  .eb-masthead{padding:16px 20px 12px;border-bottom:2px solid var(--eb-black)}
+  .eb-masthead h1{font-size:15px;font-weight:700;letter-spacing:0.08em;color:var(--eb-black);text-transform:none;border:none;margin:0;padding:0}
+  .eb-masthead .eb-sub{font-size:10px;color:var(--eb-muted);letter-spacing:0.04em;margin-top:2px}
+
+  .eb-section{padding:16px 20px 8px;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--eb-muted);display:flex;justify-content:space-between}
+
+  .eb-drop-bar{background:var(--eb-black);color:#fff;padding:10px 20px;font-size:12px;display:flex;justify-content:space-between;align-items:center}
+  .eb-drop-bar .eb-live{font-weight:700;color:var(--eb-pop);letter-spacing:0.06em}
+  .eb-drop-bar .eb-cd{font-weight:700;letter-spacing:0.04em}
+
+  .eb-drop-box{margin:16px 20px 0;padding:14px 16px;border:2px solid var(--eb-pop);background:var(--eb-pop-bg);display:flex;justify-content:space-between;align-items:center}
+  .eb-drop-box .eb-drop-label{font-size:11px;color:var(--eb-pop);font-weight:700;letter-spacing:0.06em;text-transform:uppercase}
+  .eb-drop-box .eb-drop-sub{font-size:11px;color:var(--eb-muted);margin-top:2px}
+  .eb-drop-box .eb-drop-time{font-size:20px;font-weight:700;color:var(--eb-pop)}
+
+  .eb-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 12px 12px}
+  .eb-grid-card .eb-photo{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;background:var(--eb-border)}
+  .eb-grid-card .eb-body{padding:8px 10px 10px}
+  .eb-grid-card .eb-title{font-size:12px;font-weight:700;color:var(--eb-black);line-height:1.3}
+  .eb-grid-card .eb-price{font-size:13px;font-weight:700;margin-top:2px}
+  .eb-grid-card .eb-price-was{font-size:10px;color:var(--eb-muted);text-decoration:line-through;font-weight:400;margin-left:3px}
+  .eb-grid-card .eb-dealer{display:flex;align-items:center;gap:5px;margin-top:5px}
+  .eb-grid-card .eb-dealer-face{width:18px;height:18px;border-radius:50%;background:var(--eb-black);color:#fff;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700}
+  .eb-grid-card .eb-dealer-name{font-size:9px;color:var(--eb-muted);line-height:1.3}
+  .eb-grid-card .eb-status{font-size:10px;margin-top:5px;display:flex;align-items:center;gap:5px;color:var(--eb-muted)}
+
+  .eb-tag-firm{display:inline-block;font-size:8px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:1px 4px;border:1.5px solid var(--eb-black);color:var(--eb-black);vertical-align:middle;margin-top:4px}
+  .eb-tag-drop{display:inline-block;font-size:8px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:1px 4px;border:1.5px solid var(--eb-pop);color:var(--eb-pop);transform:rotate(-1.5deg);vertical-align:middle;margin-top:4px}
+  .eb-tag-new{display:inline-block;font-size:8px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:1px 4px;color:var(--eb-pop);background:var(--eb-pop-light);border:1.5px solid transparent;vertical-align:middle;margin-left:3px}
+  .eb-tag-hold{display:inline-block;font-size:8px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:1px 4px;background:var(--eb-pop);color:#fff;vertical-align:middle;margin-left:3px}
+
+  .eb-dot{display:inline-block;width:6px;height:6px;border-radius:50%}
+  .eb-dot-green{background:var(--eb-green)}
+  .eb-dot-amber{background:var(--eb-amber)}
+  .eb-dot-red{background:var(--eb-red)}
+
+  .eb-sold .eb-photo{opacity:0.4;filter:grayscale(100%)}
+  .eb-sold .eb-title{text-decoration:line-through;color:var(--eb-muted)}
+  .eb-sold .eb-price{text-decoration:line-through;color:var(--eb-muted)}
+
+  .eb-bnav{position:relative;max-width:430px;background:var(--eb-bg);border-top:1px solid var(--eb-border);padding:14px 20px;font-size:12px;display:flex;justify-content:space-around}
+  .eb-bnav span{color:var(--eb-muted)}
+  .eb-bnav .eb-active{color:var(--eb-black);font-weight:700}
+  .eb-bnav-dot{display:inline-block;width:5px;height:5px;background:var(--eb-pop);border-radius:50%;vertical-align:super;margin-left:2px}
+
+  .eb-cta{display:block;width:calc(100% - 40px);margin:0 20px 16px;padding:16px;font-family:inherit;font-size:14px;font-weight:700;letter-spacing:0.04em;background:var(--eb-pop);color:#fff;border:none;text-align:center;cursor:pointer}
+
+  .eb-input{width:100%;padding:14px 16px;font-family:inherit;font-size:16px;border:2px solid var(--eb-black);background:#fff;outline:none}
+  .eb-input::placeholder{color:var(--eb-light)}
+
+  .eb-btn{display:block;width:100%;padding:16px;font-family:inherit;font-size:13px;font-weight:700;letter-spacing:0.04em;background:var(--eb-black);color:#fff;border:none;cursor:pointer}
+
+  .eb-empty{padding:48px 20px;text-align:center}
+  .eb-empty .eb-icon{font-size:28px;margin-bottom:12px;color:var(--eb-muted)}
+  .eb-empty p{font-size:12px;color:var(--eb-muted);line-height:1.6}
+  .eb-empty a{display:inline-block;margin-top:12px;font-size:12px;color:var(--eb-pop);font-weight:700;text-decoration:none}
+
+  /* Stats bar */
+  .eb-stats{display:flex;border-bottom:1px solid var(--eb-border)}
+  .eb-stat{flex:1;text-align:center;padding:18px 12px}
+  .eb-stat:not(:last-child){border-right:1px solid var(--eb-border)}
+  .eb-stat-num{font-size:26px;font-weight:700;color:var(--eb-black)}
+  .eb-stat-label{font-size:9px;color:var(--eb-muted);text-transform:uppercase;letter-spacing:0.1em;margin-top:2px}
+
+  /* Dealer card */
+  .eb-dealer-card{margin:0 20px 20px;padding:14px 16px;border:1px solid var(--eb-border);display:flex;gap:12px;align-items:center}
+  .eb-dealer-av{width:40px;height:40px;background:var(--eb-black);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700}
+  .eb-dealer-av-sm{width:32px;height:32px;background:#e8e8e8;color:var(--eb-text);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+</style>
+</head>
+<body>
+
+<h1>Early Bird — Design System</h1>
+<p class="intro">Canonical visual reference. JetBrains Mono everywhere. Classifieds energy with a warm accent.<br>Source of truth: <code>DESIGN_SYSTEM.md</code> · Tokens: <code>tailwind.config.js</code> · Classes: <code>globals.css</code></p>
+
+<!-- ============ COLORS ============ -->
+<h2>Colors</h2>
+
+<h3>Core</h3>
+<div class="swatches">
+  <div class="swatch"><div class="swatch-color" style="background:#1a1a1a"></div><div class="swatch-info"><div class="swatch-name">Black</div><div class="swatch-val">#1a1a1a</div><div class="swatch-tw">eb-black</div></div></div>
+  <div class="swatch"><div class="swatch-color" style="background:#2a2a2a"></div><div class="swatch-info"><div class="swatch-name">Text</div><div class="swatch-val">#2a2a2a</div><div class="swatch-tw">eb-text</div></div></div>
+  <div class="swatch"><div class="swatch-color" style="background:#888888"></div><div class="swatch-info"><div class="swatch-name">Muted</div><div class="swatch-val">#888888</div><div class="swatch-tw">eb-muted</div></div></div>
+  <div class="swatch"><div class="swatch-color" style="background:#bbbbbb"></div><div class="swatch-info"><div class="swatch-name">Light</div><div class="swatch-val">#bbbbbb</div><div class="swatch-tw">eb-light</div></div></div>
+  <div class="swatch"><div class="swatch-color" style="background:#e0e0e0"></div><div class="swatch-info"><div class="swatch-name">Border</div><div class="swatch-val">#e0e0e0</div><div class="swatch-tw">eb-border</div></div></div>
+  <div class="swatch"><div class="swatch-color" style="background:#FAFAF6;border:1px solid #e0e0e0"></div><div class="swatch-info"><div class="swatch-name">Bg</div><div class="swatch-val">#FAFAF6</div><div class="swatch-tw">eb-bg</div></div></div>
+  <div class="swatch"><div class="swatch-color" style="background:#ffffff;border:1px solid #e0e0e0"></div><div class="swatch-info"><div class="swatch-name">White</div><div class="swatch-val">#ffffff</div><div class="swatch-tw">eb-white</div></div></div>
+</div>
+
+<h3>Accent (Pop)</h3>
+<div class="swatches">
+  <div class="swatch"><div class="swatch-color" style="background:#D64000"></div><div class="swatch-info"><div class="swatch-name">Pop</div><div class="swatch-val">#D64000</div><div class="swatch-tw">eb-pop</div></div></div>
+  <div class="swatch"><div class="swatch-color" style="background:#FEF7F2;border:1px solid #e0e0e0"></div><div class="swatch-info"><div class="swatch-name">Pop Bg</div><div class="swatch-val">#FEF7F2</div><div class="swatch-tw">eb-pop-bg</div></div></div>
+  <div class="swatch"><div class="swatch-color" style="background:#FFF0E8;border:1px solid #e0e0e0"></div><div class="swatch-info"><div class="swatch-name">Pop Light</div><div class="swatch-val">#FFF0E8</div><div class="swatch-tw">eb-pop-light</div></div></div>
+</div>
+
+<h3>Semantic</h3>
+<div class="swatches">
+  <div class="swatch"><div class="swatch-color" style="background:#22C55E"></div><div class="swatch-info"><div class="swatch-name">Green</div><div class="swatch-val">#22C55E</div><div class="swatch-tw">eb-green</div></div></div>
+  <div class="swatch"><div class="swatch-color" style="background:#EAB308"></div><div class="swatch-info"><div class="swatch-name">Amber</div><div class="swatch-val">#EAB308</div><div class="swatch-tw">eb-amber</div></div></div>
+  <div class="swatch"><div class="swatch-color" style="background:#DC2626"></div><div class="swatch-info"><div class="swatch-name">Red</div><div class="swatch-val">#DC2626</div><div class="swatch-tw">eb-red</div></div></div>
+</div>
+
+<!-- ============ TYPOGRAPHY ============ -->
+<h2>Typography</h2>
+
+<div class="type-row">
+  <div class="type-label">Hero — 32px / 700</div>
+  <div style="font-size:32px;font-weight:700;color:var(--eb-black);letter-spacing:-0.02em;line-height:1.15">Shop before sunrise.</div>
+</div>
+<div class="type-row">
+  <div class="type-label">Display — 24px / 700</div>
+  <div style="font-size:24px;font-weight:700;color:var(--eb-black);line-height:1.2">Downtown Modernism</div>
+</div>
+<div class="type-row">
+  <div class="type-label">Title — 15px / 700</div>
+  <div style="font-size:15px;font-weight:700;color:var(--eb-black);letter-spacing:0.08em;line-height:1.3">EARLY BIRD</div>
+</div>
+<div class="type-row">
+  <div class="type-label">Body — 13px / 400</div>
+  <div style="font-size:13px;font-weight:400;color:var(--eb-text);line-height:1.7">Low 4-drawer walnut credenza, circa 1962. Original brass pulls, minimal wear.</div>
+</div>
+<div class="type-row">
+  <div class="type-label">Caption — 12px / 400</div>
+  <div style="font-size:12px;font-weight:400;color:var(--eb-text);line-height:1.3">Walnut Credenza</div>
+</div>
+<div class="type-row">
+  <div class="type-label">Meta — 10px / 400</div>
+  <div style="font-size:10px;font-weight:400;letter-spacing:0.1em;text-transform:uppercase;color:var(--eb-muted);line-height:1.4">NEW LISTINGS · 24 ITEMS</div>
+</div>
+<div class="type-row">
+  <div class="type-label">Micro — 9px / 700</div>
+  <div style="font-size:9px;font-weight:700;color:var(--eb-muted);line-height:1.2">Marco's Finds</div>
+</div>
+
+<!-- ============ SPACING ============ -->
+<h2>Spacing</h2>
+<p style="font-size:11px;color:var(--eb-muted);margin-bottom:16px">4px base. Use multiples: 4, 8, 12, 16, 20, 24, 32, 48.</p>
+<div class="spacing-row"><span class="spacing-label">4px</span><div class="spacing-bar" style="width:4px"></div></div>
+<div class="spacing-row"><span class="spacing-label">8px</span><div class="spacing-bar" style="width:8px"></div></div>
+<div class="spacing-row"><span class="spacing-label">12px</span><div class="spacing-bar" style="width:12px"></div></div>
+<div class="spacing-row"><span class="spacing-label">16px</span><div class="spacing-bar" style="width:16px"></div></div>
+<div class="spacing-row"><span class="spacing-label">20px</span><div class="spacing-bar" style="width:20px"></div></div>
+<div class="spacing-row"><span class="spacing-label">24px</span><div class="spacing-bar" style="width:24px"></div></div>
+<div class="spacing-row"><span class="spacing-label">32px</span><div class="spacing-bar" style="width:32px"></div></div>
+<div class="spacing-row"><span class="spacing-label">48px</span><div class="spacing-bar" style="width:48px"></div></div>
+
+<!-- ============ COMPONENTS ============ -->
+<h2>Components</h2>
+
+<!-- Masthead -->
+<h3>Masthead</h3>
+<div class="demo">
+  <div class="eb-masthead">
+    <h1>EARLY BIRD</h1>
+    <div class="eb-sub">Downtown Modernism · Apr 26</div>
+  </div>
+</div>
+
+<!-- Drop Bar -->
+<h3>Drop Bar</h3>
+<div class="demo">
+  <div class="eb-drop-bar">
+    <div>Drop is <span class="eb-live">LIVE</span></div>
+    <div class="eb-cd">14d 9h 22m</div>
+  </div>
+</div>
+
+<!-- Drop Box -->
+<h3>Drop Box</h3>
+<div class="demo" style="padding-bottom:16px">
+  <div class="eb-drop-box">
+    <div>
+      <div class="eb-drop-label">Drop opens</div>
+      <div class="eb-drop-sub">Tonight, Friday 7pm PT</div>
+    </div>
+    <div class="eb-drop-time">14d 9h</div>
+  </div>
+</div>
+
+<!-- Section Label -->
+<h3>Section Label</h3>
+<div class="demo">
+  <div class="eb-section"><span>New listings</span><span>24 items</span></div>
+</div>
+
+<!-- Stats Bar -->
+<h3>Stats Bar</h3>
+<div class="demo">
+  <div class="eb-stats">
+    <div class="eb-stat"><div class="eb-stat-num">12</div><div class="eb-stat-label">Dealers</div></div>
+    <div class="eb-stat"><div class="eb-stat-num">47</div><div class="eb-stat-label">Items</div></div>
+    <div class="eb-stat"><div class="eb-stat-num">$85</div><div class="eb-stat-label">Lowest</div></div>
+  </div>
+</div>
+
+<!-- Tags -->
+<h3>Tags</h3>
+<div class="demo" style="padding:16px 20px">
+  <span class="eb-tag-firm">FIRM</span>
+  <span class="eb-tag-drop">−28%</span>
+  <span class="eb-tag-new">NEW</span>
+  <span class="eb-tag-hold">HOLD</span>
+</div>
+
+<!-- Status Dots -->
+<h3>Status Dots</h3>
+<div class="demo" style="padding:16px 20px;font-size:10px;display:flex;gap:20px;color:var(--eb-muted)">
+  <span><span class="eb-dot eb-dot-green"></span> On hold</span>
+  <span><span class="eb-dot eb-dot-amber"></span> 2 others</span>
+  <span><span class="eb-dot eb-dot-red"></span> Sold</span>
+</div>
+
+<!-- 2-Column Grid -->
+<h3>2-Column Grid (with all states)</h3>
+<div class="demo">
+  <div class="eb-grid" style="padding-top:12px">
+    <!-- Normal card -->
+    <div class="eb-grid-card">
+      <div class="eb-photo" style="background:#ddd"></div>
+      <div class="eb-body">
+        <div class="eb-title">Walnut Credenza<span class="eb-tag-new">NEW</span></div>
+        <div class="eb-price">$450</div>
+        <div><span class="eb-tag-firm">FIRM</span></div>
+        <div class="eb-dealer"><div class="eb-dealer-face">MF</div><span class="eb-dealer-name">Marco's Finds</span></div>
+      </div>
+    </div>
+    <!-- Price drop card -->
+    <div class="eb-grid-card">
+      <div class="eb-photo" style="background:#ccc"></div>
+      <div class="eb-body">
+        <div class="eb-title">Brass Desk Lamp</div>
+        <div class="eb-price">$180 <span class="eb-price-was">$250</span></div>
+        <div><span class="eb-tag-drop">−28%</span></div>
+        <div class="eb-dealer"><div class="eb-dealer-face">DG</div><span class="eb-dealer-name">Deco Garage</span></div>
+      </div>
+    </div>
+    <!-- Status card -->
+    <div class="eb-grid-card">
+      <div class="eb-photo" style="background:#d8d8d5"></div>
+      <div class="eb-body">
+        <div class="eb-title">Teak Nesting Tables</div>
+        <div class="eb-price">$220</div>
+        <div class="eb-dealer"><div class="eb-dealer-face">MF</div><span class="eb-dealer-name">Marco's Finds</span></div>
+        <div class="eb-status"><span class="eb-dot eb-dot-amber"></span> 2 others interested</div>
+      </div>
+    </div>
+    <!-- Sold card -->
+    <div class="eb-grid-card eb-sold">
+      <div class="eb-photo" style="background:#ccc"></div>
+      <div class="eb-body">
+        <div class="eb-title">Chrome Floor Lamp</div>
+        <div class="eb-price">$275</div>
+        <div class="eb-dealer"><div class="eb-dealer-face">DG</div><span class="eb-dealer-name">Deco Garage</span></div>
+        <div class="eb-status"><span class="eb-dot eb-dot-red"></span> Sold</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Dealer Card -->
+<h3>Dealer Card (detail view)</h3>
+<div class="demo" style="padding-top:16px">
+  <div class="eb-dealer-card">
+    <div class="eb-dealer-av">MF</div>
+    <div>
+      <div style="font-size:13px;font-weight:700;color:var(--eb-black)">Marco's Finds</div>
+      <div style="font-size:11px;color:var(--eb-muted);margin-top:1px">Booth 42 · Downtown Modernism · Apr 26</div>
+    </div>
+  </div>
+</div>
+
+<!-- Dealer Avatar (small) -->
+<h3>Dealer Avatar (market list)</h3>
+<div class="demo" style="padding:16px 20px;display:flex;gap:16px;align-items:center">
+  <div class="eb-dealer-av-sm">MF</div>
+  <div class="eb-dealer-av-sm">DG</div>
+  <div class="eb-dealer-av-sm">AB</div>
+  <span style="font-size:9px;color:var(--eb-muted)">32px, light bg</span>
+</div>
+
+<!-- CTA Button -->
+<h3>CTA Button (pop)</h3>
+<div class="demo" style="padding:16px 0">
+  <button class="eb-cta">I'M INTERESTED →</button>
+</div>
+
+<!-- Form Input + Button -->
+<h3>Form Input + Button</h3>
+<div class="demo" style="padding:16px 20px">
+  <input class="eb-input" type="tel" placeholder="(555) 555-0199">
+  <button class="eb-btn" style="margin-top:12px">TEXT ME A SIGN-IN LINK</button>
+</div>
+
+<!-- Bottom Nav -->
+<h3>Bottom Nav (buyer)</h3>
+<div class="demo">
+  <div class="eb-bnav">
+    <span class="eb-active">Buy<span class="eb-bnav-dot"></span></span>
+    <span>Watching</span>
+    <span>Account</span>
+  </div>
+</div>
+
+<div class="demo-label">Bottom Nav (dealer)</div>
+<div class="demo">
+  <div class="eb-bnav">
+    <span>Buy</span>
+    <span>Watching</span>
+    <span class="eb-active">Sell<span class="eb-bnav-dot"></span></span>
+    <span>Account</span>
+  </div>
+</div>
+
+<!-- Empty State -->
+<h3>Empty State</h3>
+<div class="demo">
+  <div class="eb-empty">
+    <div class="eb-icon">○</div>
+    <p>Nothing from past markets yet.<br>Items you watch will show up here.</p>
+    <a href="#">Browse the drop →</a>
+  </div>
+</div>
+
+<!-- ============ FULL ASSEMBLY ============ -->
+<h2>Full Assembly — Buy Feed</h2>
+<div class="demo">
+  <div class="eb-masthead">
+    <h1>EARLY BIRD</h1>
+    <div class="eb-sub">Downtown Modernism · Apr 26</div>
+  </div>
+  <div class="eb-drop-bar">
+    <div>Drop is <span class="eb-live">LIVE</span></div>
+    <div class="eb-cd">14d 9h 22m</div>
+  </div>
+  <div class="eb-section"><span>New listings</span><span>24 items</span></div>
+  <div class="eb-grid">
+    <div class="eb-grid-card">
+      <div class="eb-photo" style="background:#ddd"></div>
+      <div class="eb-body">
+        <div class="eb-title">Walnut Credenza<span class="eb-tag-new">NEW</span></div>
+        <div class="eb-price">$450</div>
+        <div><span class="eb-tag-firm">FIRM</span></div>
+        <div class="eb-dealer"><div class="eb-dealer-face">MF</div><span class="eb-dealer-name">Marco's Finds</span></div>
+      </div>
+    </div>
+    <div class="eb-grid-card">
+      <div class="eb-photo" style="background:#ccc"></div>
+      <div class="eb-body">
+        <div class="eb-title">Brass Desk Lamp</div>
+        <div class="eb-price">$180 <span class="eb-price-was">$250</span></div>
+        <div><span class="eb-tag-drop">−28%</span></div>
+        <div class="eb-dealer"><div class="eb-dealer-face">DG</div><span class="eb-dealer-name">Deco Garage</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="eb-bnav">
+    <span class="eb-active">Buy<span class="eb-bnav-dot"></span></span>
+    <span>Watching</span>
+    <span>Account</span>
+  </div>
+</div>
+
+</body>
+</html>
