@@ -60,6 +60,18 @@ export default function HomePage() {
       </header>
 
       <main className="pb-24">
+        {/* Empty state */}
+        {!heroMarket && (
+          <div className="eb-empty">
+            <div className="eb-icon">○</div>
+            <p>
+              You&apos;re not following any markets yet.
+              <br />
+              Follow LA flea markets to see drops and countdowns here.
+            </p>
+          </div>
+        )}
+
         {/* Hero market */}
         {heroMarket && (
           <section className="px-5 pt-7 pb-6 border-b-2 border-eb-black">

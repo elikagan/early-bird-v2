@@ -108,45 +108,56 @@ function BuyFeedContent() {
 
       {/* Grid */}
       <main className="pb-24">
-        <div className="eb-grid">
-          {items.map((item) => {
-            const isSold = item.status === "sold";
-            const isHeld = item.status === "hold";
+        {items.length > 0 ? (
+          <div className="eb-grid">
+            {items.map((item) => {
+              const isSold = item.status === "sold";
+              const isHeld = item.status === "hold";
 
-            return (
-              <Link
-                key={item.id}
-                href={`/item/${item.id}`}
-                className={`eb-grid-card${isSold ? " eb-sold" : ""}`}
-              >
-                {item.photo_url ? (
-                  <img
-                    src={item.photo_url}
-                    alt={item.title}
-                    className="eb-photo"
-                  />
-                ) : (
-                  <div className="eb-photo bg-eb-border" />
-                )}
-                <div className="eb-body">
-                  <div className="eb-title">{item.title}</div>
-                  <div className="eb-price">{formatPrice(item.price)}</div>
-                  {isHeld && <span className="eb-tag-hold">HELD</span>}
-                  <div className="eb-dealer">
-                    <span className="eb-avatar eb-avatar-sm">
-                      {getInitials(
-                        item.dealer_display_name || item.dealer_name
-                      )}
-                    </span>
-                    <span className="eb-dealer-name">
-                      {item.dealer_display_name || item.dealer_name}
-                    </span>
+              return (
+                <Link
+                  key={item.id}
+                  href={`/item/${item.id}`}
+                  className={`eb-grid-card${isSold ? " eb-sold" : ""}`}
+                >
+                  {item.photo_url ? (
+                    <img
+                      src={item.photo_url}
+                      alt={item.title}
+                      className="eb-photo"
+                    />
+                  ) : (
+                    <div className="eb-photo bg-eb-border" />
+                  )}
+                  <div className="eb-body">
+                    <div className="eb-title">{item.title}</div>
+                    <div className="eb-price">{formatPrice(item.price)}</div>
+                    {isHeld && <span className="eb-tag-hold">HELD</span>}
+                    <div className="eb-dealer">
+                      <span className="eb-avatar eb-avatar-sm">
+                        {getInitials(
+                          item.dealer_display_name || item.dealer_name
+                        )}
+                      </span>
+                      <span className="eb-dealer-name">
+                        {item.dealer_display_name || item.dealer_name}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
+                </Link>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="eb-empty">
+            <div className="eb-icon">○</div>
+            <p>
+              No items in this market yet.
+              <br />
+              Dealers usually post the night before each drop.
+            </p>
+          </div>
+        )}
       </main>
 
       <BottomNav active="buy" watchingCount={favCount} />
