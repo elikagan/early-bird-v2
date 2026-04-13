@@ -4,12 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
-import {
-  getInitials,
-  formatDate,
-  daysUntil,
-  heroCountdown,
-} from "@/lib/format";
+import { formatDate, daysUntil, heroCountdown } from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
 
 interface Market {
@@ -43,7 +38,7 @@ export default function HomePage() {
     return (
       <>
         <div className="flex-1 flex items-center justify-center">
-          <span className="loading loading-spinner loading-md"></span>
+          <span className="eb-spinner" />
         </div>
         <BottomNav active={null} />
       </>
@@ -59,70 +54,58 @@ export default function HomePage() {
 
   return (
     <>
-      {/* Header */}
-      <header className="px-4 pt-6 pb-3 border-b border-base-300">
-        <div className="flex items-center justify-between">
-          <div className="text-lg font-bold tracking-tight">EARLY BIRD</div>
-          <div className="avatar placeholder">
-            <div className="bg-neutral text-neutral-content w-8 rounded-full">
-              <span className="text-xs font-bold">
-                {getInitials(user?.display_name || user?.first_name || "?")}
-              </span>
-            </div>
-          </div>
-        </div>
+      <header className="eb-masthead">
+        <h1>EARLY BIRD</h1>
+        <div className="eb-sub">Your markets</div>
       </header>
 
-      <main className="flex-1 pb-24">
-        {/* Hero */}
+      <main className="pb-24">
+        {/* Hero market */}
         {heroMarket && (
-          <section className="px-4 pt-8 pb-7 border-b border-base-300">
+          <section className="px-5 pt-7 pb-6 border-b-2 border-eb-black">
             {heroMarket.status === "live" && (
-              <div className="badge badge-success font-bold mb-4">LIVE NOW</div>
+              <span className="inline-block text-eb-micro uppercase tracking-wider text-eb-pop bg-eb-pop-light px-1 py-0.5 mb-3">
+                LIVE NOW
+              </span>
             )}
-            <h1 className="text-3xl font-bold leading-tight tracking-tight mb-2">
+            <h2 className="text-eb-display text-eb-black leading-tight">
               {heroMarket.name}
-            </h1>
-            <div className="text-xs text-base-content/60 leading-relaxed mb-6">
+            </h2>
+            <div className="text-eb-caption text-eb-muted mt-2 leading-relaxed">
               {formatDate(heroMarket.starts_at)} ·{" "}
               {heroMarket.status === "live"
                 ? `${heroMarket.dealer_count} dealers · ${heroMarket.item_count} items`
                 : `~${heroMarket.dealer_count} dealers`}
             </div>
 
-            {/* Dealer: countdown */}
-            {isDealer && heroMarket.status === "upcoming" && (
-              <div className="mb-6">
-                <div className="text-[10px] uppercase tracking-widest text-base-content/60 mb-1">
-                  Drops in
+            {/* Drop box (upcoming only) */}
+            {heroMarket.status === "upcoming" && (
+              <div className="eb-drop-box">
+                <div>
+                  <div className="eb-drop-label">Drop opens</div>
+                  <div className="eb-drop-sub">
+                    {formatDate(heroMarket.drop_at)}
+                  </div>
                 </div>
-                <div className="text-2xl font-bold tabular-nums leading-none">
+                <div className="eb-drop-time">
                   {heroCountdown(heroMarket.drop_at)}
-                </div>
-                <div className="text-xs text-base-content/60 mt-1">
-                  {formatDate(heroMarket.drop_at)}
                 </div>
               </div>
             )}
 
-            {/* Buyer: live → browse, upcoming → coming soon */}
+            {/* CTA */}
             {heroMarket.status === "live" && !isDealer && (
-              <>
-                <div className="text-xs text-base-content/60 leading-relaxed mb-6">
-                  Open until 8pm tonight
-                </div>
-                <Link
-                  href={`/buy?market=${heroMarket.id}`}
-                  className="btn btn-neutral btn-block"
-                >
-                  Browse the market →
-                </Link>
-              </>
+              <Link
+                href={`/buy?market=${heroMarket.id}`}
+                className="eb-btn mt-5 text-center"
+              >
+                Browse the market →
+              </Link>
             )}
             {heroMarket.status === "live" && isDealer && (
               <Link
                 href={`/sell?market=${heroMarket.id}`}
-                className="btn btn-neutral btn-block"
+                className="eb-btn mt-5 text-center"
               >
                 Manage your booth →
               </Link>
@@ -130,7 +113,7 @@ export default function HomePage() {
             {heroMarket.status === "upcoming" && isDealer && (
               <Link
                 href={`/sell?market=${heroMarket.id}`}
-                className="btn btn-neutral btn-block"
+                className="eb-btn mt-5 text-center"
               >
                 Set up your booth →
               </Link>
@@ -138,7 +121,7 @@ export default function HomePage() {
             {heroMarket.status === "upcoming" && !isDealer && (
               <Link
                 href={`/buy?market=${heroMarket.id}`}
-                className="btn btn-neutral btn-block"
+                className="eb-btn mt-5 text-center"
               >
                 Preview items →
               </Link>
@@ -149,32 +132,27 @@ export default function HomePage() {
         {/* Coming up */}
         {otherMarkets.length > 0 && (
           <>
-            <section className="px-4 pt-7 pb-3">
-              <div className="text-xs uppercase tracking-widest text-base-content/60">
-                Coming up
-              </div>
-            </section>
+            <div className="eb-section">
+              <span>Coming up</span>
+            </div>
             {otherMarkets.map((m) => (
               <Link
                 key={m.id}
                 href={
-                  isDealer
-                    ? `/sell?market=${m.id}`
-                    : `/buy?market=${m.id}`
+                  isDealer ? `/sell?market=${m.id}` : `/buy?market=${m.id}`
                 }
-                className="block px-4 py-4 border-t border-base-300"
+                className="block px-5 py-4 border-b border-eb-border"
               >
                 <div className="flex items-baseline justify-between gap-3">
-                  <div className="text-base font-bold">{m.name}</div>
-                  <div className="text-xs font-bold tabular-nums">
-                    Drops in {daysUntil(m.drop_at)}d
-                  </div>
+                  <span className="text-eb-body font-bold text-eb-black">
+                    {m.name}
+                  </span>
+                  <span className="text-eb-caption font-bold tabular-nums text-eb-black">
+                    {daysUntil(m.drop_at)}d
+                  </span>
                 </div>
-                <div className="text-xs text-base-content/60 mt-0.5">
+                <div className="text-eb-meta text-eb-muted mt-1">
                   {formatDate(m.starts_at)} · ~{m.dealer_count} dealers
-                </div>
-                <div className="text-xs text-base-content/60 mt-0.5">
-                  {formatDate(m.drop_at)}
                 </div>
               </Link>
             ))}
@@ -182,11 +160,11 @@ export default function HomePage() {
         )}
 
         {/* How it works */}
-        <section className="px-4 pt-7 pb-8 border-t border-base-300">
-          <div className="text-xs uppercase tracking-widest text-base-content/60 mb-4">
-            How it works
-          </div>
-          <div className="text-sm text-base-content/70 leading-relaxed space-y-3">
+        <div className="eb-section border-t border-eb-border">
+          <span>How it works</span>
+        </div>
+        <section className="px-5 pb-8">
+          <div className="text-eb-body text-eb-muted leading-relaxed space-y-3">
             {isDealer ? (
               <>
                 <p>
