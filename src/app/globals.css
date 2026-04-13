@@ -555,4 +555,12 @@
   @keyframes eb-spin {
     to { transform: rotate(360deg); }
   }
+
+  .animate-slide-up {
+    animation: eb-slide-up 0.3s ease-out;
+  }
+  @keyframes eb-slide-up {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
 }

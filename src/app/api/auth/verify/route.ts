@@ -79,6 +79,46 @@ export async function POST(request: Request) {
     });
   }
 
+  // ── Dealer invite flow ──
+  if (tokenType === "dealer_invite") {
+    const userId = authToken.user_id as string;
+    if (!userId) return error("Invalid invite token", 400);
+
+    const user = await db.execute({
+      sql: `
+        SELECT u.*, d.id as dealer_id
+        FROM users u
+        LEFT JOIN dealers d ON d.user_id = u.id
+        WHERE u.id = ?
+      `,
+      args: [userId],
+    });
+
+    if (user.rows.length === 0) return error("User not found", 404);
+    const userRow = user.rows[0] as Record<string, unknown>;
+
+    const sessionToken = nanoid(32);
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+    await db.execute({
+      sql: `INSERT INTO sessions (id, user_id, token, expires_at) VALUES (?, ?, ?, ?)`,
+      args: [newId(), userRow.id as string, sessionToken, expiresAt],
+    });
+
+    return json({
+      session_token: sessionToken,
+      dealer_invite: true,
+      user: {
+        id: userRow.id,
+        phone: userRow.phone,
+        first_name: userRow.first_name,
+        last_name: userRow.last_name,
+        display_name: userRow.display_name,
+        is_dealer: userRow.is_dealer,
+        needs_onboarding: false,
+      },
+    });
+  }
+
   // ── Normal login flow ──
   const user = await db.execute({
     sql: `

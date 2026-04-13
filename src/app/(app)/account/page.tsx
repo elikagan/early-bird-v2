@@ -7,6 +7,7 @@ import { apiFetch } from "@/lib/api-client";
 import { processImage } from "@/lib/image-processing";
 import { getInitials, formatPhone } from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
+import { DealerApplyDrawer } from "@/components/dealer-apply-drawer";
 
 interface UserProfile {
   id: string;
@@ -63,12 +64,7 @@ export default function AccountPage() {
 
   // Dealer application
   const [appStatus, setAppStatus] = useState<"none" | "pending" | "approved" | "rejected" | null>(null);
-  const [showApplyForm, setShowApplyForm] = useState(false);
-  const [applyName, setApplyName] = useState("");
-  const [applyBiz, setApplyBiz] = useState("");
-  const [applyIg, setApplyIg] = useState("");
-  const [applySubmitting, setApplySubmitting] = useState(false);
-  const [applyError, setApplyError] = useState<string | null>(null);
+  const [showApplyDrawer, setShowApplyDrawer] = useState(false);
 
   const isDealer = user?.is_dealer === 1;
 
@@ -301,32 +297,6 @@ export default function AccountPage() {
       setPhoneSending(false);
     }
   }, [phoneValue]);
-
-  const submitApplication = useCallback(async () => {
-    if (!applyName.trim() || !applyBiz.trim()) return;
-    setApplySubmitting(true);
-    setApplyError(null);
-    try {
-      const res = await apiFetch("/api/dealer-applications", {
-        method: "POST",
-        body: JSON.stringify({
-          name: applyName.trim(),
-          business_name: applyBiz.trim(),
-          instagram_handle: applyIg.trim() || null,
-        }),
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Submission failed");
-      }
-      setAppStatus("pending");
-      setShowApplyForm(false);
-    } catch (err) {
-      setApplyError(err instanceof Error ? err.message : "Something went wrong");
-    } finally {
-      setApplySubmitting(false);
-    }
-  }, [applyName, applyBiz, applyIg]);
 
   // ── Derived ──
 
@@ -738,7 +708,6 @@ export default function AccountPage() {
             <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-3">
               Become A Seller
             </div>
-
             {appStatus === "pending" ? (
               <div className="text-eb-body text-eb-text leading-relaxed">
                 Your application is being reviewed. We&apos;ll text you when
@@ -749,90 +718,31 @@ export default function AccountPage() {
                 You&apos;re approved! Sign out and back in to access your dealer
                 dashboard.
               </div>
-            ) : !showApplyForm ? (
+            ) : (
               <>
                 <div className="text-eb-body text-eb-text leading-relaxed mb-3">
                   Selling at an upcoming LA market? List your items here for
                   free.
                 </div>
                 <button
-                  onClick={() => {
-                    setApplyName(profile?.display_name || "");
-                    setApplyBiz("");
-                    setApplyIg("");
-                    setApplyError(null);
-                    setShowApplyForm(true);
-                  }}
+                  onClick={() => setShowApplyDrawer(true)}
                   className="text-eb-caption font-bold bg-eb-black text-white px-4 py-2 tracking-wider uppercase"
                 >
                   Apply to Sell
                 </button>
               </>
-            ) : (
-              <div className="space-y-3">
-                <div>
-                  <label className="text-eb-micro text-eb-muted uppercase tracking-widest block mb-1">
-                    Your Name
-                  </label>
-                  <input
-                    type="text"
-                    className="eb-input"
-                    value={applyName}
-                    onChange={(e) => setApplyName(e.target.value.slice(0, 60))}
-                    placeholder="Jane Doe"
-                  />
-                </div>
-                <div>
-                  <label className="text-eb-micro text-eb-muted uppercase tracking-widest block mb-1">
-                    Business Name
-                  </label>
-                  <input
-                    type="text"
-                    className="eb-input"
-                    value={applyBiz}
-                    onChange={(e) => setApplyBiz(e.target.value.slice(0, 60))}
-                    placeholder="Vintage Finds LA"
-                  />
-                </div>
-                <div>
-                  <label className="text-eb-micro text-eb-muted uppercase tracking-widest block mb-1">
-                    Instagram
-                    <span className="text-eb-light ml-1">optional</span>
-                  </label>
-                  <input
-                    type="text"
-                    className="eb-input"
-                    value={applyIg}
-                    onChange={(e) => setApplyIg(e.target.value.slice(0, 31))}
-                    placeholder="@yourhandle"
-                  />
-                </div>
-                <p className="text-eb-micro text-eb-muted leading-relaxed">
-                  We&apos;ll use your phone number on file ({profile ? formatPhone(profile.phone) : ""}) to
-                  text you when approved.
-                </p>
-                {applyError && (
-                  <p className="text-eb-meta text-eb-red">{applyError}</p>
-                )}
-                <div className="flex gap-2">
-                  <button
-                    onClick={submitApplication}
-                    disabled={applySubmitting || !applyName.trim() || !applyBiz.trim()}
-                    className="eb-btn flex-1"
-                  >
-                    {applySubmitting ? "Submitting\u2026" : "Submit"}
-                  </button>
-                  <button
-                    onClick={() => setShowApplyForm(false)}
-                    className="flex-1 py-2.5 text-eb-caption font-bold border-2 border-eb-border text-eb-muted uppercase tracking-wider"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
             )}
           </section>
           <div className="border-t border-eb-border mx-5" />
+
+          <DealerApplyDrawer
+            open={showApplyDrawer}
+            onClose={() => setShowApplyDrawer(false)}
+            onSubmitted={() => {
+              setShowApplyDrawer(false);
+              setAppStatus("pending");
+            }}
+          />
         </>
       )}
 

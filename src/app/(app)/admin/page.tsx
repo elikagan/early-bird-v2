@@ -27,6 +27,11 @@ export default function AdminPage() {
   const [filter, setFilter] = useState<"pending" | "approved" | "rejected">("pending");
   const [approving, setApproving] = useState<string | null>(null);
 
+  // Invite link state
+  const [inviteUrl, setInviteUrl] = useState<string | null>(null);
+  const [inviteGenerating, setInviteGenerating] = useState(false);
+  const [inviteCopied, setInviteCopied] = useState(false);
+
   const loadApps = useCallback(async (status: string) => {
     setLoading(true);
     setError(null);
@@ -56,6 +61,24 @@ export default function AdminPage() {
     setApproving(null);
   }, []);
 
+  const generateInvite = useCallback(async () => {
+    setInviteGenerating(true);
+    setInviteCopied(false);
+    const res = await apiFetch("/api/admin/invite-link", { method: "POST" });
+    if (res.ok) {
+      const { url } = await res.json();
+      setInviteUrl(url);
+    }
+    setInviteGenerating(false);
+  }, []);
+
+  const copyInvite = useCallback(() => {
+    if (!inviteUrl) return;
+    navigator.clipboard.writeText(inviteUrl);
+    setInviteCopied(true);
+    setTimeout(() => setInviteCopied(false), 2000);
+  }, [inviteUrl]);
+
   if (!user) {
     return (
       <div className="flex-1 flex items-center justify-center">
@@ -73,7 +96,53 @@ export default function AdminPage() {
         <div className="eb-sub">Admin</div>
       </header>
 
+      {/* Invite link generator */}
+      <section className="px-5 py-5 border-b border-eb-border">
+        <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-3">
+          Invite a Dealer
+        </div>
+        <p className="text-eb-micro text-eb-muted leading-relaxed mb-3">
+          Generate a one-time link. Send it however you want — text, email, DM.
+          They fill out their info and become a dealer instantly.
+        </p>
+        {inviteUrl ? (
+          <div>
+            <div className="eb-input text-eb-micro break-all mb-2 select-all">
+              {inviteUrl}
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={copyInvite}
+                className="py-2 px-4 text-eb-caption font-bold bg-eb-black text-white uppercase tracking-wider"
+              >
+                {inviteCopied ? "Copied!" : "Copy Link"}
+              </button>
+              <button
+                onClick={() => {
+                  setInviteUrl(null);
+                  generateInvite();
+                }}
+                className="py-2 px-4 text-eb-caption font-bold border-2 border-eb-border text-eb-muted uppercase tracking-wider"
+              >
+                New Link
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={generateInvite}
+            disabled={inviteGenerating}
+            className="py-2 px-4 text-eb-caption font-bold bg-eb-black text-white uppercase tracking-wider"
+          >
+            {inviteGenerating ? "Generating\u2026" : "Generate Invite Link"}
+          </button>
+        )}
+      </section>
+
       {/* Filter tabs */}
+      <div className="text-eb-meta uppercase tracking-widest text-eb-muted px-5 pt-5 pb-2">
+        Dealer Applications
+      </div>
       <div className="flex border-b border-eb-border">
         {(["pending", "approved", "rejected"] as const).map((s) => (
           <button
