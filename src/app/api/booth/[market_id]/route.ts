@@ -2,6 +2,26 @@ import db from "@/lib/db";
 import { json, error } from "@/lib/api";
 import { getSession } from "@/lib/auth";
 
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ market_id: string }> }
+) {
+  const { market_id } = await params;
+  const user = await getSession(request);
+  if (!user) return error("Unauthorized", 401);
+  if (!user.dealer_id) return error("Dealer account required", 403);
+
+  const result = await db.execute({
+    sql: `SELECT * FROM booth_settings WHERE dealer_id = ? AND market_id = ?`,
+    args: [user.dealer_id, market_id],
+  });
+
+  if (result.rows.length === 0) {
+    return json({ booth_number: null });
+  }
+  return json(result.rows[0]);
+}
+
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ market_id: string }> }

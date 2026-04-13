@@ -34,6 +34,9 @@ function SellContent() {
   const [items, setItems] = useState<Item[]>([]);
   const [market, setMarket] = useState<Market | null>(null);
   const [loading, setLoading] = useState(true);
+  const [boothNumber, setBoothNumber] = useState("");
+  const [boothSaving, setBoothSaving] = useState(false);
+  const [boothSaved, setBoothSaved] = useState(false);
 
   const marketId = searchParams.get("market");
 
@@ -66,6 +69,14 @@ function SellContent() {
 
       if (itemsRes.ok) setItems(await itemsRes.json());
       if (marketRes.ok) setMarket(await marketRes.json());
+
+      // Load booth number
+      const boothRes = await apiFetch(`/api/booth/${mktId}`);
+      if (boothRes.ok) {
+        const boothData = await boothRes.json();
+        setBoothNumber(boothData.booth_number || "");
+      }
+
       setLoading(false);
     }
     load();
@@ -85,6 +96,26 @@ function SellContent() {
       }
     },
     []
+  );
+
+  const saveBooth = useCallback(
+    async (value: string) => {
+      if (!market) return;
+      setBoothSaving(true);
+      const res = await apiFetch("/api/booth", {
+        method: "POST",
+        body: JSON.stringify({
+          market_id: market.id,
+          booth_number: value.trim() || null,
+        }),
+      });
+      setBoothSaving(false);
+      if (res.ok) {
+        setBoothSaved(true);
+        setTimeout(() => setBoothSaved(false), 1500);
+      }
+    },
+    [market]
   );
 
   if (loading) {
@@ -129,6 +160,35 @@ function SellContent() {
           <div className="eb-stat-label">Inquiries</div>
         </div>
       </div>
+
+      {/* Booth number */}
+      {market && (
+        <div className="px-5 py-4 border-b border-eb-border">
+          <div className="flex justify-between items-center mb-1.5">
+            <span className="text-eb-meta uppercase tracking-widest text-eb-muted">
+              Your Booth
+            </span>
+            <span className="text-eb-meta text-eb-muted">
+              {boothSaving ? "Saving\u2026" : boothSaved ? "Saved" : ""}
+            </span>
+          </div>
+          <input
+            type="text"
+            className="eb-input"
+            placeholder="A12"
+            value={boothNumber}
+            onChange={(e) => {
+              const v = e.target.value.replace(/[^a-zA-Z0-9]/g, "").slice(0, 10);
+              setBoothNumber(v);
+            }}
+            onBlur={() => saveBooth(boothNumber)}
+            inputMode="text"
+          />
+          <p className="text-eb-micro text-eb-muted mt-1">
+            Buyers see this on your listings so they can find you.
+          </p>
+        </div>
+      )}
 
       {/* Add listing */}
       <div className="px-3 py-3 border-b border-eb-border">
