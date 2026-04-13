@@ -2,9 +2,8 @@
 
 import { useEffect, useState, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import Link from "next/link";
-import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
+import { BottomNav } from "@/components/bottom-nav";
 
 interface Market {
   id: string;
@@ -17,7 +16,6 @@ interface Market {
 function AddItemContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { user } = useAuth();
   const marketId = searchParams.get("market");
 
   const [market, setMarket] = useState<Market | null>(null);
@@ -58,160 +56,125 @@ function AddItemContent() {
   const ctaText =
     market?.status === "live"
       ? "Live instantly · Watchers get notified"
-      : `Goes live when the market drops`;
+      : "Goes live when the market drops";
 
   return (
     <>
       {/* Header */}
-      <header className="px-4 pt-6 pb-3 border-b border-base-300">
-        <div className="flex items-center justify-between mb-3">
-          <div className="text-lg font-bold tracking-tight">ADD ITEM</div>
+      <header className="eb-masthead">
+        <div className="flex items-center justify-between">
+          <h1>ADD ITEM</h1>
           <button
-            className="btn btn-sm btn-circle btn-ghost bg-base-200 border border-base-300 text-base-content/60"
             onClick={() => router.back()}
+            className="text-eb-body text-eb-muted"
           >
             ✕
           </button>
         </div>
-        {market && (
-          <div className="flex items-center justify-between">
-            <div className="text-sm font-bold">{market.name}</div>
-          </div>
-        )}
+        {market && <div className="eb-sub">{market.name}</div>}
       </header>
 
-      {/* Photos (placeholder — upload not implemented) */}
-      <section className="px-4 py-5">
+      {/* Photos placeholder */}
+      <section className="px-5 py-5">
         <div className="grid grid-cols-3 gap-2">
-          <button className="aspect-square bg-base-100 rounded border-2 border-dashed border-neutral flex items-center justify-center text-base-content">
+          <button className="aspect-square bg-white border-2 border-dashed border-eb-black flex items-center justify-center">
             <div className="flex flex-col items-center gap-1">
-              <div className="text-2xl font-bold">+</div>
-              <div className="text-[9px] uppercase tracking-wider font-bold">
+              <span className="text-2xl font-bold text-eb-black">+</span>
+              <span className="text-eb-micro uppercase tracking-wider text-eb-black">
                 Add
-              </div>
+              </span>
             </div>
           </button>
         </div>
       </section>
 
-      <div className="divider mx-4 my-0"></div>
+      <div className="border-t border-eb-border mx-5" />
 
-      {/* Details */}
-      <section className="px-4 py-5 space-y-5">
-        <label className="form-control w-full">
-          <div className="label">
-            <span className="label-text text-xs uppercase tracking-widest text-base-content/60">
+      {/* Form fields */}
+      <section className="px-5 py-5 space-y-5">
+        {/* Title */}
+        <div>
+          <div className="flex justify-between items-center mb-1.5">
+            <span className="text-eb-meta uppercase tracking-widest text-eb-muted">
               Title *
             </span>
-            <span className="label-text-alt text-base-content/60">
+            <span className="text-eb-meta text-eb-muted">
               {title.length} / 60
             </span>
           </div>
           <input
             type="text"
             placeholder="Walnut Credenza"
-            className="input input-bordered w-full"
+            className="eb-input"
             value={title}
             onChange={(e) => setTitle(e.target.value.slice(0, 60))}
           />
-        </label>
+        </div>
 
-        <label className="form-control w-full">
-          <div className="label">
-            <span className="label-text text-xs uppercase tracking-widest text-base-content/60">
+        {/* Description */}
+        <div>
+          <div className="flex justify-between items-center mb-1.5">
+            <span className="text-eb-meta uppercase tracking-widest text-eb-muted">
               Description
             </span>
-            <span className="label-text-alt text-base-content/60">
+            <span className="text-eb-meta text-eb-muted">
               {description.length} / 500
             </span>
           </div>
           <textarea
-            className="textarea textarea-bordered h-28"
+            className="eb-input h-28 resize-none"
             placeholder="Condition, era, dimensions, any notable features..."
             value={description}
             onChange={(e) => setDescription(e.target.value.slice(0, 500))}
-          ></textarea>
-        </label>
+          />
+        </div>
 
-        <label className="form-control w-full">
-          <div className="label">
-            <span className="label-text text-xs uppercase tracking-widest text-base-content/60">
+        {/* Price */}
+        <div>
+          <div className="flex justify-between items-center mb-1.5">
+            <span className="text-eb-meta uppercase tracking-widest text-eb-muted">
               Price *
             </span>
-            <label className="label-text-alt cursor-pointer flex items-center gap-2">
-              <input
-                type="checkbox"
-                className="checkbox checkbox-xs"
-                checked={priceFirm}
-                onChange={(e) => setPriceFirm(e.target.checked)}
-              />
-              <span className="text-[10px] uppercase tracking-widest font-bold">
-                Firm
-              </span>
-            </label>
+            <button
+              type="button"
+              onClick={() => setPriceFirm(!priceFirm)}
+              className={
+                priceFirm
+                  ? "eb-tag-firm"
+                  : "inline-block text-eb-micro uppercase tracking-wider text-eb-muted border border-eb-border px-1 py-0.5"
+              }
+            >
+              FIRM
+            </button>
           </div>
-          <label className="input input-bordered flex items-center gap-2">
-            <span className="text-base-content/60 font-bold">$</span>
+          <div className="flex items-center border-2 border-eb-black bg-white">
+            <span className="pl-4 font-bold text-eb-muted">$</span>
             <input
               type="number"
-              className="grow"
+              className="flex-1 py-3.5 px-2 bg-transparent outline-none text-base"
               placeholder="450"
               value={price}
               onChange={(e) => setPrice(e.target.value)}
             />
-          </label>
-        </label>
+          </div>
+        </div>
       </section>
 
-      {/* Spacer */}
-      <div className="h-36"></div>
+      {/* Submit */}
+      <section className="px-5 pb-36">
+        <button
+          className="eb-btn"
+          onClick={submit}
+          disabled={!title || !price || saving}
+        >
+          {saving ? "Posting..." : "Post Item"}
+        </button>
+        <p className="text-eb-meta text-eb-muted text-center mt-2">
+          {ctaText}
+        </p>
+      </section>
 
-      {/* Sticky bottom: CTA + nav */}
-      <div className="max-w-md mx-auto fixed bottom-0 left-0 right-0 bg-base-200">
-        <div className="px-4 pt-4 pb-3">
-          <button
-            className={`btn btn-neutral w-full${saving ? " loading" : ""}`}
-            onClick={submit}
-            disabled={!title || !price || saving}
-          >
-            Post Item
-          </button>
-          <p className="text-[10px] text-center text-base-content/60 mt-2 uppercase tracking-wider">
-            {ctaText}
-          </p>
-        </div>
-        <nav className="flex bg-base-200">
-          <Link
-            href="/buy"
-            className="flex-1 flex flex-col items-center py-3 text-base-content/60"
-          >
-            <span className="text-[10px] uppercase tracking-widest">Buy</span>
-          </Link>
-          <Link
-            href="/watching"
-            className="flex-1 flex flex-col items-center py-3 text-base-content/60"
-          >
-            <span className="text-[10px] uppercase tracking-widest">
-              Watching
-            </span>
-          </Link>
-          <div className="w-px bg-base-300 my-2"></div>
-          <Link
-            href="/sell"
-            className="flex-1 flex flex-col items-center py-3 text-base-content font-bold border-t-2 border-neutral"
-          >
-            <span className="text-[10px] uppercase tracking-widest">Sell</span>
-          </Link>
-          <Link
-            href="/account"
-            className="flex-1 flex flex-col items-center py-3 text-base-content/60"
-          >
-            <span className="text-[10px] uppercase tracking-widest">
-              Account
-            </span>
-          </Link>
-        </nav>
-      </div>
+      <BottomNav active="sell" />
     </>
   );
 }
@@ -221,7 +184,7 @@ export default function AddItemPage() {
     <Suspense
       fallback={
         <div className="flex-1 flex items-center justify-center">
-          <span className="loading loading-spinner loading-md"></span>
+          <span className="eb-spinner" />
         </div>
       }
     >
