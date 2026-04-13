@@ -172,14 +172,17 @@ export default function LandingPage() {
                       {formatDate(m.starts_at)} · {m.location}
                     </div>
                   </div>
-                  <div
-                    className={
-                      m.status === "live"
-                        ? "text-eb-meta font-bold text-eb-pop"
-                        : "text-eb-meta text-eb-muted"
-                    }
-                  >
-                    {heroCountdown(m.drop_at)}
+                  <div className="text-right">
+                    <div className="text-eb-meta text-eb-muted">Drop in</div>
+                    <div
+                      className={
+                        m.status === "live"
+                          ? "text-eb-meta font-bold text-eb-pop"
+                          : "text-eb-meta font-bold text-eb-black"
+                      }
+                    >
+                      {m.status === "live" ? "LIVE" : heroCountdown(m.drop_at)}
+                    </div>
                   </div>
                 </div>
               ))}
