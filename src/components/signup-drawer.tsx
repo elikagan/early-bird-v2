@@ -88,9 +88,6 @@ export function SignupDrawer({
             >
               {sending ? "SENDING\u2026" : "TEXT ME A SIGN-IN LINK"}
             </button>
-            <p className="text-eb-micro text-eb-muted mt-2 text-center">
-              Free forever. No spam.
-            </p>
           </>
         )}
       </div>
