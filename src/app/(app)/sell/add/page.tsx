@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api-client";
 import { useRequireAuth } from "@/lib/require-auth";
 import { processImage, createThumbnail } from "@/lib/image-processing";
+import { formatDate } from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
 
 interface Market {
@@ -218,7 +219,7 @@ function AddItemContent() {
             {"\u2715"}
           </button>
         </div>
-        {market && <div className="eb-sub">{market.name}</div>}
+        {market && <div className="eb-sub">{market.name} {"\u00b7"} {formatDate(market.starts_at)}</div>}
       </header>
 
       {/* Photos */}

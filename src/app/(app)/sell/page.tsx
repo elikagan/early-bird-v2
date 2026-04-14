@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { useRequireAuth } from "@/lib/require-auth";
 import { apiFetch } from "@/lib/api-client";
-import { formatPrice } from "@/lib/format";
+import { formatPrice, formatDate } from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
 
 interface Item {
@@ -145,7 +145,7 @@ function SellContent() {
         <Link href="/home">
           <h1>EARLY BIRD</h1>
         </Link>
-        {market && <div className="eb-sub">{market.name}</div>}
+        {market && <div className="eb-sub">{market.name} {"\u00b7"} {formatDate(market.starts_at)}</div>}
       </header>
 
       {/* Stats */}

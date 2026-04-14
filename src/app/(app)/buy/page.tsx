@@ -118,7 +118,7 @@ function BuyFeedContent() {
           <Link href="/home">
             <h1>EARLY BIRD</h1>
           </Link>
-          <div className="eb-sub">{market.name}</div>
+          <div className="eb-sub">{market.name} {"\u00b7"} {formatDate(market.starts_at)}</div>
         </header>
 
         <main className="pb-24">
@@ -203,7 +203,7 @@ function BuyFeedContent() {
           <h1>EARLY BIRD</h1>
         </Link>
         <div className="eb-sub">
-          {market.name} · {formatDate(market.starts_at)}
+          {market.name} {"\u00b7"} {formatDate(market.starts_at)}
         </div>
       </header>
 
