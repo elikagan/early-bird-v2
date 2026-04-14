@@ -45,7 +45,6 @@ interface ItemDetail {
   view_count: number;
   watcher_count: number;
   inquiry_count: number;
-  hidden: number;
   booth_number: string | null;
   photos: Photo[];
   market: Market | null;
@@ -104,10 +103,9 @@ export default function ItemDetailPage() {
   // Confirm drawer (dealer-own)
   const [confirmInquiry, setConfirmInquiry] = useState<Inquiry | null>(null);
 
-  // Delete / hide
+  // Delete
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [hiding, setHiding] = useState(false);
 
   // ── Edit mode state ──
   const [editing, setEditing] = useState(false);
@@ -399,20 +397,6 @@ export default function ItemDetailPage() {
       setShowDeleteConfirm(false);
     }
   }, [id, router]);
-
-  const toggleHidden = useCallback(async () => {
-    if (!item) return;
-    setHiding(true);
-    const newVal = item.hidden ? 0 : 1;
-    const res = await apiFetch(`/api/items/${id}`, {
-      method: "PATCH",
-      body: JSON.stringify({ hidden: newVal }),
-    });
-    if (res.ok) {
-      setItem({ ...item, hidden: newVal });
-    }
-    setHiding(false);
-  }, [id, item]);
 
   const currentPhoto = item.photos[photoIndex]?.url;
   const marketDate = item.market ? formatDate(item.market.starts_at) : "";
@@ -970,33 +954,15 @@ export default function ItemDetailPage() {
         </section>
       )}
 
-      {/* Dealer-own: Hide + Delete — hidden in edit mode */}
+      {/* Dealer-own: Delete — hidden in edit mode */}
       {isOwner && !editing && (
         <section className="px-5 py-5 border-t border-eb-border">
-          {/* Hidden banner */}
-          {item.hidden === 1 && (
-            <div className="mb-4 px-3 py-2 border border-eb-amber bg-eb-pop-bg text-eb-meta text-eb-amber uppercase tracking-wider font-bold text-center">
-              Hidden from buyers
-            </div>
-          )}
-          <div className="flex gap-3">
-            <button
-              onClick={toggleHidden}
-              disabled={hiding}
-              className="flex-1 py-2.5 text-eb-caption font-bold border border-eb-border text-eb-text uppercase tracking-wider"
-            >
-              {hiding ? "..." : item.hidden ? "Show Listing" : "Hide Listing"}
-            </button>
-            <button
-              onClick={() => setShowDeleteConfirm(true)}
-              className="py-2.5 px-4 text-eb-caption font-bold border border-eb-red text-eb-red uppercase tracking-wider"
-            >
-              Delete
-            </button>
-          </div>
-          <p className="text-eb-micro text-eb-muted mt-2 leading-relaxed">
-            Hidden items stay in your booth but buyers can&apos;t see them. Delete is permanent.
-          </p>
+          <button
+            onClick={() => setShowDeleteConfirm(true)}
+            className="w-full py-2.5 text-eb-caption font-bold border border-eb-red text-eb-red uppercase tracking-wider"
+          >
+            Delete Listing
+          </button>
         </section>
       )}
 

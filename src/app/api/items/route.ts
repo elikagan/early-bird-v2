@@ -31,9 +31,6 @@ export async function GET(request: Request) {
   if (dealerId) {
     sql += ` AND i.dealer_id = ?`;
     args.push(dealerId);
-  } else {
-    // Buyers don't see hidden items
-    sql += ` AND COALESCE(i.hidden, 0) = 0`;
   }
 
   sql += ` ORDER BY i.created_at DESC`;
