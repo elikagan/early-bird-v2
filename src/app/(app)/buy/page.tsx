@@ -3,6 +3,7 @@
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
 import { getInitials, formatPrice, formatDate } from "@/lib/format";
@@ -232,9 +233,12 @@ function BuyFeedContent() {
               const cardContent = (
                 <>
                   {item.photo_url ? (
-                    <img
+                    <Image
                       src={item.photo_url}
                       alt={item.title}
+                      width={400}
+                      height={400}
+                      sizes="(max-width: 430px) 50vw, 215px"
                       className="eb-photo"
                     />
                   ) : (

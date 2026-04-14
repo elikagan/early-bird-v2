@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useAuth } from "@/lib/auth-context";
 import { useRequireAuth } from "@/lib/require-auth";
 import { apiFetch } from "@/lib/api-client";
@@ -397,9 +398,12 @@ export default function AccountPage() {
               className="relative shrink-0"
             >
               {profile.avatar_url ? (
-                <img
+                <Image
                   src={profile.avatar_url}
                   alt={displayName}
+                  width={96}
+                  height={96}
+                  sizes="48px"
                   className="eb-avatar eb-avatar-xl object-cover"
                 />
               ) : (
@@ -455,9 +459,12 @@ export default function AccountPage() {
           <div>
             <div className="flex items-center gap-3 mb-2">
               {profile.avatar_url ? (
-                <img
+                <Image
                   src={profile.avatar_url}
                   alt={nameValue || "?"}
+                  width={96}
+                  height={96}
+                  sizes="48px"
                   className="eb-avatar eb-avatar-xl object-cover shrink-0"
                 />
               ) : (

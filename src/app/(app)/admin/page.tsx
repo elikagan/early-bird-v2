@@ -2,6 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { useRequireAuth } from "@/lib/require-auth";
@@ -955,7 +956,7 @@ function DealersTab() {
                                 {detailData.items.slice(0, 10).map((item: AdminItem) => (
                                   <div key={item.id} className="flex gap-2 py-1.5 border-t border-eb-border">
                                     {item.photo_url ? (
-                                      <img src={item.photo_url} alt="" className="w-8 h-8 object-cover shrink-0" />
+                                      <Image src={item.photo_url} alt="" width={56} height={56} sizes="32px" className="w-8 h-8 object-cover shrink-0" />
                                     ) : (
                                       <div className="w-8 h-8 bg-eb-border shrink-0" />
                                     )}
@@ -1221,7 +1222,7 @@ function ItemsTab() {
                   className="w-full text-left p-3 flex gap-3"
                 >
                   {item.photo_url ? (
-                    <img src={item.photo_url} alt="" className="w-14 h-14 object-cover shrink-0" />
+                    <Image src={item.photo_url} alt="" width={112} height={112} sizes="56px" className="w-14 h-14 object-cover shrink-0" />
                   ) : (
                     <div className="w-14 h-14 bg-eb-border shrink-0" />
                   )}
@@ -1277,7 +1278,7 @@ function ItemsTab() {
                         {detail.photos.length > 0 && (
                           <div className="flex gap-1 overflow-x-auto mb-3">
                             {detail.photos.map((p) => (
-                              <img key={p.id} src={p.url} alt="" className="w-20 h-20 object-cover shrink-0" />
+                              <Image key={p.id} src={p.url} alt="" width={160} height={160} sizes="80px" className="w-20 h-20 object-cover shrink-0" />
                             ))}
                           </div>
                         )}

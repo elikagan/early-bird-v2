@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { useRequireAuth } from "@/lib/require-auth";
 import { apiFetch } from "@/lib/api-client";
 import { formatPrice, formatDate } from "@/lib/format";
@@ -250,9 +251,12 @@ function SellContent() {
                   className={`eb-grid-card${isSold || isDeleted ? " eb-sold" : ""}`}
                 >
                   {item.photo_url ? (
-                    <img
+                    <Image
                       src={item.photo_url}
                       alt={item.title}
+                      width={400}
+                      height={400}
+                      sizes="(max-width: 430px) 50vw, 215px"
                       className="eb-photo"
                     />
                   ) : (

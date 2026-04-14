@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
 import { processImage, createThumbnail } from "@/lib/image-processing";
@@ -468,7 +469,7 @@ export default function ItemDetailPage() {
             {/* Existing photos (not removed) */}
             {keptPhotos.map((photo, i) => (
               <div key={photo.id} className="relative aspect-square bg-eb-cream border-2 border-eb-border overflow-hidden">
-                <img src={photo.url} alt="Item photo" className="w-full h-full object-cover" />
+                <Image src={photo.url} alt="Item photo" width={200} height={200} sizes="33vw" className="w-full h-full object-cover" />
                 <button
                   onClick={() => setRemovePhotoIds((prev) => new Set([...prev, photo.id]))}
                   className="absolute top-1 right-1 w-6 h-6 bg-eb-black text-eb-white flex items-center justify-center text-eb-micro font-bold"
@@ -598,10 +599,14 @@ export default function ItemDetailPage() {
               }}
             >
               {item.photos.map((photo, i) => (
-                <img
+                <Image
                   key={photo.id}
                   src={photo.url}
                   alt={i === 0 ? item.title : `${item.title} photo ${i + 1}`}
+                  width={860}
+                  height={860}
+                  sizes="100vw"
+                  priority={i === 0}
                   className="w-full shrink-0 block"
                   draggable={false}
                 />

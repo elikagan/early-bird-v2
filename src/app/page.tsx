@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
 import { formatDate, heroCountdown, formatPrice } from "@/lib/format";
@@ -181,10 +182,12 @@ export default function LandingPage() {
                         className="relative aspect-square overflow-hidden bg-eb-cream"
                       >
                         {item.photo_url ? (
-                          <img
+                          <Image
                             src={item.photo_url}
                             alt={item.title}
-                            className="w-full h-full object-cover"
+                            fill
+                            sizes="33vw"
+                            className="object-cover"
                           />
                         ) : (
                           <div className="w-full h-full bg-eb-border" />
