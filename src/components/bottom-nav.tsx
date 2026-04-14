@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
+import { SignupDrawer } from "./signup-drawer";
 
 type Tab = "buy" | "watching" | "sell" | "account" | null;
 
@@ -17,6 +19,7 @@ export function BottomNav({
   const { user } = useAuth();
   const isDealer = user?.is_dealer === 1;
   const isLoggedIn = !!user;
+  const [showSignup, setShowSignup] = useState(false);
   const watchLabel =
     watchingCount != null && watchingCount > 0
       ? `Watching (${watchingCount})`
@@ -26,11 +29,17 @@ export function BottomNav({
 
   if (!isLoggedIn) {
     return (
-      <nav className="eb-bnav">
-        <Link href="/">
-          <span className="eb-active">Sign Up</span>
-        </Link>
-      </nav>
+      <>
+        <nav className="eb-bnav">
+          <button onClick={() => setShowSignup(true)}>
+            <span className="eb-active">Sign Up</span>
+          </button>
+        </nav>
+        <SignupDrawer
+          open={showSignup}
+          onClose={() => setShowSignup(false)}
+        />
+      </>
     );
   }
 
