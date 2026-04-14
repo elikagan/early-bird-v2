@@ -45,6 +45,23 @@ interface AdminAction {
   created_at: string;
 }
 
+interface AdminItem {
+  id: string;
+  title: string;
+  price: number;
+  status: string;
+  created_at: string;
+  market_id: string;
+  dealer_name: string;
+  dealer_display_name: string | null;
+  dealer_id: string;
+  user_id: string;
+  market_name: string;
+  photo_url: string | null;
+  fav_count: number;
+  inquiry_count: number;
+}
+
 interface Application {
   id: string;
   user_id: string;
@@ -606,12 +623,47 @@ function MarketsTab() {
 }
 
 /* ════════════════════════════════════════════════════
-   DEALERS TAB (stub — Session 2)
+   DEALERS TAB
    ════════════════════════════════════════════════════ */
 
+interface AdminUser {
+  id: string;
+  phone: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  is_dealer: number;
+  created_at: string;
+  dealer_id: string | null;
+  business_name: string | null;
+  instagram_handle: string | null;
+  item_count: number;
+}
+
 function DealersTab() {
-  const [apps, setApps] = useState<Application[]>([]);
+  const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [section, setSection] = useState<"users" | "applications" | "invite">("users");
+
+  // Create user form
+  const [createPhone, setCreatePhone] = useState("");
+  const [createName, setCreateName] = useState("");
+  const [createBiz, setCreateBiz] = useState("");
+  const [createRole, setCreateRole] = useState<"buyer" | "dealer">("dealer");
+  const [creating, setCreating] = useState(false);
+  const [createMsg, setCreateMsg] = useState("");
+
+  // User detail
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [detailData, setDetailData] = useState<(AdminUser & { items: AdminItem[]; actions: AdminAction[] }) | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [editingName, setEditingName] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  // Applications
+  const [apps, setApps] = useState<Application[]>([]);
+  const [appsLoading, setAppsLoading] = useState(false);
   const [appFilter, setAppFilter] = useState<"pending" | "approved" | "rejected">("pending");
   const [approving, setApproving] = useState<string | null>(null);
 
@@ -620,16 +672,87 @@ function DealersTab() {
   const [inviteGenerating, setInviteGenerating] = useState(false);
   const [inviteCopied, setInviteCopied] = useState(false);
 
-  const loadApps = useCallback(async (status: string) => {
+  const loadUsers = useCallback(async () => {
     setLoading(true);
+    const params = search ? `?search=${encodeURIComponent(search)}` : "";
+    const res = await apiFetch(`/api/admin/dealers${params}`);
+    if (res.ok) setUsers(await res.json());
+    setLoading(false);
+  }, [search]);
+
+  useEffect(() => {
+    if (section === "users") loadUsers();
+  }, [section, loadUsers]);
+
+  const loadApps = useCallback(async (status: string) => {
+    setAppsLoading(true);
     const res = await apiFetch(`/api/admin/applications?status=${status}`);
     if (res.ok) setApps(await res.json());
-    setLoading(false);
+    setAppsLoading(false);
   }, []);
 
   useEffect(() => {
-    loadApps(appFilter);
-  }, [appFilter, loadApps]);
+    if (section === "applications") loadApps(appFilter);
+  }, [section, appFilter, loadApps]);
+
+  const createUser = async () => {
+    if (!createPhone || creating) return;
+    setCreating(true);
+    setCreateMsg("");
+    const res = await apiFetch("/api/admin/dealers", {
+      method: "POST",
+      body: JSON.stringify({
+        phone: createPhone,
+        display_name: createName || null,
+        role: createRole,
+        business_name: createBiz || null,
+      }),
+    });
+    if (res.ok) {
+      setCreatePhone("");
+      setCreateName("");
+      setCreateBiz("");
+      setCreateMsg("Created!");
+      loadUsers();
+    } else {
+      const data = await res.json();
+      setCreateMsg(data.error || "Failed");
+    }
+    setCreating(false);
+  };
+
+  const expandUser = async (id: string) => {
+    if (expandedId === id) { setExpandedId(null); return; }
+    setExpandedId(id);
+    setDetailLoading(true);
+    setEditingName(false);
+    const res = await apiFetch(`/api/admin/dealers/${id}`);
+    if (res.ok) setDetailData(await res.json());
+    setDetailLoading(false);
+  };
+
+  const saveUserName = async () => {
+    if (!expandedId || savingEdit) return;
+    setSavingEdit(true);
+    await apiFetch(`/api/admin/dealers/${expandedId}`, {
+      method: "PATCH",
+      body: JSON.stringify({ display_name: editName }),
+    });
+    setSavingEdit(false);
+    setEditingName(false);
+    loadUsers();
+    expandUser(expandedId);
+  };
+
+  const changeRole = async (userId: string, newDealer: number) => {
+    if (!confirm(`Change this user to ${newDealer ? "dealer" : "buyer"}?`)) return;
+    await apiFetch(`/api/admin/dealers/${userId}`, {
+      method: "PATCH",
+      body: JSON.stringify({ is_dealer: newDealer, business_name: newDealer ? "New Dealer" : undefined }),
+    });
+    loadUsers();
+    if (expandedId === userId) expandUser(userId);
+  };
 
   const approve = async (id: string) => {
     setApproving(id);
@@ -642,76 +765,423 @@ function DealersTab() {
     setInviteGenerating(true);
     setInviteCopied(false);
     const res = await apiFetch("/api/admin/invite-link", { method: "POST" });
-    if (res.ok) {
-      const { url } = await res.json();
-      setInviteUrl(url);
-    }
+    if (res.ok) { const { url } = await res.json(); setInviteUrl(url); }
     setInviteGenerating(false);
   };
 
   return (
     <>
-      {/* Invite link generator */}
-      <div className="px-5 py-4 border-b border-eb-border">
-        <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-2">
-          Invite a Dealer
-        </div>
-        <p className="text-eb-micro text-eb-muted leading-relaxed mb-3">
-          Generate a one-time link. Send it however you want — text, email, DM.
-        </p>
-        {inviteUrl ? (
-          <div>
-            <div className="eb-input text-eb-micro break-all mb-2 select-all">
-              {inviteUrl}
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText(inviteUrl);
-                  setInviteCopied(true);
-                  setTimeout(() => setInviteCopied(false), 2000);
-                }}
-                className="py-2 px-4 text-eb-caption font-bold bg-eb-black text-white uppercase tracking-wider"
-              >
-                {inviteCopied ? "Copied!" : "Copy Link"}
-              </button>
-              <button
-                onClick={() => { setInviteUrl(null); generateInvite(); }}
-                className="py-2 px-4 text-eb-caption font-bold border-2 border-eb-border text-eb-muted uppercase tracking-wider"
-              >
-                New Link
-              </button>
-            </div>
-          </div>
-        ) : (
-          <button
-            onClick={generateInvite}
-            disabled={inviteGenerating}
-            className="py-2 px-4 text-eb-caption font-bold bg-eb-black text-white uppercase tracking-wider"
-          >
-            {inviteGenerating ? "Generating\u2026" : "Generate Invite Link"}
-          </button>
-        )}
-      </div>
-
-      {/* Application review */}
-      <div className="text-eb-meta uppercase tracking-widest text-eb-muted px-5 pt-4 pb-2">
-        Dealer Applications
-      </div>
+      {/* Sub-nav */}
       <div className="flex border-b border-eb-border">
-        {(["pending", "approved", "rejected"] as const).map((s) => (
+        {(["users", "applications", "invite"] as const).map((s) => (
           <button
             key={s}
-            onClick={() => setAppFilter(s)}
+            onClick={() => setSection(s)}
             className={`flex-1 py-3 text-eb-micro font-bold uppercase tracking-wider text-center ${
-              appFilter === s
-                ? "text-eb-black border-b-2 border-eb-black"
-                : "text-eb-muted"
+              section === s ? "text-eb-black border-b-2 border-eb-black" : "text-eb-muted"
             }`}
           >
-            {s}
+            {s === "users" ? "All Users" : s === "applications" ? "Applications" : "Invite"}
           </button>
         ))}
+      </div>
+
+      {section === "users" && (
+        <>
+          {/* Create user form */}
+          <div className="px-5 py-4 border-b border-eb-border">
+            <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-2">
+              Create User
+            </div>
+            <div className="space-y-2">
+              <input
+                type="tel"
+                inputMode="tel"
+                className="eb-input"
+                placeholder="Phone number"
+                value={createPhone}
+                onChange={(e) => setCreatePhone(e.target.value)}
+              />
+              <input
+                className="eb-input"
+                placeholder="Name (optional)"
+                value={createName}
+                onChange={(e) => setCreateName(e.target.value)}
+              />
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setCreateRole("dealer")}
+                  className={`flex-1 py-2 text-eb-caption font-bold uppercase tracking-wider border-2 ${
+                    createRole === "dealer" ? "border-eb-black text-eb-black" : "border-eb-border text-eb-muted"
+                  }`}
+                >
+                  Dealer
+                </button>
+                <button
+                  onClick={() => setCreateRole("buyer")}
+                  className={`flex-1 py-2 text-eb-caption font-bold uppercase tracking-wider border-2 ${
+                    createRole === "buyer" ? "border-eb-black text-eb-black" : "border-eb-border text-eb-muted"
+                  }`}
+                >
+                  Buyer
+                </button>
+              </div>
+              {createRole === "dealer" && (
+                <input
+                  className="eb-input"
+                  placeholder="Business name"
+                  value={createBiz}
+                  onChange={(e) => setCreateBiz(e.target.value)}
+                />
+              )}
+              <button onClick={createUser} disabled={creating || !createPhone} className="eb-btn">
+                {creating ? "CREATING\u2026" : "CREATE USER"}
+              </button>
+              {createMsg && (
+                <div className={`text-eb-caption ${createMsg === "Created!" ? "text-eb-green" : "text-eb-red"}`}>
+                  {createMsg}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Search + list */}
+          <div className="px-5 pt-4">
+            <input
+              className="eb-input mb-3"
+              placeholder="Search by name, phone, business..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && loadUsers()}
+            />
+            <button onClick={loadUsers} className="text-eb-micro text-eb-pop font-bold mb-3 block">
+              Search
+            </button>
+          </div>
+
+          <div className="px-5 pb-4">
+            {loading ? (
+              <div className="flex justify-center py-8"><span className="eb-spinner" /></div>
+            ) : users.length === 0 ? (
+              <div className="eb-empty"><p>No users found</p></div>
+            ) : (
+              <div className="space-y-2">
+                {users.map((u) => (
+                  <div key={u.id} className="border-2 border-eb-border">
+                    <button onClick={() => expandUser(u.id)} className="w-full text-left p-3">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <span className="text-eb-caption font-bold text-eb-black">
+                            {u.display_name || "No name"}
+                          </span>
+                          {u.business_name && (
+                            <span className="text-eb-micro text-eb-muted ml-2">{u.business_name}</span>
+                          )}
+                        </div>
+                        <span className={`text-eb-micro font-bold uppercase px-1.5 py-0.5 ${
+                          u.is_dealer ? "text-eb-pop bg-eb-pop-light" : "text-eb-muted bg-eb-cream"
+                        }`}>
+                          {u.is_dealer ? "Dealer" : "Buyer"}
+                        </span>
+                      </div>
+                      <div className="text-eb-micro text-eb-muted mt-1">
+                        {formatPhone(u.phone)}
+                        {u.is_dealer ? ` · ${Number(u.item_count)} items` : ""}
+                      </div>
+                    </button>
+
+                    {expandedId === u.id && (
+                      <div className="border-t border-eb-border p-3">
+                        {detailLoading ? (
+                          <div className="flex justify-center py-4"><span className="eb-spinner" /></div>
+                        ) : detailData ? (
+                          <>
+                            {/* Quick actions */}
+                            <div className="flex gap-2 mb-3">
+                              {!editingName ? (
+                                <button
+                                  onClick={() => { setEditingName(true); setEditName(detailData.display_name || ""); }}
+                                  className="py-1.5 px-3 text-eb-micro font-bold uppercase tracking-wider border-2 border-eb-border text-eb-muted"
+                                >
+                                  Edit Name
+                                </button>
+                              ) : (
+                                <div className="flex gap-1 flex-1">
+                                  <input
+                                    className="eb-input text-eb-caption flex-1"
+                                    value={editName}
+                                    onChange={(e) => setEditName(e.target.value)}
+                                  />
+                                  <button onClick={saveUserName} disabled={savingEdit} className="py-1.5 px-3 text-eb-micro font-bold bg-eb-black text-white uppercase">
+                                    {savingEdit ? "\u2026" : "Save"}
+                                  </button>
+                                  <button onClick={() => setEditingName(false)} className="py-1.5 px-3 text-eb-micro font-bold border-2 border-eb-border text-eb-muted uppercase">
+                                    X
+                                  </button>
+                                </div>
+                              )}
+                              <button
+                                onClick={() => changeRole(u.id, u.is_dealer ? 0 : 1)}
+                                className="py-1.5 px-3 text-eb-micro font-bold uppercase tracking-wider border-2 border-eb-border text-eb-muted"
+                              >
+                                {u.is_dealer ? "\u2192 Buyer" : "\u2192 Dealer"}
+                              </button>
+                            </div>
+
+                            {/* Info */}
+                            <div className="space-y-1 text-eb-micro text-eb-muted mb-3">
+                              <div>Phone: {formatPhone(detailData.phone)}</div>
+                              {detailData.instagram_handle && <div>IG: @{detailData.instagram_handle}</div>}
+                              <div>Joined: {formatDate(detailData.created_at)}</div>
+                            </div>
+
+                            {/* Items */}
+                            {detailData.items && detailData.items.length > 0 && (
+                              <div>
+                                <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-2">
+                                  Items ({detailData.items.length})
+                                </div>
+                                {detailData.items.slice(0, 10).map((item: AdminItem) => (
+                                  <div key={item.id} className="flex gap-2 py-1.5 border-t border-eb-border">
+                                    {item.photo_url ? (
+                                      <img src={item.photo_url} alt="" className="w-8 h-8 object-cover shrink-0" />
+                                    ) : (
+                                      <div className="w-8 h-8 bg-eb-border shrink-0" />
+                                    )}
+                                    <div className="min-w-0 flex-1">
+                                      <div className="text-eb-micro font-bold text-eb-black truncate">
+                                        {item.title || "Untitled"}
+                                      </div>
+                                      <div className="text-eb-micro text-eb-muted">
+                                        {formatPrice(item.price)} · {item.status}
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+
+                            {/* Actions */}
+                            {detailData.actions && detailData.actions.length > 0 && (
+                              <div className="mt-3">
+                                <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-2">
+                                  Admin History
+                                </div>
+                                {detailData.actions.map((a: AdminAction) => (
+                                  <div key={a.id} className="flex justify-between py-1 text-eb-micro text-eb-muted">
+                                    <span>{actionLabel(a)}</span>
+                                    <span className="text-eb-light">{timeAgo(a.created_at)}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </>
+                        ) : null}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
+      {section === "applications" && (
+        <>
+          <div className="flex border-b border-eb-border">
+            {(["pending", "approved", "rejected"] as const).map((s) => (
+              <button
+                key={s}
+                onClick={() => setAppFilter(s)}
+                className={`flex-1 py-3 text-eb-micro font-bold uppercase tracking-wider text-center ${
+                  appFilter === s ? "text-eb-black border-b-2 border-eb-black" : "text-eb-muted"
+                }`}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+          <div className="px-5 py-4">
+            {appsLoading ? (
+              <div className="flex justify-center py-8"><span className="eb-spinner" /></div>
+            ) : apps.length === 0 ? (
+              <div className="eb-empty"><p>No {appFilter} applications</p></div>
+            ) : (
+              <div className="space-y-3">
+                {apps.map((app) => (
+                  <div key={app.id} className="border-2 border-eb-border p-4">
+                    <div className="text-eb-body font-bold text-eb-black">{app.name}</div>
+                    <div className="text-eb-meta text-eb-text mt-1">{app.business_name}</div>
+                    {app.instagram_handle && (
+                      <div className="text-eb-meta text-eb-muted mt-0.5">@{app.instagram_handle}</div>
+                    )}
+                    <div className="text-eb-meta text-eb-muted mt-0.5">{formatPhone(app.phone)}</div>
+                    <div className="text-eb-micro text-eb-light mt-1">
+                      Applied {new Date(app.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                    </div>
+                    {appFilter === "pending" && (
+                      <button
+                        onClick={() => approve(app.id)}
+                        disabled={approving === app.id}
+                        className="mt-3 py-2 px-4 text-eb-caption font-bold bg-eb-black text-white uppercase tracking-wider"
+                      >
+                        {approving === app.id ? "Approving\u2026" : "Approve & Send Login"}
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
+      {section === "invite" && (
+        <div className="px-5 py-4">
+          <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-2">
+            Invite a Dealer
+          </div>
+          <p className="text-eb-micro text-eb-muted leading-relaxed mb-3">
+            Generate a one-time link. Send it however you want — text, email, DM.
+          </p>
+          {inviteUrl ? (
+            <div>
+              <div className="eb-input text-eb-micro break-all mb-2 select-all">{inviteUrl}</div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(inviteUrl);
+                    setInviteCopied(true);
+                    setTimeout(() => setInviteCopied(false), 2000);
+                  }}
+                  className="py-2 px-4 text-eb-caption font-bold bg-eb-black text-white uppercase tracking-wider"
+                >
+                  {inviteCopied ? "Copied!" : "Copy Link"}
+                </button>
+                <button
+                  onClick={() => { setInviteUrl(null); generateInvite(); }}
+                  className="py-2 px-4 text-eb-caption font-bold border-2 border-eb-border text-eb-muted uppercase tracking-wider"
+                >
+                  New Link
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={generateInvite}
+              disabled={inviteGenerating}
+              className="py-2 px-4 text-eb-caption font-bold bg-eb-black text-white uppercase tracking-wider"
+            >
+              {inviteGenerating ? "Generating\u2026" : "Generate Invite Link"}
+            </button>
+          )}
+        </div>
+      )}
+    </>
+  );
+}
+
+/* ════════════════════════════════════════════════════
+   ITEMS TAB
+   ════════════════════════════════════════════════════ */
+
+interface AdminItemDetail extends AdminItem {
+  description: string | null;
+  original_price: number | null;
+  price_firm: number;
+  dealer_phone: string;
+  dealer_user_id: string;
+  fav_count: number;
+  photos: { id: string; url: string; position: number }[];
+  inquiries: { id: string; buyer_name: string; buyer_phone: string; message: string; status: string; created_at: string }[];
+  actions: AdminAction[];
+}
+
+function ItemsTab() {
+  const [items, setItems] = useState<AdminItem[]>([]);
+  const [markets, setMarkets] = useState<Market[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filterMarket, setFilterMarket] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [detail, setDetail] = useState<AdminItemDetail | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+
+  const loadItems = useCallback(async () => {
+    setLoading(true);
+    const params = new URLSearchParams();
+    if (filterMarket) params.set("market_id", filterMarket);
+    if (filterStatus) params.set("status", filterStatus);
+    const res = await apiFetch(`/api/admin/items?${params}`);
+    if (res.ok) setItems(await res.json());
+    setLoading(false);
+  }, [filterMarket, filterStatus]);
+
+  useEffect(() => {
+    loadItems();
+  }, [loadItems]);
+
+  useEffect(() => {
+    (async () => {
+      const res = await apiFetch("/api/admin/markets");
+      if (res.ok) setMarkets(await res.json());
+    })();
+  }, []);
+
+  const expandItem = async (id: string) => {
+    if (expandedId === id) {
+      setExpandedId(null);
+      setDetail(null);
+      return;
+    }
+    setExpandedId(id);
+    setDetailLoading(true);
+    const res = await apiFetch(`/api/admin/items/${id}`);
+    if (res.ok) setDetail(await res.json());
+    setDetailLoading(false);
+  };
+
+  const quickStatus = async (id: string, status: string) => {
+    await apiFetch(`/api/admin/items/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    });
+    loadItems();
+  };
+
+  const deleteItem = async (id: string) => {
+    if (!confirm("Soft-delete this item?")) return;
+    await apiFetch(`/api/admin/items/${id}`, { method: "DELETE" });
+    setExpandedId(null);
+    loadItems();
+  };
+
+  return (
+    <>
+      {/* Filter bar */}
+      <div className="px-5 py-3 border-b border-eb-border flex gap-2">
+        <select
+          className="eb-input text-eb-caption flex-1"
+          value={filterMarket}
+          onChange={(e) => setFilterMarket(e.target.value)}
+        >
+          <option value="">All markets</option>
+          {markets.filter((m) => !m.archived).map((m) => (
+            <option key={m.id} value={m.id}>{m.name}</option>
+          ))}
+        </select>
+        <select
+          className="eb-input text-eb-caption flex-1"
+          value={filterStatus}
+          onChange={(e) => setFilterStatus(e.target.value)}
+        >
+          <option value="">All status</option>
+          <option value="live">Live</option>
+          <option value="hold">Hold</option>
+          <option value="sold">Sold</option>
+          <option value="deleted">Deleted</option>
+        </select>
       </div>
 
       <div className="px-5 py-4">
@@ -719,31 +1189,150 @@ function DealersTab() {
           <div className="flex justify-center py-8">
             <span className="eb-spinner" />
           </div>
-        ) : apps.length === 0 ? (
+        ) : items.length === 0 ? (
           <div className="eb-empty">
-            <p>No {appFilter} applications</p>
+            <p>No items match filters</p>
           </div>
         ) : (
           <div className="space-y-3">
-            {apps.map((app) => (
-              <div key={app.id} className="border-2 border-eb-border p-4">
-                <div className="text-eb-body font-bold text-eb-black">{app.name}</div>
-                <div className="text-eb-meta text-eb-text mt-1">{app.business_name}</div>
-                {app.instagram_handle && (
-                  <div className="text-eb-meta text-eb-muted mt-0.5">@{app.instagram_handle}</div>
-                )}
-                <div className="text-eb-meta text-eb-muted mt-0.5">{formatPhone(app.phone)}</div>
-                <div className="text-eb-micro text-eb-light mt-1">
-                  Applied {new Date(app.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+            {items.map((item) => (
+              <div key={item.id} className="border-2 border-eb-border">
+                <button
+                  onClick={() => expandItem(item.id)}
+                  className="w-full text-left p-3 flex gap-3"
+                >
+                  {item.photo_url ? (
+                    <img src={item.photo_url} alt="" className="w-14 h-14 object-cover shrink-0" />
+                  ) : (
+                    <div className="w-14 h-14 bg-eb-border shrink-0" />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex justify-between items-start">
+                      <div className="text-eb-caption font-bold text-eb-black truncate">
+                        {item.title || "Untitled"}
+                      </div>
+                      <span className={`text-eb-micro font-bold uppercase ml-2 shrink-0 ${
+                        item.status === "live" ? "text-eb-green"
+                          : item.status === "hold" ? "text-eb-pop"
+                          : item.status === "sold" ? "text-eb-muted"
+                          : "text-eb-red"
+                      }`}>
+                        {item.status}
+                      </span>
+                    </div>
+                    <div className="text-eb-body font-bold text-eb-black">
+                      {formatPrice(item.price)}
+                    </div>
+                    <div className="text-eb-micro text-eb-muted mt-0.5 truncate">
+                      {item.dealer_display_name || item.dealer_name} · {item.market_name}
+                    </div>
+                  </div>
+                </button>
+
+                {/* Quick status buttons */}
+                <div className="flex border-t border-eb-border">
+                  {["live", "hold", "sold"].map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => quickStatus(item.id, s)}
+                      disabled={item.status === s}
+                      className={`flex-1 py-2 text-eb-micro font-bold uppercase tracking-wider ${
+                        item.status === s ? "text-eb-black bg-eb-cream" : "text-eb-muted"
+                      }`}
+                    >
+                      {s}
+                    </button>
+                  ))}
                 </div>
-                {appFilter === "pending" && (
-                  <button
-                    onClick={() => approve(app.id)}
-                    disabled={approving === app.id}
-                    className="mt-3 py-2 px-4 text-eb-caption font-bold bg-eb-black text-white uppercase tracking-wider"
-                  >
-                    {approving === app.id ? "Approving\u2026" : "Approve & Send Login"}
-                  </button>
+
+                {/* Expanded detail */}
+                {expandedId === item.id && (
+                  <div className="border-t border-eb-border p-3">
+                    {detailLoading ? (
+                      <div className="flex justify-center py-4">
+                        <span className="eb-spinner" />
+                      </div>
+                    ) : detail ? (
+                      <>
+                        {/* Photos */}
+                        {detail.photos.length > 0 && (
+                          <div className="flex gap-1 overflow-x-auto mb-3">
+                            {detail.photos.map((p) => (
+                              <img key={p.id} src={p.url} alt="" className="w-20 h-20 object-cover shrink-0" />
+                            ))}
+                          </div>
+                        )}
+
+                        {detail.description && (
+                          <p className="text-eb-caption text-eb-text mb-3">{detail.description}</p>
+                        )}
+
+                        <div className="grid grid-cols-3 gap-2 mb-3 text-center">
+                          <div className="py-2 border border-eb-border">
+                            <div className="text-eb-body font-bold">{Number(detail.fav_count)}</div>
+                            <div className="text-eb-micro text-eb-muted">Favs</div>
+                          </div>
+                          <div className="py-2 border border-eb-border">
+                            <div className="text-eb-body font-bold">{detail.inquiries.length}</div>
+                            <div className="text-eb-micro text-eb-muted">Inquiries</div>
+                          </div>
+                          <div className="py-2 border border-eb-border">
+                            <div className="text-eb-body font-bold">{detail.price_firm ? "Firm" : "OBO"}</div>
+                            <div className="text-eb-micro text-eb-muted">Price</div>
+                          </div>
+                        </div>
+
+                        {/* Dealer info */}
+                        <div className="text-eb-micro text-eb-muted mb-1">
+                          Dealer: {detail.dealer_display_name || detail.dealer_name} · {formatPhone(detail.dealer_phone)}
+                        </div>
+
+                        {/* Inquiries */}
+                        {detail.inquiries.length > 0 && (
+                          <div className="mt-3">
+                            <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-2">
+                              Inquiries
+                            </div>
+                            {detail.inquiries.map((inq) => (
+                              <div key={inq.id} className="py-2 border-t border-eb-border">
+                                <div className="flex justify-between">
+                                  <span className="text-eb-caption font-bold text-eb-black">
+                                    {inq.buyer_name || "Unknown"}
+                                  </span>
+                                  <span className={`text-eb-micro font-bold uppercase ${
+                                    inq.status === "open" ? "text-eb-green"
+                                      : inq.status === "held" ? "text-eb-pop"
+                                      : "text-eb-muted"
+                                  }`}>
+                                    {inq.status}
+                                  </span>
+                                </div>
+                                <div className="text-eb-micro text-eb-muted">
+                                  {formatPhone(inq.buyer_phone)}
+                                </div>
+                                {inq.message && (
+                                  <div className="text-eb-caption text-eb-text mt-1">
+                                    {"\u201C"}{inq.message}{"\u201D"}
+                                  </div>
+                                )}
+                                <div className="text-eb-micro text-eb-light mt-0.5">
+                                  {timeAgo(inq.created_at)}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Delete */}
+                        <button
+                          onClick={() => deleteItem(item.id)}
+                          className="mt-3 py-2 px-4 text-eb-micro font-bold uppercase tracking-wider border-2 border-eb-border text-eb-red"
+                        >
+                          Delete Item
+                        </button>
+                      </>
+                    ) : null}
+                  </div>
                 )}
               </div>
             ))}
@@ -751,19 +1340,6 @@ function DealersTab() {
         )}
       </div>
     </>
-  );
-}
-
-/* ════════════════════════════════════════════════════
-   ITEMS TAB (stub — Session 2)
-   ════════════════════════════════════════════════════ */
-
-function ItemsTab() {
-  return (
-    <div className="eb-empty">
-      <div className="eb-icon">{"\u2727"}</div>
-      <p>Items management coming in Session 2</p>
-    </div>
   );
 }
 
