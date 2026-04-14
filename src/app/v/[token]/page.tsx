@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
+import { useParams, useSearchParams } from "next/navigation";
 
-export default function VerifyShortPage() {
+function VerifyContent() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const token = params.token as string;
+  const isDealerSignup = searchParams.get("dealer") === "1";
   const [error, setError] = useState<string | null>(() => {
     // Validate token presence synchronously (avoids setState-in-effect lint error)
     if (!token) return "No token provided";
@@ -34,8 +36,6 @@ export default function VerifyShortPage() {
         localStorage.setItem("eb_token", data.session_token);
 
         let dest = "/home";
-        const isDealerSignup = typeof window !== "undefined" &&
-          localStorage.getItem("eb_dealer_signup") === "1";
         if (data.phone_changed) {
           dest = "/account";
         } else if (data.user.needs_onboarding) {
@@ -55,7 +55,7 @@ export default function VerifyShortPage() {
 
     verify();
     return () => { cancelled = true; };
-  }, [token]);
+  }, [token, isDealerSignup]);
 
   if (error) {
     return (
@@ -78,5 +78,19 @@ export default function VerifyShortPage() {
     <div className="min-h-screen flex flex-col items-center justify-center">
       <span className="text-eb-body text-eb-muted">Signing you in…</span>
     </div>
+  );
+}
+
+export default function VerifyShortPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex flex-col items-center justify-center">
+          <span className="text-eb-body text-eb-muted">Signing you in…</span>
+        </div>
+      }
+    >
+      <VerifyContent />
+    </Suspense>
   );
 }

@@ -8,7 +8,7 @@ import { nanoid } from "nanoid";
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const { phone } = body;
+  const { phone, dealer } = body;
 
   if (!phone) return error("phone is required");
 
@@ -35,7 +35,9 @@ export async function POST(request: Request) {
   });
 
   // Short path so the full URL stays on one tappable line in SMS
-  const url = `${getBaseUrl(request)}/v/${token}`;
+  const url = dealer
+    ? `${getBaseUrl(request)}/v/${token}?dealer=1`
+    : `${getBaseUrl(request)}/v/${token}`;
   await sendSMS(phone, composeMagicLink(url));
 
   return json({ ok: true });

@@ -71,11 +71,6 @@ export default function LandingPage() {
 
   const handleSend = async () => {
     if (!phone || sending) return;
-    if (mode === "dealer") {
-      localStorage.setItem("eb_dealer_signup", "1");
-    } else {
-      localStorage.removeItem("eb_dealer_signup");
-    }
     setSending(true);
     const digits = phone.replace(/\D/g, "");
     const formatted =
@@ -86,7 +81,7 @@ export default function LandingPage() {
           : `+${digits}`;
     const res = await apiFetch("/api/auth/start", {
       method: "POST",
-      body: JSON.stringify({ phone: formatted }),
+      body: JSON.stringify({ phone: formatted, dealer: mode === "dealer" }),
     });
     setSending(false);
     if (res.ok) setSent(true);

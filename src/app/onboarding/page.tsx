@@ -32,11 +32,9 @@ function OnboardingContent() {
   const [instagram, setInstagram] = useState("");
   const [dealerError, setDealerError] = useState<string | null>(null);
 
-  // Detect dealer signup from sessionStorage or query param
+  // Detect dealer signup from query param (set by verify page from SMS link)
   useEffect(() => {
-    const fromStorage = localStorage.getItem("eb_dealer_signup") === "1";
-    const fromParam = searchParams.get("dealer") === "1";
-    if (fromStorage || fromParam) {
+    if (searchParams.get("dealer") === "1") {
       setIsDealerSignup(true);
     }
   }, [searchParams]);
@@ -115,7 +113,6 @@ function OnboardingContent() {
         setSaving(false);
         return;
       }
-      localStorage.removeItem("eb_dealer_signup");
     }
 
     await refreshUser();
