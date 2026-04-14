@@ -22,17 +22,27 @@ export default function HomePage() {
   const { user } = useAuth();
   const [markets, setMarkets] = useState<Market[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pendingApp, setPendingApp] = useState(false);
 
   const isDealer = user?.is_dealer === 1;
 
   useEffect(() => {
     async function load() {
-      const res = await apiFetch("/api/markets");
-      if (res.ok) setMarkets(await res.json());
+      const [marketsRes, appRes] = await Promise.all([
+        apiFetch("/api/markets"),
+        !isDealer ? apiFetch("/api/dealer-applications") : Promise.resolve(null),
+      ]);
+      if (marketsRes.ok) setMarkets(await marketsRes.json());
+      if (appRes?.ok) {
+        const data = await appRes.json();
+        if (data.application?.status === "pending") {
+          setPendingApp(true);
+        }
+      }
       setLoading(false);
     }
     load();
-  }, []);
+  }, [isDealer]);
 
   if (loading) {
     return (
@@ -58,6 +68,20 @@ export default function HomePage() {
         <h1>EARLY BIRD</h1>
         <div className="eb-sub">{user ? "Your markets" : "LA flea markets"}</div>
       </header>
+
+      {/* Pending dealer application banner */}
+      {pendingApp && (
+        <div className="px-5 py-3 bg-eb-cream border-b-2 border-eb-pop">
+          <div className="text-eb-caption font-bold text-eb-black uppercase tracking-wider">
+            Application under review
+          </div>
+          <p className="text-eb-meta text-eb-muted mt-0.5">
+            We{"\u2019"}re reviewing your dealer application. We{"\u2019"}ll
+            text you when you{"\u2019"}re approved. Browse as a buyer in the
+            meantime.
+          </p>
+        </div>
+      )}
 
       <main className="pb-24">
         {/* Empty state */}
