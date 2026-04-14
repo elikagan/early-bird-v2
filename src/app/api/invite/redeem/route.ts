@@ -53,7 +53,7 @@ export async function POST(request: Request) {
   const inviteId = invite.rows[0].id as string;
 
   // ── Find or create user ──
-  let userResult = await db.execute({
+  const userResult = await db.execute({
     sql: `SELECT u.id, d.id as dealer_id FROM users u LEFT JOIN dealers d ON d.user_id = u.id WHERE u.phone = ?`,
     args: [normalized],
   });

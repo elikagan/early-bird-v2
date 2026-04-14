@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { useAuth } from "@/lib/auth-context";
 import { useRequireAuth } from "@/lib/require-auth";
 import { apiFetch } from "@/lib/api-client";
 import { formatPrice, formatDate } from "@/lib/format";

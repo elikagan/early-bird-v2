@@ -33,7 +33,7 @@ export default function WatchingPage() {
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
-      setLoading(false);
+      queueMicrotask(() => setLoading(false));
       return;
     }
     async function load() {

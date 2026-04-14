@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, Suspense } from "react";
+import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
@@ -304,15 +304,18 @@ function MarketsTab() {
   const [editStatus, setEditStatus] = useState("");
   const [saving, setSaving] = useState(false);
 
-  const loadMarkets = useCallback(async () => {
+  const loadMarkets = async () => {
     const res = await apiFetch("/api/admin/markets");
     if (res.ok) setMarkets(await res.json());
-    setLoading(false);
-  }, []);
+  };
 
   useEffect(() => {
-    loadMarkets();
-  }, [loadMarkets]);
+    void (async () => {
+      const res = await apiFetch("/api/admin/markets");
+      if (res.ok) setMarkets(await res.json());
+      setLoading(false);
+    })();
+  }, []);
 
   const createMarket = async () => {
     if (!formName || !formDate || !formDrop || creating) return;
@@ -672,28 +675,36 @@ function DealersTab() {
   const [inviteGenerating, setInviteGenerating] = useState(false);
   const [inviteCopied, setInviteCopied] = useState(false);
 
-  const loadUsers = useCallback(async () => {
+  const loadUsers = async () => {
     setLoading(true);
     const params = search ? `?search=${encodeURIComponent(search)}` : "";
     const res = await apiFetch(`/api/admin/dealers${params}`);
     if (res.ok) setUsers(await res.json());
     setLoading(false);
-  }, [search]);
+  };
 
   useEffect(() => {
-    if (section === "users") loadUsers();
-  }, [section, loadUsers]);
-
-  const loadApps = useCallback(async (status: string) => {
-    setAppsLoading(true);
-    const res = await apiFetch(`/api/admin/applications?status=${status}`);
-    if (res.ok) setApps(await res.json());
-    setAppsLoading(false);
-  }, []);
+    if (section === "users") {
+      void (async () => {
+        setLoading(true);
+        const params = search ? `?search=${encodeURIComponent(search)}` : "";
+        const res = await apiFetch(`/api/admin/dealers${params}`);
+        if (res.ok) setUsers(await res.json());
+        setLoading(false);
+      })();
+    }
+  }, [section, search]);
 
   useEffect(() => {
-    if (section === "applications") loadApps(appFilter);
-  }, [section, appFilter, loadApps]);
+    if (section === "applications") {
+      void (async () => {
+        setAppsLoading(true);
+        const res = await apiFetch(`/api/admin/applications?status=${appFilter}`);
+        if (res.ok) setApps(await res.json());
+        setAppsLoading(false);
+      })();
+    }
+  }, [section, appFilter]);
 
   const createUser = async () => {
     if (!createPhone || creating) return;
@@ -1108,7 +1119,7 @@ function ItemsTab() {
   const [detail, setDetail] = useState<AdminItemDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
 
-  const loadItems = useCallback(async () => {
+  const loadItems = async () => {
     setLoading(true);
     const params = new URLSearchParams();
     if (filterMarket) params.set("market_id", filterMarket);
@@ -1116,11 +1127,19 @@ function ItemsTab() {
     const res = await apiFetch(`/api/admin/items?${params}`);
     if (res.ok) setItems(await res.json());
     setLoading(false);
-  }, [filterMarket, filterStatus]);
+  };
 
   useEffect(() => {
-    loadItems();
-  }, [loadItems]);
+    void (async () => {
+      setLoading(true);
+      const params = new URLSearchParams();
+      if (filterMarket) params.set("market_id", filterMarket);
+      if (filterStatus) params.set("status", filterStatus);
+      const res = await apiFetch(`/api/admin/items?${params}`);
+      if (res.ok) setItems(await res.json());
+      setLoading(false);
+    })();
+  }, [filterMarket, filterStatus]);
 
   useEffect(() => {
     (async () => {

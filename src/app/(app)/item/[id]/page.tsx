@@ -404,7 +404,6 @@ export default function ItemDetailPage() {
     );
   }
 
-  const currentPhoto = item.photos[photoIndex]?.url;
   const marketDate = item.market ? formatDate(item.market.starts_at) : "";
   const boothStr = item.booth_number ? `Booth ${item.booth_number}` : null;
 
