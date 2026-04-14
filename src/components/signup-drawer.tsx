@@ -88,6 +88,10 @@ export function SignupDrawer({
             >
               {sending ? "SENDING\u2026" : "TEXT ME A SIGN-IN LINK"}
             </button>
+            <p className="text-eb-micro text-eb-light mt-3 text-center leading-relaxed">
+              Early Bird is not affiliated with any market or organizer.
+              We simply allow dealers to post items they{"\u2019"}re bringing.
+            </p>
           </>
         )}
       </div>
