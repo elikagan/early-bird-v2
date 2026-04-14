@@ -113,6 +113,28 @@
     margin-right: 2px;
   }
 
+  .safari-nav-btn {
+    background: none;
+    border: none;
+    color: var(--blue);
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0 2px;
+    line-height: 1;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    opacity: 0.9;
+  }
+
+  .safari-nav-btn:disabled {
+    color: var(--text-dim);
+    opacity: 0.3;
+    cursor: default;
+  }
+
+  .safari-nav-btn:not(:disabled):hover {
+    opacity: 1;
+  }
+
   /* Screen area */
   .screen-area {
     position: absolute;
@@ -519,6 +541,8 @@
   <div class="iphone-frame">
     <div class="dynamic-island"></div>
     <div class="safari-bar">
+      <button class="safari-nav-btn" id="iframeBack" onclick="iframeNav(-1)" title="Back">&#x276E;</button>
+      <button class="safari-nav-btn" id="iframeForward" onclick="iframeNav(1)" title="Forward">&#x276F;</button>
       <span class="lock-icon">&#x1F512;</span>
       <div class="url-pill" id="urlBar">earlybird.la</div>
     </div>
@@ -769,6 +793,27 @@ function jumpToPage(val) {
   currentIndex = parseInt(val, 10);
   renderPage();
 }
+
+// ── Iframe back/forward ──
+function iframeNav(dir) {
+  try {
+    const frame = document.getElementById("phoneFrame");
+    if (dir === -1) frame.contentWindow.history.back();
+    else frame.contentWindow.history.forward();
+  } catch (e) { /* cross-origin safety */ }
+}
+
+// Track iframe URL changes and update the URL bar
+(function() {
+  const frame = document.getElementById("phoneFrame");
+  frame.addEventListener("load", () => {
+    try {
+      const loc = frame.contentWindow.location;
+      const path = loc.pathname + loc.search;
+      document.getElementById("urlBar").textContent = "earlybird.la" + path;
+    } catch (e) { /* cross-origin */ }
+  });
+})();
 
 function addComment() {
   const input = document.getElementById("commentInput");
