@@ -1,4 +1,5 @@
 import db from "@/lib/db";
+import { after } from "next/server";
 import { json, error } from "@/lib/api";
 import { getSession } from "@/lib/auth";
 import { sendSMS } from "@/lib/sms";
@@ -208,151 +209,150 @@ export async function PATCH(
     });
   }
 
-  // Price drop: notify watchers who have price_drops pref enabled
-  if (body.price !== undefined) {
-    const newPrice = Number(body.price);
-    const oldPrice = item.price as number;
-    if (newPrice < oldPrice) {
-      const proto = request.headers.get("x-forwarded-proto") || "https";
-      const host = request.headers.get("host") || "earlybird.la";
-      const itemUrl = `${proto}://${host}/item/${id}`;
-
-      // Get all watchers (favorites) except the dealer themselves
-      const watchers = await db.execute({
-        sql: `SELECT u.id, u.phone FROM favorites f JOIN users u ON u.id = f.buyer_id WHERE f.item_id = ?`,
-        args: [id],
-      });
-
-      // Send in parallel batches of 5 to avoid overwhelming the SMS provider
-      const batch: Promise<void>[] = [];
-      for (const row of watchers.rows) {
-        const watcher = row as Record<string, unknown>;
-        batch.push(
-          (async () => {
-            const canNotify = await shouldNotify(watcher.id as string, "price_drops");
-            if (canNotify) {
-              await sendSMS(
-                watcher.phone as string,
-                composePriceDropNotification(
-                  item.title as string,
-                  formatPrice(oldPrice),
-                  formatPrice(newPrice),
-                  itemUrl
-                )
-              );
-            }
-          })()
-        );
-        if (batch.length >= 5) {
-          await Promise.all(batch);
-          batch.length = 0;
-        }
-      }
-      if (batch.length > 0) await Promise.all(batch);
-    }
-  }
-
-  // Helper to look up context for SMS
-  async function getReceiptContext() {
-    const ctx = await db.execute({
-      sql: `
-        SELECT d.business_name, bs.booth_number, m.name as market_name,
-               m.starts_at
-        FROM items i
-        JOIN dealers d ON d.id = i.dealer_id
-        LEFT JOIN booth_settings bs ON bs.dealer_id = d.id AND bs.market_id = i.market_id
-        JOIN markets m ON m.id = i.market_id
-        WHERE i.id = ?
-      `,
-      args: [id],
-    });
-    const row = ctx.rows[0] as Record<string, unknown>;
-    const startDate = new Date(row.starts_at as string);
-    const dateStr = startDate.toLocaleDateString("en-US", {
-      weekday: "short", month: "short", day: "numeric",
-    });
-    return {
-      dealerName: row.business_name as string,
-      boothNumber: row.booth_number as string | null,
-      marketName: row.market_name as string,
-      marketDate: dateStr,
-    };
-  }
-
-  // If status changed to hold/sold via per-inquiry action, update inquiry statuses + send SMS
+  // Update inquiry statuses (synchronous — must complete before response)
   if (body.status === "hold" && body.held_for) {
     await db.execute({
       sql: `UPDATE inquiries SET status = 'held' WHERE item_id = ? AND buyer_id = ?`,
       args: [id, body.held_for],
     });
-    // SMS: hold receipt to buyer
-    const buyer = await db.execute({
-      sql: `SELECT phone FROM users WHERE id = ?`,
-      args: [body.held_for],
-    });
-    if (buyer.rows.length > 0) {
-      const ctx = await getReceiptContext();
-      await sendSMS(
-        (buyer.rows[0] as Record<string, unknown>).phone as string,
-        composeHoldReceipt(ctx.dealerName, item.title as string, ctx.boothNumber, ctx.marketName, ctx.marketDate)
-      );
-    }
   }
   if (body.status === "sold" && body.sold_to) {
     await db.execute({
       sql: `UPDATE inquiries SET status = 'sold' WHERE item_id = ? AND buyer_id = ?`,
       args: [id, body.sold_to],
     });
-    // All other inquirers lose
     await db.execute({
       sql: `UPDATE inquiries SET status = 'lost' WHERE item_id = ? AND buyer_id != ? AND status IN ('open', 'held')`,
       args: [id, body.sold_to],
     });
-    // SMS: sold receipt to winner
-    const ctx = await getReceiptContext();
-    const winner = await db.execute({
-      sql: `SELECT phone FROM users WHERE id = ?`,
-      args: [body.sold_to],
-    });
-    if (winner.rows.length > 0) {
-      await sendSMS(
-        (winner.rows[0] as Record<string, unknown>).phone as string,
-        composeSoldReceipt(ctx.dealerName, item.title as string, ctx.boothNumber, ctx.marketName, ctx.marketDate)
-      );
-    }
-    // SMS: lost receipt to all other inquirers
-    const losers = await db.execute({
-      sql: `SELECT u.phone FROM inquiries q JOIN users u ON u.id = q.buyer_id WHERE q.item_id = ? AND q.buyer_id != ?`,
-      args: [id, body.sold_to],
-    });
-    for (const loser of losers.rows) {
-      await sendSMS(
-        (loser as Record<string, unknown>).phone as string,
-        composeLostReceipt(item.title as string, ctx.dealerName)
-      );
-    }
   }
   if (body.status === "sold" && !body.sold_to) {
-    // Walk-up sale: all inquirers lose
     await db.execute({
       sql: `UPDATE inquiries SET status = 'lost' WHERE item_id = ? AND status IN ('open', 'held')`,
       args: [id],
     });
-    // SMS: lost receipt to all inquirers
-    const ctx = await getReceiptContext();
-    const allInquirers = await db.execute({
-      sql: `SELECT u.phone FROM inquiries q JOIN users u ON u.id = q.buyer_id WHERE q.item_id = ?`,
-      args: [id],
-    });
-    for (const inq of allInquirers.rows) {
-      await sendSMS(
-        (inq as Record<string, unknown>).phone as string,
-        composeLostReceipt(item.title as string, ctx.dealerName)
-      );
-    }
   }
 
   const updated = await db.execute({ sql: `SELECT * FROM items WHERE id = ?`, args: [id] });
+
+  // Deferred: all SMS notifications run after response is sent
+  const priceDropped = body.price !== undefined && Number(body.price) < (item.price as number);
+  const itemTitle = item.title as string;
+  const proto = request.headers.get("x-forwarded-proto") || "https";
+  const host = request.headers.get("host") || "earlybird.la";
+
+  after(async () => {
+    try {
+      async function getReceiptContext() {
+        const ctx = await db.execute({
+          sql: `
+            SELECT d.business_name, bs.booth_number, m.name as market_name, m.starts_at
+            FROM items i
+            JOIN dealers d ON d.id = i.dealer_id
+            LEFT JOIN booth_settings bs ON bs.dealer_id = d.id AND bs.market_id = i.market_id
+            JOIN markets m ON m.id = i.market_id
+            WHERE i.id = ?
+          `,
+          args: [id],
+        });
+        const row = ctx.rows[0] as Record<string, unknown>;
+        const startDate = new Date(row.starts_at as string);
+        const dateStr = startDate.toLocaleDateString("en-US", {
+          weekday: "short", month: "short", day: "numeric",
+        });
+        return {
+          dealerName: row.business_name as string,
+          boothNumber: row.booth_number as string | null,
+          marketName: row.market_name as string,
+          marketDate: dateStr,
+        };
+      }
+
+      // Price drop → notify all watchers
+      if (priceDropped) {
+        const oldPrice = item.price as number;
+        const newPrice = Number(body.price);
+        const itemUrl = `${proto}://${host}/item/${id}`;
+        const watchers = await db.execute({
+          sql: `SELECT u.id, u.phone FROM favorites f JOIN users u ON u.id = f.buyer_id WHERE f.item_id = ?`,
+          args: [id],
+        });
+        await Promise.allSettled(
+          watchers.rows.map(async (row) => {
+            const w = row as Record<string, unknown>;
+            if (await shouldNotify(w.id as string, "price_drops")) {
+              await sendSMS(
+                w.phone as string,
+                composePriceDropNotification(itemTitle, formatPrice(oldPrice), formatPrice(newPrice), itemUrl)
+              );
+            }
+          })
+        );
+      }
+
+      // Hold → receipt to buyer
+      if (body.status === "hold" && body.held_for) {
+        const buyer = await db.execute({
+          sql: `SELECT phone FROM users WHERE id = ?`,
+          args: [body.held_for],
+        });
+        if (buyer.rows.length > 0) {
+          const ctx = await getReceiptContext();
+          await sendSMS(
+            (buyer.rows[0] as Record<string, unknown>).phone as string,
+            composeHoldReceipt(ctx.dealerName, itemTitle, ctx.boothNumber, ctx.marketName, ctx.marketDate)
+          );
+        }
+      }
+
+      // Sold → receipt to winner + lost receipts to others
+      if (body.status === "sold" && body.sold_to) {
+        const ctx = await getReceiptContext();
+        const winner = await db.execute({
+          sql: `SELECT phone FROM users WHERE id = ?`,
+          args: [body.sold_to],
+        });
+        if (winner.rows.length > 0) {
+          await sendSMS(
+            (winner.rows[0] as Record<string, unknown>).phone as string,
+            composeSoldReceipt(ctx.dealerName, itemTitle, ctx.boothNumber, ctx.marketName, ctx.marketDate)
+          );
+        }
+        const losers = await db.execute({
+          sql: `SELECT u.phone FROM inquiries q JOIN users u ON u.id = q.buyer_id WHERE q.item_id = ? AND q.buyer_id != ?`,
+          args: [id, body.sold_to],
+        });
+        await Promise.allSettled(
+          losers.rows.map((loser) =>
+            sendSMS(
+              (loser as Record<string, unknown>).phone as string,
+              composeLostReceipt(itemTitle, ctx.dealerName)
+            )
+          )
+        );
+      }
+
+      // Walk-up sale → lost receipts to all inquirers
+      if (body.status === "sold" && !body.sold_to) {
+        const ctx = await getReceiptContext();
+        const allInquirers = await db.execute({
+          sql: `SELECT u.phone FROM inquiries q JOIN users u ON u.id = q.buyer_id WHERE q.item_id = ?`,
+          args: [id],
+        });
+        await Promise.allSettled(
+          allInquirers.rows.map((inq) =>
+            sendSMS(
+              (inq as Record<string, unknown>).phone as string,
+              composeLostReceipt(itemTitle, ctx.dealerName)
+            )
+          )
+        );
+      }
+    } catch (err) {
+      console.error("Deferred SMS error:", err);
+    }
+  });
+
   return json(updated.rows[0]);
 }
 

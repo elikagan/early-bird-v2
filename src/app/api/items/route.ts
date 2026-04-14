@@ -37,7 +37,10 @@ export async function GET(request: Request) {
     sql += ` AND i.status != 'deleted'`;
   }
 
-  sql += ` ORDER BY i.created_at DESC`;
+  const limit = Math.min(Math.max(1, Number(url.searchParams.get("limit")) || 50), 200);
+  const offset = Math.max(0, Number(url.searchParams.get("offset")) || 0);
+
+  sql += ` ORDER BY i.created_at DESC LIMIT ${limit} OFFSET ${offset}`;
 
   const result = await db.execute({ sql, args });
   return cachedJson(result.rows);

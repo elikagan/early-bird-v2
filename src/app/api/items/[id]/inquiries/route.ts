@@ -32,6 +32,7 @@ export async function GET(
       JOIN users u ON u.id = q.buyer_id
       WHERE q.item_id = ?
       ORDER BY q.created_at DESC
+      LIMIT 100
     `,
     args: [id],
   });

@@ -36,7 +36,10 @@ export async function GET(request: Request) {
     args.push(marketId);
   }
 
-  sql += ` ORDER BY f.created_at DESC`;
+  const limit = Math.min(Math.max(1, Number(url.searchParams.get("limit")) || 200), 500);
+  const offset = Math.max(0, Number(url.searchParams.get("offset")) || 0);
+
+  sql += ` ORDER BY f.created_at DESC LIMIT ${limit} OFFSET ${offset}`;
 
   const result = await db.execute({ sql, args });
   return json(result.rows);

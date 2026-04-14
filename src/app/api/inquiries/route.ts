@@ -1,4 +1,5 @@
 import db from "@/lib/db";
+import { after } from "next/server";
 import { json, error } from "@/lib/api";
 import { getSession } from "@/lib/auth";
 import { newId } from "@/lib/id";
@@ -40,26 +41,32 @@ export async function POST(request: Request) {
     args: [newId(), user.id, item_id],
   });
 
-  // Send SMS to dealer (respects notification preferences)
-  const dealerUser = await db.execute({
-    sql: `SELECT u.id, u.phone FROM users u JOIN dealers d ON d.user_id = u.id WHERE d.id = ?`,
-    args: [itemRow.dealer_id as string],
-  });
-  if (dealerUser.rows.length > 0) {
-    const dealer = dealerUser.rows[0] as Record<string, unknown>;
-    const canNotify = await shouldNotify(dealer.id as string, "new_inquiries");
-    if (canNotify) {
-      const buyerName = user.display_name || user.first_name || "A buyer";
-      await sendSMS(
-        dealer.phone as string,
-        composeInquiryNotification(buyerName, user.phone, itemRow.title as string, message || "")
-      );
-    }
-  }
-
   const inquiry = await db.execute({
     sql: `SELECT * FROM inquiries WHERE id = ?`,
     args: [inquiryId],
   });
+  // Deferred: notify dealer via SMS after response is sent
+  after(async () => {
+    try {
+      const dealerUser = await db.execute({
+        sql: `SELECT u.id, u.phone FROM users u JOIN dealers d ON d.user_id = u.id WHERE d.id = ?`,
+        args: [itemRow.dealer_id as string],
+      });
+      if (dealerUser.rows.length > 0) {
+        const dealer = dealerUser.rows[0] as Record<string, unknown>;
+        const canNotify = await shouldNotify(dealer.id as string, "new_inquiries");
+        if (canNotify) {
+          const buyerName = user.display_name || user.first_name || "A buyer";
+          await sendSMS(
+            dealer.phone as string,
+            composeInquiryNotification(buyerName, user.phone, itemRow.title as string, message || "")
+          );
+        }
+      }
+    } catch (err) {
+      console.error("Deferred inquiry SMS error:", err);
+    }
+  });
+
   return json(inquiry.rows[0], 201);
 }
