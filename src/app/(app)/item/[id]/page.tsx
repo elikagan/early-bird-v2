@@ -438,7 +438,7 @@ export default function ItemDetailPage() {
                   onClick={() => setRemovePhotoIds((prev) => new Set([...prev, photo.id]))}
                   className="absolute top-1 right-1 w-6 h-6 bg-eb-black text-eb-white flex items-center justify-center text-eb-micro font-bold"
                 >
-                  \u2715
+                  {"\u2715"}
                 </button>
                 {i === 0 && newPhotos.filter((p) => p.status === "done").length === 0 && (
                   <span className="absolute bottom-1 left-1 bg-eb-pop text-eb-white text-eb-micro px-1.5 py-0.5 font-bold uppercase">
@@ -471,7 +471,7 @@ export default function ItemDetailPage() {
                   }}
                   className="absolute top-1 right-1 w-6 h-6 bg-eb-black text-eb-white flex items-center justify-center text-eb-micro font-bold"
                 >
-                  \u2715
+                  {"\u2715"}
                 </button>
               </div>
             ))}
