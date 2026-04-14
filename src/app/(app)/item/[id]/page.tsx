@@ -503,16 +503,42 @@ export default function ItemDetailPage() {
         </section>
       ) : (
         <>
-          {/* VIEW MODE: Photo */}
-          {currentPhoto ? (
-            <img
-              src={currentPhoto}
-              alt={item.title}
-              className="w-full block"
-            />
-          ) : (
-            <div className="w-full aspect-[4/3] bg-eb-border" />
-          )}
+          {/* VIEW MODE: Swipeable photo carousel */}
+          <div
+            className="relative w-full overflow-hidden touch-pan-y"
+            onTouchStart={(e) => {
+              const t = e.touches[0];
+              (e.currentTarget as HTMLElement).dataset.sx = String(t.clientX);
+              (e.currentTarget as HTMLElement).dataset.sy = String(t.clientY);
+            }}
+            onTouchEnd={(e) => {
+              const el = e.currentTarget as HTMLElement;
+              const sx = Number(el.dataset.sx || 0);
+              const sy = Number(el.dataset.sy || 0);
+              const ex = e.changedTouches[0].clientX;
+              const ey = e.changedTouches[0].clientY;
+              const dx = ex - sx;
+              const dy = ey - sy;
+              if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
+                if (dx < 0 && photoIndex < item.photos.length - 1) {
+                  setPhotoIndex(photoIndex + 1);
+                } else if (dx > 0 && photoIndex > 0) {
+                  setPhotoIndex(photoIndex - 1);
+                }
+              }
+            }}
+          >
+            {currentPhoto ? (
+              <img
+                src={currentPhoto}
+                alt={item.title}
+                className="w-full block"
+                draggable={false}
+              />
+            ) : (
+              <div className="w-full aspect-[4/3] bg-eb-border" />
+            )}
+          </div>
           {/* Photo dots */}
           {item.photos.length > 1 && (
             <div className="flex justify-center gap-1.5 py-2.5">
