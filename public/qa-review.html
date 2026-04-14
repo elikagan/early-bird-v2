@@ -78,78 +78,108 @@
     z-index: 10;
   }
 
-  /* Safari chrome bar */
-  .safari-bar {
+  /* iOS status bar (time, signal, battery) */
+  .ios-status-bar {
     position: absolute;
-    top: 54px;
+    top: 12px;
+    left: 40px;
+    right: 40px;
+    height: 36px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 8px;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  .ios-status-bar .status-left { font-size: 15px; }
+  .ios-status-bar .status-right {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+  }
+
+  /* Screen area — sits below status bar, above bottom chrome */
+  .screen-area {
+    position: absolute;
+    top: 52px;
     left: 10px;
     right: 10px;
-    height: 44px;
-    background: var(--surface);
+    bottom: 100px;
+    overflow: hidden;
+    background: var(--phone-screen);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Safari bottom URL bar */
+  .safari-url-bar {
+    position: absolute;
+    bottom: 54px;
+    left: 10px;
+    right: 10px;
+    height: 42px;
+    background: #2c2c2e;
     border-radius: 12px;
     display: flex;
     align-items: center;
+    justify-content: center;
     padding: 0 14px;
     z-index: 10;
-    gap: 8px;
   }
 
-  .safari-bar .url-pill {
-    flex: 1;
-    background: var(--surface2);
-    border-radius: 8px;
-    padding: 6px 10px;
-    font-size: 11px;
-    color: var(--text-dim);
+  .safari-url-bar .url-text {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+    font-size: 14px;
+    color: #fff;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
   }
 
-  .safari-bar .lock-icon {
-    font-size: 10px;
-    color: var(--text-dim);
-    margin-right: 2px;
-  }
-
-  .safari-nav-btn {
-    background: none;
-    border: none;
-    color: var(--blue);
-    font-size: 18px;
-    cursor: pointer;
-    padding: 0 2px;
-    line-height: 1;
-    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-    opacity: 0.9;
-  }
-
-  .safari-nav-btn:disabled {
-    color: var(--text-dim);
-    opacity: 0.3;
-    cursor: default;
-  }
-
-  .safari-nav-btn:not(:disabled):hover {
-    opacity: 1;
-  }
-
-  /* Screen area */
-  .screen-area {
+  /* Safari bottom toolbar (back, forward, share, tabs) */
+  .safari-toolbar {
     position: absolute;
-    top: 102px;
+    bottom: 10px;
     left: 10px;
     right: 10px;
-    bottom: 10px;
+    height: 40px;
     border-radius: 0 0 42px 42px;
-    overflow: hidden;
-    background: var(--phone-screen);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 30px;
+    z-index: 10;
+  }
+
+  .safari-toolbar button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .safari-toolbar button svg {
+    width: 22px;
+    height: 22px;
+    fill: #007AFF;
+  }
+
+  .safari-toolbar button.disabled svg {
+    fill: #48484a;
   }
 
   .screen-area iframe {
+    flex: 1;
     width: 100%;
-    height: 100%;
     border: none;
     background: white;
   }
@@ -259,6 +289,17 @@
     font-size: 12px;
     color: var(--text-dim);
     line-height: 1.5;
+  }
+
+  .page-context {
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.6;
+    margin-top: 8px;
+    padding: 8px 10px;
+    background: var(--surface);
+    border-left: 3px solid var(--accent-dim);
+    border-radius: 0 6px 6px 0;
   }
 
   /* Navigation */
@@ -540,14 +581,26 @@
 <div class="phone-column">
   <div class="iphone-frame">
     <div class="dynamic-island"></div>
-    <div class="safari-bar">
-      <button class="safari-nav-btn" id="iframeBack" onclick="iframeNav(-1)" title="Back">&#x276E;</button>
-      <button class="safari-nav-btn" id="iframeForward" onclick="iframeNav(1)" title="Forward">&#x276F;</button>
-      <span class="lock-icon">&#x1F512;</span>
-      <div class="url-pill" id="urlBar">earlybird.la</div>
+    <div class="ios-status-bar">
+      <span class="status-left">9:41</span>
+      <span class="status-right">
+        <svg width="16" height="12" viewBox="0 0 16 12"><path d="M1 7h2v4H1zM5 5h2v6H5zM9 3h2v8H9zM13 1h2v10h-2z" fill="#fff"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 3.5C6 3.5 4.2 4.3 2.9 5.6l1.4 1.4C5.4 5.9 6.6 5.5 8 5.5s2.6.4 3.7 1.5l1.4-1.4C11.8 4.3 10 3.5 8 3.5zM8 7.5c-.8 0-1.6.3-2.1.9L8 10.5l2.1-2.1C9.6 7.8 8.8 7.5 8 7.5z" fill="#fff"/></svg>
+        <svg width="25" height="12" viewBox="0 0 25 12"><rect x="0" y="1" width="21" height="10" rx="2" ry="2" stroke="#fff" stroke-width="1" fill="none"/><rect x="22" y="4" width="2" height="4" rx="1" fill="#fff" opacity="0.4"/><rect x="1.5" y="2.5" width="16" height="7" rx="1" fill="#fff"/></svg>
+      </span>
     </div>
     <div class="screen-area">
       <iframe id="phoneFrame" src="about:blank"></iframe>
+    </div>
+    <div class="safari-url-bar">
+      <span class="url-text" id="urlBar">earlybird.la</span>
+    </div>
+    <div class="safari-toolbar">
+      <button onclick="iframeNav(-1)" title="Back"><svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button>
+      <button onclick="iframeNav(1)" title="Forward"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/></svg></button>
+      <button class="disabled" title="Share"><svg viewBox="0 0 24 24"><path d="M16 5l-1.42 1.42-1.59-1.59V16h-2V4.83l-1.59 1.59L8 5l4-4 4 4zm4 5v11c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2V10c0-1.1.9-2 2-2h3v2H6v11h12V10h-3V8h3c1.1 0 2 .9 2 2z"/></svg></button>
+      <button class="disabled" title="Bookmarks"><svg viewBox="0 0 24 24"><path d="M18 2H6c-1.1 0-2 .9-2 2v16l8-3.5L20 20V4c0-1.1-.9-2-2-2zm0 15l-6-2.6L6 17V4h12v13z"/></svg></button>
+      <button class="disabled" title="Tabs"><svg viewBox="0 0 24 24"><path d="M3 3h8v2H5v6H3V3zm0 10h2v6h6v2H3V13zm18 0v8h-8v-2h6v-6h2zm0-10v8h-2V5h-6V3h8z"/></svg></button>
     </div>
     <div class="home-indicator"></div>
   </div>
@@ -570,6 +623,7 @@
     </div>
     <div class="page-title" id="pageTitle">—</div>
     <div class="page-desc" id="pageDesc">—</div>
+    <div class="page-context" id="pageContext"></div>
   </div>
 
   <div class="nav-row">
@@ -626,76 +680,110 @@ const PAGES = [
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   // ── Public Pages ──
-  { id: "landing", title: "Landing Page", path: "/", desc: "Homepage. Hero, value prop, sign in CTA.", badge: "live", badgeClass: "badge-live" },
-  { id: "privacy", title: "Privacy Policy", path: "/privacy", desc: "Static legal page.", badge: "static", badgeClass: "badge-static" },
-  { id: "terms", title: "Terms of Service", path: "/terms", desc: "Static legal page.", badge: "static", badgeClass: "badge-static" },
+  { id: "landing", title: "Landing Page", path: "/", desc: "Homepage. Hero, value prop, sign in CTA.", badge: "live", badgeClass: "badge-live",
+    context: "First thing anyone sees when they hit the site. Should sell the concept and get them to sign up." },
+  { id: "privacy", title: "Privacy Policy", path: "/privacy", desc: "Static legal page.", badge: "static", badgeClass: "badge-static",
+    context: "Linked from the footer. Just needs to exist and be readable." },
+  { id: "terms", title: "Terms of Service", path: "/terms", desc: "Static legal page.", badge: "static", badgeClass: "badge-static",
+    context: "Linked from the footer. Just needs to exist and be readable." },
 
   // ── Auth Flow ──
-  { id: "auth-start", title: "Auth — Phone Entry", path: "/home", desc: "Phone number input for magic link.", badge: "auth", badgeClass: "badge-auth" },
-  { id: "auth-verify", title: "Auth — Verify Pending", path: "/auth/verify", desc: "Waiting for magic link tap. 'Check your texts' message.", badge: "auth", badgeClass: "badge-auth" },
-  { id: "onboarding", title: "Onboarding", path: "/onboarding", desc: "First-time user: set display name, optional avatar.", badge: "auth", badgeClass: "badge-auth" },
+  { id: "auth-start", title: "Auth — Phone Entry", path: "/home", desc: "Phone number input for magic link.", badge: "auth", badgeClass: "badge-auth",
+    context: "User tapped Sign In. They enter their phone number here and we text them a magic link. No passwords, no codes." },
+  { id: "auth-verify", title: "Auth — Verify Pending", path: "/auth/verify", desc: "Waiting for magic link tap. 'Check your texts' message.", badge: "auth", badgeClass: "badge-auth",
+    context: "After entering their phone, they land here while waiting for the magic link SMS. Should feel clear, not confusing." },
+  { id: "onboarding", title: "Onboarding", path: "/onboarding", desc: "First-time user: set display name, optional avatar.", badge: "auth", badgeClass: "badge-auth",
+    context: "Brand new user just verified their phone for the first time. They pick a display name and optionally upload a photo." },
 
   // ── Logged Out Browsing ──
-  { id: "home-out", title: "Home Hub (Logged Out)", path: "/home", desc: "Generic 'LA flea markets' subtitle. Sign-up CTA instead of preview buttons.", badge: "live", badgeClass: "badge-live" },
-  { id: "buy-grid-out", title: "Buy Grid (Logged Out)", path: "/buy?market_id=H8siHnv5aFjc-thg", desc: "Item grid WITHOUT dealer names/avatars on cards.", badge: "live", badgeClass: "badge-live" },
-  { id: "item-live-out", title: "Item Detail (Logged Out)", path: "/item/uAkbhcZoxWw7jMl4", desc: "Walnut Credenza. Should show signup CTA instead of 'I'm Interested' button.", badge: "live", badgeClass: "badge-live" },
-  { id: "watching-out", title: "Watching (Logged Out)", path: "/watching", desc: "Should show signup prompt: 'Sign up to save items.'", badge: "live", badgeClass: "badge-live" },
-  { id: "dealer-share-out", title: "Dealer Page (Logged Out)", path: "/d/zcYMRz9HT2WoIYoi", desc: "Items render as buttons (trigger signup), not links.", badge: "live", badgeClass: "badge-live" },
-  { id: "invite-page", title: "Invite Landing", path: "/invite/TESTCODE", desc: "Dealer invite code landing. May 404 with bad code.", badge: "auth", badgeClass: "badge-auth" },
+  { id: "home-out", title: "Home Hub (Logged Out)", path: "/home", desc: "Generic 'LA flea markets' subtitle. Sign-up CTA instead of preview buttons.", badge: "live", badgeClass: "badge-live",
+    context: "Someone who isn't signed in lands on the home hub. They can see upcoming markets but get nudged to sign up instead of previewing items." },
+  { id: "buy-grid-out", title: "Buy Grid (Logged Out)", path: "/buy?market_id=H8siHnv5aFjc-thg", desc: "Item grid WITHOUT dealer names/avatars on cards.", badge: "live", badgeClass: "badge-live",
+    context: "A visitor browsing items without an account. They can see the grid but dealer info is hidden. Compare this to the logged-in version." },
+  { id: "item-live-out", title: "Item Detail (Logged Out)", path: "/item/uAkbhcZoxWw7jMl4", desc: "Walnut Credenza. Should show signup CTA instead of 'I'm Interested' button.", badge: "live", badgeClass: "badge-live",
+    context: "Visitor tapped an item. Instead of the inquiry button, they should see a prompt to sign up. This is where we convert browsers into users." },
+  { id: "watching-out", title: "Watching (Logged Out)", path: "/watching", desc: "Should show signup prompt: 'Sign up to save items.'", badge: "live", badgeClass: "badge-live",
+    context: "Visitor tapped the Watching tab. Since they're not logged in, this should show a signup prompt, not an empty list." },
+  { id: "dealer-share-out", title: "Dealer Page (Logged Out)", path: "/d/zcYMRz9HT2WoIYoi", desc: "Items render as buttons (trigger signup), not links.", badge: "live", badgeClass: "badge-live",
+    context: "A dealer shared their page link on Instagram. The visitor isn't logged in, so tapping any item should trigger signup instead of navigating." },
+  { id: "invite-page", title: "Invite Landing", path: "/invite/TESTCODE", desc: "Dealer invite code landing. May 404 with bad code.", badge: "auth", badgeClass: "badge-auth",
+    context: "A potential dealer clicked an invite link we sent them. This is their entry point into becoming a seller." },
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // LOG IN AS BUYER — review these next
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   // ── Buyer: Browsing ──
-  { id: "home-in", title: "Home Hub (Logged In)", path: "/home", desc: "'Your markets' subtitle. Preview buttons for upcoming markets.", badge: "live", badgeClass: "badge-live" },
-  { id: "buy-grid-in", title: "Buy Grid (Logged In)", path: "/buy?market_id=H8siHnv5aFjc-thg", desc: "Downtown Modernism. Items show dealer names/avatars.", badge: "live", badgeClass: "badge-live" },
-  { id: "item-live-buyer", title: "Item Detail — Live", path: "/item/uAkbhcZoxWw7jMl4", desc: "Walnut Credenza. 'I'm Interested' button + compose drawer.", badge: "live", badgeClass: "badge-live" },
-  { id: "item-hold-buyer", title: "Item Detail — On Hold", path: "/item/yPBEngIKVHeNiYAF", desc: "Teak Nesting Tables. Hold badge visible.", badge: "live", badgeClass: "badge-live" },
-  { id: "item-sold-buyer", title: "Item Detail — Sold", path: "/item/HDBvJerG2MUX-Npc", desc: "Enamel Kitchen Table. Sold badge, inquiry disabled.", badge: "live", badgeClass: "badge-live" },
+  { id: "home-in", title: "Home Hub (Logged In)", path: "/home", desc: "'Your markets' subtitle. Preview buttons for upcoming markets.", badge: "live", badgeClass: "badge-live",
+    context: "A logged-in buyer opens the app. They see their markets with preview buttons for upcoming ones. Compare to the logged-out version." },
+  { id: "buy-grid-in", title: "Buy Grid (Logged In)", path: "/buy?market_id=H8siHnv5aFjc-thg", desc: "Downtown Modernism. Items show dealer names/avatars.", badge: "live", badgeClass: "badge-live",
+    context: "Buyer browsing items at Downtown Modernism. Cards should show dealer names and avatars now that they're logged in." },
+  { id: "item-live-buyer", title: "Item Detail — Live", path: "/item/uAkbhcZoxWw7jMl4", desc: "Walnut Credenza. 'I'm Interested' button + compose drawer.", badge: "live", badgeClass: "badge-live",
+    context: "Buyer looking at a live item. The key action is the 'I'm Interested' button which opens a compose drawer to message the dealer." },
+  { id: "item-hold-buyer", title: "Item Detail — On Hold", path: "/item/yPBEngIKVHeNiYAF", desc: "Teak Nesting Tables. Hold badge visible.", badge: "live", badgeClass: "badge-live",
+    context: "Buyer looking at an item someone else has first dibs on. Should clearly show it's on hold so they know not to get their hopes up." },
+  { id: "item-sold-buyer", title: "Item Detail — Sold", path: "/item/HDBvJerG2MUX-Npc", desc: "Enamel Kitchen Table. Sold badge, inquiry disabled.", badge: "live", badgeClass: "badge-live",
+    context: "Buyer looking at a sold item. The inquiry button should be gone or disabled. This is what they'd see if they bookmarked it and came back too late." },
 
   // ── Buyer: Watching ──
-  { id: "watching-in", title: "Watching (With Items)", path: "/watching", desc: "Favorited + inquired items grid with status indicators.", badge: "live", badgeClass: "badge-live" },
-  { id: "watching-empty", title: "Watching (Empty)", path: "/watching", desc: "Logged in but no favorites or inquiries yet. Empty state.", badge: "live", badgeClass: "badge-live" },
+  { id: "watching-in", title: "Watching (With Items)", path: "/watching", desc: "Favorited + inquired items grid with status indicators.", badge: "live", badgeClass: "badge-live",
+    context: "Buyer who has favorited some items and sent some inquiries. Their saved items show up here with live/hold/sold status badges." },
+  { id: "watching-empty", title: "Watching (Empty)", path: "/watching", desc: "Logged in but no favorites or inquiries yet. Empty state.", badge: "live", badgeClass: "badge-live",
+    context: "Buyer who just signed up and hasn't saved anything yet. Should be a friendly nudge to go browse, not a sad empty page." },
 
   // ── Buyer: Other ──
-  { id: "dealer-share-in", title: "Dealer Page (Logged In)", path: "/d/zcYMRz9HT2WoIYoi", desc: "Items render as links to item detail (not signup buttons).", badge: "live", badgeClass: "badge-live" },
-  { id: "account-buyer", title: "Account (Buyer)", path: "/account", desc: "Stats, notification prefs, 'Become A Seller' section.", badge: "live", badgeClass: "badge-live" },
+  { id: "dealer-share-in", title: "Dealer Page (Logged In)", path: "/d/zcYMRz9HT2WoIYoi", desc: "Items render as links to item detail (not signup buttons).", badge: "live", badgeClass: "badge-live",
+    context: "Logged-in buyer visiting a dealer's public page. Items are tappable links that go straight to item detail, unlike the logged-out version." },
+  { id: "account-buyer", title: "Account (Buyer)", path: "/account", desc: "Stats, notification prefs, 'Become A Seller' section.", badge: "live", badgeClass: "badge-live",
+    context: "Buyer's account page. Shows their stats, notification preferences, and a section to apply to become a dealer." },
 
   // ── Markets ──
-  { id: "buy-pcc", title: "Buy — PCC Flea (Upcoming)", path: "/buy?market_id=Gww9arnESzhOtAOl", desc: "PCC Flea. Upcoming status, may have no items.", badge: "live", badgeClass: "badge-live" },
-  { id: "buy-rosebowl", title: "Buy — Rose Bowl (Upcoming)", path: "/buy?market_id=uX2wJ92BSCJv-SLK", desc: "Rose Bowl Flea. Upcoming.", badge: "live", badgeClass: "badge-live" },
+  { id: "buy-pcc", title: "Buy — PCC Flea (Upcoming)", path: "/buy?market_id=Gww9arnESzhOtAOl", desc: "PCC Flea. Upcoming status, may have no items.", badge: "live", badgeClass: "badge-live",
+    context: "An upcoming market that hasn't happened yet. Dealers may have pre-listed items or it may be empty. Check how the upcoming state looks." },
+  { id: "buy-rosebowl", title: "Buy — Rose Bowl (Upcoming)", path: "/buy?market_id=uX2wJ92BSCJv-SLK", desc: "Rose Bowl Flea. Upcoming.", badge: "live", badgeClass: "badge-live",
+    context: "Another upcoming market. Same as PCC — checking that upcoming state renders correctly across markets." },
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // LOG IN AS DEALER — review these next
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   // ── Dealer: Home ──
-  { id: "home-dealer", title: "Home Hub (Dealer)", path: "/home", desc: "Dealer-specific onboarding copy and CTAs.", badge: "dealer", badgeClass: "badge-dealer" },
+  { id: "home-dealer", title: "Home Hub (Dealer)", path: "/home", desc: "Dealer-specific onboarding copy and CTAs.", badge: "dealer", badgeClass: "badge-dealer",
+    context: "A dealer opens the app. The home hub should show dealer-specific copy and CTAs — different from what a buyer sees." },
 
   // ── Dealer: Sell Tab ──
-  { id: "sell-inventory", title: "Sell — Inventory List", path: "/sell", desc: "Items grid with status badges, stats, booth #, share link.", badge: "dealer", badgeClass: "badge-dealer" },
-  { id: "sell-empty", title: "Sell — Empty Inventory", path: "/sell", desc: "Dealer with no items listed yet. Empty state + Add CTA.", badge: "dealer", badgeClass: "badge-dealer" },
-  { id: "sell-add", title: "Sell — Add Item", path: "/sell/add", desc: "New item form: photos, title, price, description, market.", badge: "dealer", badgeClass: "badge-dealer" },
+  { id: "sell-inventory", title: "Sell — Inventory List", path: "/sell", desc: "Items grid with status badges, stats, booth #, share link.", badge: "dealer", badgeClass: "badge-dealer",
+    context: "Dealer's main workspace. All their listed items with status badges, stats at the top, booth number, and a shareable link to their page." },
+  { id: "sell-empty", title: "Sell — Empty Inventory", path: "/sell", desc: "Dealer with no items listed yet. Empty state + Add CTA.", badge: "dealer", badgeClass: "badge-dealer",
+    context: "Brand new dealer who hasn't listed anything. Should guide them to add their first item, not just show a blank page." },
+  { id: "sell-add", title: "Sell — Add Item", path: "/sell/add", desc: "New item form: photos, title, price, description, market.", badge: "dealer", badgeClass: "badge-dealer",
+    context: "Dealer adding a new item to sell. Photos, title, price, description, market picker. This is where their inventory comes from." },
 
   // ── Dealer: Item Management ──
-  { id: "item-dealer-own", title: "Item Detail — Dealer Own", path: "/item/uAkbhcZoxWw7jMl4", desc: "Walnut Credenza. Edit, status controls, inquiry log.", badge: "dealer", badgeClass: "badge-dealer" },
+  { id: "item-dealer-own", title: "Item Detail — Dealer Own", path: "/item/uAkbhcZoxWw7jMl4", desc: "Walnut Credenza. Edit, status controls, inquiry log.", badge: "dealer", badgeClass: "badge-dealer",
+    context: "Dealer viewing their own listing. They can edit details, change status (hold/sold), and see a log of buyer inquiries." },
 
   // ── Dealer: Account ──
-  { id: "account-dealer", title: "Account (Dealer)", path: "/account", desc: "Business name, Instagram, payment methods, dealer notifications.", badge: "dealer", badgeClass: "badge-dealer" },
+  { id: "account-dealer", title: "Account (Dealer)", path: "/account", desc: "Business name, Instagram, payment methods, dealer notifications.", badge: "dealer", badgeClass: "badge-dealer",
+    context: "Dealer's account settings. Business info, Instagram handle, accepted payment methods, and notification preferences for their listings." },
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // ADMIN
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  { id: "admin", title: "Admin CMS", path: "/admin", desc: "Dashboard, markets, dealers, items tabs, SMS logs.", badge: "admin", badgeClass: "badge-admin" },
+  { id: "admin", title: "Admin CMS", path: "/admin", desc: "Dashboard, markets, dealers, items tabs, SMS logs.", badge: "admin", badgeClass: "badge-admin",
+    context: "Your admin panel. Manage markets, approve dealer applications, view all items, and check SMS delivery logs." },
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // EDGE CASES & ERRORS
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  { id: "buy-bad-market", title: "Buy — Bad Market ID", path: "/buy?market_id=nonexistent", desc: "Invalid market_id. Should show error or empty state.", badge: "live", badgeClass: "badge-live" },
-  { id: "item-404", title: "Item — 404", path: "/item/nonexistent-id-12345", desc: "Item that doesn't exist. Should show error state.", badge: "live", badgeClass: "badge-live" },
-  { id: "dealer-404", title: "Dealer Page — 404", path: "/d/nonexistent-dealer-id", desc: "Dealer that doesn't exist. Should show error state.", badge: "live", badgeClass: "badge-live" },
-  { id: "invite-bad", title: "Invite — Bad Code", path: "/invite/BADCODE999", desc: "Invalid invite code. Should show error.", badge: "auth", badgeClass: "badge-auth" },
+  { id: "buy-bad-market", title: "Buy — Bad Market ID", path: "/buy?market_id=nonexistent", desc: "Invalid market_id. Should show error or empty state.", badge: "live", badgeClass: "badge-live",
+    context: "Someone hit a URL with a market ID that doesn't exist. Should fail gracefully, not blow up or show a blank page." },
+  { id: "item-404", title: "Item — 404", path: "/item/nonexistent-id-12345", desc: "Item that doesn't exist. Should show error state.", badge: "live", badgeClass: "badge-live",
+    context: "Someone bookmarked an item that got deleted, or hit a bad link. Should show a clear 'not found' message." },
+  { id: "dealer-404", title: "Dealer Page — 404", path: "/d/nonexistent-dealer-id", desc: "Dealer that doesn't exist. Should show error state.", badge: "live", badgeClass: "badge-live",
+    context: "Someone hit a dealer page URL that doesn't exist. Should show a clear error, not a broken page." },
+  { id: "invite-bad", title: "Invite — Bad Code", path: "/invite/BADCODE999", desc: "Invalid invite code. Should show error.", badge: "auth", badgeClass: "badge-auth",
+    context: "Someone typed in a bad invite code or the link expired. Should explain the problem clearly." },
 ];
 
 const STORAGE_KEY = "eb-qa-comments";
@@ -722,6 +810,11 @@ function renderPage() {
 
   // Update URL bar
   document.getElementById("urlBar").textContent = "earlybird.la" + page.path;
+
+  // Update context on right panel
+  const ctxEl = document.getElementById("pageContext");
+  ctxEl.textContent = page.context || "";
+  ctxEl.style.display = page.context ? "" : "none";
 
   // Update info
   document.getElementById("pageCounter").textContent = `${currentIndex + 1} / ${PAGES.length}`;
