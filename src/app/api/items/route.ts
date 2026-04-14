@@ -19,6 +19,7 @@ export async function GET(request: Request) {
       u.display_name as dealer_display_name,
       u.avatar_url as dealer_avatar,
       (SELECT url FROM item_photos p WHERE p.item_id = i.id ORDER BY p.position LIMIT 1) as photo_url,
+      (SELECT thumb_url FROM item_photos p WHERE p.item_id = i.id ORDER BY p.position LIMIT 1) as thumb_url,
       (SELECT COUNT(*) FROM favorites f WHERE f.item_id = i.id) as watcher_count,
       (SELECT COUNT(*) FROM inquiries q WHERE q.item_id = i.id) as inquiry_count
     FROM items i
@@ -48,7 +49,7 @@ export async function POST(request: Request) {
   if (!user.dealer_id) return error("Dealer account required", 403);
 
   const body = await request.json();
-  const { market_id, title, description, price, price_firm, photo_urls } = body;
+  const { market_id, title, description, price, price_firm, photo_urls, photos } = body;
 
   if (!market_id || !title || price == null) {
     return error("market_id, title, and price are required");
@@ -61,13 +62,18 @@ export async function POST(request: Request) {
     args: [itemId, user.dealer_id, market_id, title, description || null, price, price_firm ? 1 : 0],
   });
 
-  if (Array.isArray(photo_urls)) {
-    for (let i = 0; i < photo_urls.length; i++) {
-      await db.execute({
-        sql: `INSERT INTO item_photos (id, item_id, url, position) VALUES (?, ?, ?, ?)`,
-        args: [newId(), itemId, photo_urls[i], i],
-      });
-    }
+  // Accept new format { url, thumb_url }[] or legacy string[]
+  const photoList: { url: string; thumb_url: string | null }[] = Array.isArray(photos)
+    ? photos
+    : Array.isArray(photo_urls)
+      ? photo_urls.map((u: string) => ({ url: u, thumb_url: null }))
+      : [];
+
+  for (let i = 0; i < photoList.length; i++) {
+    await db.execute({
+      sql: `INSERT INTO item_photos (id, item_id, url, thumb_url, position) VALUES (?, ?, ?, ?, ?)`,
+      args: [newId(), itemId, photoList[i].url, photoList[i].thumb_url, i],
+    });
   }
 
   const item = await db.execute({ sql: `SELECT * FROM items WHERE id = ?`, args: [itemId] });

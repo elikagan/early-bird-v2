@@ -2,6 +2,7 @@ import { storage } from "@/lib/storage";
 import { json, error } from "@/lib/api";
 import { getSession } from "@/lib/auth";
 import { nanoid } from "nanoid";
+import sharp from "sharp";
 
 const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15MB
 const ALLOWED_TYPES = new Set([
@@ -11,6 +12,9 @@ const ALLOWED_TYPES = new Set([
   "image/heic",
   "image/heif",
 ]);
+
+const THUMB_MAX = 400;
+const THUMB_QUALITY = 70;
 
 export async function POST(request: Request) {
   const user = await getSession(request);
@@ -29,9 +33,13 @@ export async function POST(request: Request) {
   }
 
   const ext = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
-  const path = `${user.dealer_id}/${nanoid(12)}.${ext}`;
+  const fileId = nanoid(12);
+  const path = `${user.dealer_id}/${fileId}.${ext}`;
+  const thumbPath = `${user.dealer_id}/${fileId}_thumb.jpg`;
 
   const buffer = Buffer.from(await file.arrayBuffer());
+
+  // Upload original
   const { error: uploadError } = await storage.upload(path, buffer, {
     contentType: file.type,
     upsert: false,
@@ -41,7 +49,28 @@ export async function POST(request: Request) {
     return error(`Upload failed: ${uploadError.message}`, 500);
   }
 
+  // Generate and upload thumbnail (400px max, JPEG q70)
+  let thumbUrl: string | null = null;
+  try {
+    const thumbBuffer = await sharp(buffer)
+      .resize(THUMB_MAX, THUMB_MAX, { fit: "inside", withoutEnlargement: true })
+      .jpeg({ quality: THUMB_QUALITY })
+      .toBuffer();
+
+    const { error: thumbError } = await storage.upload(thumbPath, thumbBuffer, {
+      contentType: "image/jpeg",
+      upsert: false,
+    });
+
+    if (!thumbError) {
+      const { data: thumbData } = storage.getPublicUrl(thumbPath);
+      thumbUrl = thumbData.publicUrl;
+    }
+  } catch {
+    // Thumbnail generation failed — not fatal, continue without it
+  }
+
   const { data: urlData } = storage.getPublicUrl(path);
 
-  return json({ url: urlData.publicUrl }, 201);
+  return json({ url: urlData.publicUrl, thumb_url: thumbUrl }, 201);
 }

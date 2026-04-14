@@ -28,6 +28,7 @@ interface Item {
   price: number;
   status: string;
   photo_url: string | null;
+  thumb_url: string | null;
 }
 
 interface Market {
@@ -194,7 +195,7 @@ function DealerPageContent() {
                 <>
                   {item.photo_url ? (
                     <Image
-                      src={item.photo_url}
+                      src={item.thumb_url || item.photo_url}
                       alt={item.title}
                       width={400}
                       height={400}

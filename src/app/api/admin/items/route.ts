@@ -41,6 +41,7 @@ export async function GET(request: Request) {
             u.display_name as dealer_display_name, u.id as user_id,
             m.name as market_name,
             (SELECT url FROM item_photos WHERE item_id = i.id ORDER BY position LIMIT 1) as photo_url,
+            (SELECT thumb_url FROM item_photos WHERE item_id = i.id ORDER BY position LIMIT 1) as thumb_url,
             (SELECT COUNT(*) FROM favorites WHERE item_id = i.id) as fav_count,
             (SELECT COUNT(*) FROM inquiries WHERE item_id = i.id) as inquiry_count
           FROM items i

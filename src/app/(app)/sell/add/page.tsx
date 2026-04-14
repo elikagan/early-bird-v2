@@ -22,6 +22,8 @@ interface PhotoSlot {
   preview: string;
   /** Remote URL after successful upload */
   url: string | null;
+  /** Thumbnail URL after successful upload */
+  thumb_url: string | null;
   /** Upload state */
   status: "processing" | "uploading" | "done" | "error";
   /** Error message if failed */
@@ -94,7 +96,7 @@ function AddItemContent() {
       const data = await res.json();
       setPhotos((prev) =>
         prev.map((p) =>
-          p.id === slotId ? { ...p, status: "done", url: data.url } : p
+          p.id === slotId ? { ...p, status: "done", url: data.url, thumb_url: data.thumb_url || null } : p
         )
       );
     } catch (err) {
@@ -130,6 +132,7 @@ function AddItemContent() {
           id: slotId,
           preview,
           url: null,
+          thumb_url: null,
           status: "processing",
         });
 
@@ -185,7 +188,7 @@ function AddItemContent() {
           description: description.trim() || undefined,
           price: priceNum,
           price_firm: priceFirm,
-          photo_urls: photos.map((p) => p.url),
+          photos: photos.map((p) => ({ url: p.url, thumb_url: p.thumb_url })),
         }),
       });
 

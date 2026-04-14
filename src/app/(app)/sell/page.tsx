@@ -16,6 +16,7 @@ interface Item {
   original_price: number | null;
   status: string;
   photo_url: string | null;
+  thumb_url: string | null;
   view_count: number;
   watcher_count: number;
   inquiry_count: number;
@@ -252,7 +253,7 @@ function SellContent() {
                 >
                   {item.photo_url ? (
                     <Image
-                      src={item.photo_url}
+                      src={item.thumb_url || item.photo_url}
                       alt={item.title}
                       width={400}
                       height={400}

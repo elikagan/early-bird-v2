@@ -42,7 +42,7 @@ export async function GET(
 
   // Photos
   const photos = await db.execute({
-    sql: `SELECT id, url, position FROM item_photos WHERE item_id = ? ORDER BY position`,
+    sql: `SELECT id, url, thumb_url, position FROM item_photos WHERE item_id = ? ORDER BY position`,
     args: [id],
   });
   (item as Record<string, unknown>).photos = photos.rows;
@@ -159,31 +159,34 @@ export async function PATCH(
   }
   const hasFieldUpdates = updates.length > 0;
 
-  // Photo management
-  if (Array.isArray(body.add_photo_urls) && body.add_photo_urls.length > 0) {
-    // Get current max position
+  // Photo management — accept add_photos [{url, thumb_url}] or legacy add_photo_urls [string]
+  const addPhotos: { url: string; thumb_url: string | null }[] = Array.isArray(body.add_photos)
+    ? body.add_photos
+    : Array.isArray(body.add_photo_urls)
+      ? body.add_photo_urls.map((u: string) => ({ url: u, thumb_url: null }))
+      : [];
+
+  if (addPhotos.length > 0) {
     const posRes = await db.execute({
       sql: `SELECT COALESCE(MAX(position), -1) as max_pos FROM item_photos WHERE item_id = ?`,
       args: [id],
     });
     let pos = Number((posRes.rows[0] as Record<string, unknown>).max_pos) + 1;
-    for (const url of body.add_photo_urls) {
+    for (const photo of addPhotos) {
       await db.execute({
-        sql: `INSERT INTO item_photos (id, item_id, url, position) VALUES (?, ?, ?, ?)`,
-        args: [(await import("@/lib/id")).newId(), id, url, pos++],
+        sql: `INSERT INTO item_photos (id, item_id, url, thumb_url, position) VALUES (?, ?, ?, ?, ?)`,
+        args: [(await import("@/lib/id")).newId(), id, photo.url, photo.thumb_url, pos++],
       });
     }
   }
 
   if (Array.isArray(body.remove_photo_ids) && body.remove_photo_ids.length > 0) {
-    // Check that at least 1 photo will remain
     const totalRes = await db.execute({
       sql: `SELECT COUNT(*) as count FROM item_photos WHERE item_id = ?`,
       args: [id],
     });
     const total = Number((totalRes.rows[0] as Record<string, unknown>).count);
-    const addCount = Array.isArray(body.add_photo_urls) ? body.add_photo_urls.length : 0;
-    const remaining = total - body.remove_photo_ids.length + addCount;
+    const remaining = total - body.remove_photo_ids.length + addPhotos.length;
     if (remaining < 1) return error("Item must have at least 1 photo");
 
     const placeholders = body.remove_photo_ids.map(() => "?").join(",");
@@ -193,7 +196,7 @@ export async function PATCH(
     });
   }
 
-  if (!hasFieldUpdates && !body.add_photo_urls?.length && !body.remove_photo_ids?.length) {
+  if (!hasFieldUpdates && addPhotos.length === 0 && !body.remove_photo_ids?.length) {
     return error("No fields to update");
   }
 

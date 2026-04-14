@@ -19,6 +19,7 @@ export async function GET(request: Request) {
       u.display_name as dealer_display_name,
       m.name as market_name,
       (SELECT url FROM item_photos p WHERE p.item_id = i.id ORDER BY p.position LIMIT 1) as photo_url,
+      (SELECT thumb_url FROM item_photos p WHERE p.item_id = i.id ORDER BY p.position LIMIT 1) as thumb_url,
       (SELECT message FROM inquiries q WHERE q.item_id = i.id AND q.buyer_id = ? ORDER BY q.created_at DESC LIMIT 1) as my_inquiry_message,
       (SELECT status FROM inquiries q WHERE q.item_id = i.id AND q.buyer_id = ? ORDER BY q.created_at DESC LIMIT 1) as my_inquiry_status
     FROM favorites f

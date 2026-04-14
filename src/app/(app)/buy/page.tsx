@@ -18,6 +18,7 @@ interface Item {
   price: number;
   status: string;
   photo_url: string | null;
+  thumb_url: string | null;
   dealer_name: string;
   dealer_display_name: string | null;
 }
@@ -234,7 +235,7 @@ function BuyFeedContent() {
                 <>
                   {item.photo_url ? (
                     <Image
-                      src={item.photo_url}
+                      src={item.thumb_url || item.photo_url}
                       alt={item.title}
                       width={400}
                       height={400}

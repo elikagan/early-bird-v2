@@ -21,6 +21,7 @@ interface FavItem {
   market_name: string;
   market_id: string;
   photo_url: string | null;
+  thumb_url: string | null;
   my_inquiry_message: string | null;
   my_inquiry_status: string | null;
 }
@@ -122,7 +123,7 @@ export default function WatchingPage() {
                   >
                     {item.photo_url ? (
                       <Image
-                        src={item.photo_url}
+                        src={item.thumb_url || item.photo_url}
                         alt={item.title}
                         width={400}
                         height={400}

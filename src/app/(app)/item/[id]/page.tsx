@@ -73,6 +73,7 @@ interface NewPhotoSlot {
   tempId: string;
   preview: string;
   url: string | null;
+  thumb_url: string | null;
   status: "processing" | "uploading" | "done" | "error";
   error?: string;
 }
@@ -214,7 +215,7 @@ export default function ItemDetailPage() {
       const data = await res.json();
       setNewPhotos((prev) =>
         prev.map((p) =>
-          p.tempId === tempId ? { ...p, status: "done", url: data.url } : p
+          p.tempId === tempId ? { ...p, status: "done", url: data.url, thumb_url: data.thumb_url || null } : p
         )
       );
     } catch (err) {
@@ -242,7 +243,7 @@ export default function ItemDetailPage() {
         }
         const tempId = crypto.randomUUID();
         const preview = await createThumbnail(file);
-        slots.push({ tempId, preview, url: null, status: "processing" });
+        slots.push({ tempId, preview, url: null, thumb_url: null, status: "processing" });
         uploadEditPhoto(file, tempId);
       }
 
@@ -293,8 +294,8 @@ export default function ItemDetailPage() {
       price_firm: editFirm,
     };
 
-    const addUrls = newPhotos.filter((p) => p.url).map((p) => p.url);
-    if (addUrls.length > 0) body.add_photo_urls = addUrls;
+    const addPhotos = newPhotos.filter((p) => p.url).map((p) => ({ url: p.url, thumb_url: p.thumb_url || null }));
+    if (addPhotos.length > 0) body.add_photos = addPhotos;
 
     const removeIds = Array.from(removePhotoIds);
     if (removeIds.length > 0) body.remove_photo_ids = removeIds;

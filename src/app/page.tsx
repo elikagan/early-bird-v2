@@ -24,6 +24,7 @@ interface PreviewItem {
   title: string;
   price: number;
   photo_url: string | null;
+  thumb_url: string | null;
 }
 
 export default function LandingPage() {
@@ -183,7 +184,7 @@ export default function LandingPage() {
                       >
                         {item.photo_url ? (
                           <Image
-                            src={item.photo_url}
+                            src={item.thumb_url || item.photo_url}
                             alt={item.title}
                             fill
                             sizes="33vw"
