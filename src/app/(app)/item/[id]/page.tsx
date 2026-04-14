@@ -508,7 +508,7 @@ export default function ItemDetailPage() {
             <img
               src={currentPhoto}
               alt={item.title}
-              className="w-full aspect-[4/3] object-cover block"
+              className="w-full block"
             />
           ) : (
             <div className="w-full aspect-[4/3] bg-eb-border" />
