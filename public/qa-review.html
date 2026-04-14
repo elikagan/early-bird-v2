@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+  QA Review Tool — NOT part of the Early Bird app.
+  Standalone desktop page for reviewing every app screen
+  inside an iPhone frame. Comments persist in localStorage.
+  Export to markdown. Delete when QA is done.
+-->
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Early Bird — QA Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0e0e10;
+    --surface: #18181b;
+    --surface2: #212126;
+    --border: #2c2c33;
+    --text: #d0d0d6;
+    --text-dim: #6e6e78;
+    --accent: #d2886f;
+    --accent-dim: #a86b55;
+    --green: #4a9a65;
+    --red: #b85454;
+    --amber: #a89540;
+    --blue: #5a8fbf;
+    --phone-bezel: #1a1a1e;
+    --phone-screen: #000;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+  }
+
+  /* ── Left: iPhone Frame ── */
+  .phone-column {
+    flex: 0 0 440px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    position: relative;
+  }
+
+  .iphone-frame {
+    width: 393px;
+    height: calc(100vh - 40px);
+    max-height: 852px;
+    background: var(--phone-bezel);
+    border-radius: 50px;
+    position: relative;
+    box-shadow:
+      0 0 0 2px #333,
+      0 0 0 4px #1a1a1e,
+      0 20px 60px rgba(0,0,0,0.6);
+    overflow: hidden;
+  }
+
+  /* Dynamic Island */
+  .dynamic-island {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 126px;
+    height: 36px;
+    background: #000;
+    border-radius: 20px;
+    z-index: 10;
+  }
+
+  /* Safari chrome bar */
+  .safari-bar {
+    position: absolute;
+    top: 54px;
+    left: 10px;
+    right: 10px;
+    height: 44px;
+    background: var(--surface);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    z-index: 10;
+    gap: 8px;
+  }
+
+  .safari-bar .url-pill {
+    flex: 1;
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 11px;
+    color: var(--text-dim);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  .safari-bar .lock-icon {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-right: 2px;
+  }
+
+  /* Screen area */
+  .screen-area {
+    position: absolute;
+    top: 102px;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    border-radius: 0 0 42px 42px;
+    overflow: hidden;
+    background: var(--phone-screen);
+  }
+
+  .screen-area iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: white;
+  }
+
+  /* Home indicator */
+  .home-indicator {
+    position: absolute;
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 134px;
+    height: 5px;
+    background: #555;
+    border-radius: 3px;
+    z-index: 10;
+  }
+
+  /* ── Right: Controls Panel ── */
+  .controls-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 24px 32px;
+    overflow: hidden;
+    min-width: 0;
+  }
+
+  .header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-shrink: 0;
+  }
+
+  .header-row h1 {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .header-row h1 span {
+    color: var(--accent);
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .btn:hover { background: var(--surface2); border-color: #3a3a42; }
+  .btn-accent { background: var(--accent-dim); border-color: var(--accent-dim); color: #fff; }
+  .btn-accent:hover { background: var(--accent); }
+  .btn-sm { padding: 5px 10px; font-size: 11px; }
+
+  /* Page info */
+  .page-info {
+    flex-shrink: 0;
+    margin-bottom: 16px;
+  }
+
+  .page-counter {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .page-counter .badge {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .badge-live { background: rgba(74,154,101,0.15); color: var(--green); }
+  .badge-auth { background: rgba(90,143,191,0.15); color: var(--blue); }
+  .badge-dealer { background: rgba(168,149,64,0.15); color: var(--amber); }
+  .badge-admin { background: rgba(184,84,84,0.15); color: var(--red); }
+  .badge-static { background: rgba(110,110,120,0.15); color: var(--text-dim); }
+
+  .page-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
+  }
+
+  .page-desc {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  /* Navigation */
+  .nav-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-shrink: 0;
+  }
+
+  .nav-row .btn { flex: 0 0 auto; }
+  .nav-row .page-jump {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .page-jump select {
+    width: 100%;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 8px 10px;
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236e6e78'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+  }
+
+  /* Comment section */
+  .comment-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .comment-section h3 {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+    flex-shrink: 0;
+  }
+
+  .comment-input-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-shrink: 0;
+  }
+
+  .comment-input-row textarea {
+    flex: 1;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 10px;
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    resize: none;
+    height: 70px;
+    line-height: 1.5;
+  }
+
+  .comment-input-row textarea::placeholder { color: var(--text-dim); }
+  .comment-input-row textarea:focus { outline: none; border-color: var(--accent-dim); }
+
+  .comment-input-row .btn {
+    align-self: flex-end;
+  }
+
+  .comments-list {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+
+  .comment-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    position: relative;
+  }
+
+  .comment-card .comment-meta {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+  }
+
+  .comment-card .comment-text {
+    font-size: 12px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+  }
+
+  .comment-card .delete-comment {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 2px;
+    line-height: 1;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  .comment-card:hover .delete-comment { opacity: 1; }
+  .comment-card .delete-comment:hover { color: var(--red); }
+
+  .no-comments {
+    font-size: 12px;
+    color: var(--text-dim);
+    text-align: center;
+    padding: 24px 0;
+  }
+
+  /* Stats bar */
+  .stats-bar {
+    display: flex;
+    gap: 16px;
+    padding: 10px 0;
+    border-top: 1px solid var(--border);
+    margin-top: auto;
+    flex-shrink: 0;
+  }
+
+  .stats-bar .stat {
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  .stats-bar .stat strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  /* ── Modal (View All Comments) ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    width: 700px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .modal-header h2 {
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 20px;
+  }
+
+  .modal-body .all-page-group {
+    margin-bottom: 20px;
+  }
+
+  .modal-body .all-page-title {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--accent);
+    cursor: pointer;
+  }
+
+  .modal-body .all-page-title:hover {
+    text-decoration: underline;
+  }
+
+  .modal-body .all-comment {
+    font-size: 12px;
+    line-height: 1.5;
+    padding: 8px 12px;
+    background: var(--surface2);
+    border-radius: 6px;
+    margin-bottom: 6px;
+    white-space: pre-wrap;
+  }
+
+  .modal-body .all-comment .all-comment-meta {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-bottom: 2px;
+  }
+
+  .modal-body .no-comments-at-all {
+    font-size: 13px;
+    color: var(--text-dim);
+    text-align: center;
+    padding: 40px 0;
+  }
+
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 12px 20px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Category dividers in the dropdown */
+  .page-jump select optgroup {
+    font-weight: 600;
+    color: var(--text-dim);
+    font-style: normal;
+    padding: 4px 0;
+  }
+
+  /* Keyboard hint */
+  .keyboard-hint {
+    font-size: 10px;
+    color: #444;
+    text-align: center;
+    margin-top: 4px;
+    flex-shrink: 0;
+  }
+
+  /* Scrollbar styling */
+  .comments-list::-webkit-scrollbar,
+  .modal-body::-webkit-scrollbar {
+    width: 4px;
+  }
+  .comments-list::-webkit-scrollbar-track,
+  .modal-body::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .comments-list::-webkit-scrollbar-thumb,
+  .modal-body::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 2px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Left: iPhone ── -->
+<div class="phone-column">
+  <div class="iphone-frame">
+    <div class="dynamic-island"></div>
+    <div class="safari-bar">
+      <span class="lock-icon">&#x1F512;</span>
+      <div class="url-pill" id="urlBar">earlybird.la</div>
+    </div>
+    <div class="screen-area">
+      <iframe id="phoneFrame" src="about:blank"></iframe>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+</div>
+
+<!-- ── Right: Controls ── -->
+<div class="controls-column">
+  <div class="header-row">
+    <h1><span>Early Bird</span> QA Review</h1>
+    <div class="header-actions">
+      <button class="btn" onclick="openAllComments()">View All</button>
+      <button class="btn btn-accent" onclick="exportMarkdown()">Export .md</button>
+    </div>
+  </div>
+
+  <div class="page-info">
+    <div class="page-counter">
+      <span id="pageCounter">1 / 22</span>
+      <span class="badge" id="pageBadge"></span>
+    </div>
+    <div class="page-title" id="pageTitle">—</div>
+    <div class="page-desc" id="pageDesc">—</div>
+  </div>
+
+  <div class="nav-row">
+    <button class="btn" id="prevBtn" onclick="navigate(-1)">&larr; Prev</button>
+    <div class="page-jump">
+      <select id="pageSelect" onchange="jumpToPage(this.value)"></select>
+    </div>
+    <button class="btn" id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+  </div>
+
+  <div class="comment-section">
+    <h3>Comments</h3>
+    <div class="comment-input-row">
+      <textarea id="commentInput" placeholder="Add a note about this page..."></textarea>
+      <button class="btn btn-accent" onclick="addComment()">Add</button>
+    </div>
+    <div class="comments-list" id="commentsList"></div>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat">Pages: <strong id="statPages">0</strong></div>
+    <div class="stat">Commented: <strong id="statCommented">0</strong></div>
+    <div class="stat">Total notes: <strong id="statNotes">0</strong></div>
+  </div>
+  <div class="keyboard-hint">&larr; / &rarr; arrow keys to navigate &middot; Ctrl+Enter to add comment</div>
+</div>
+
+<!-- ── Modal: View All Comments ── -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>All Comments</h2>
+      <button class="btn btn-sm" onclick="closeModal()">&times; Close</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="clearAllComments()">Clear All</button>
+      <button class="btn btn-accent" onclick="exportMarkdown(); closeModal();">Export .md</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Page definitions ──
+// Using real IDs from the database.
+// Items: live (xrfLTgjlPqxwElaP, vbbS9r2vnwQo_tPq, CUwjxioxHTQFjVl5, uAkbhcZoxWw7jMl4)
+// Items: hold (yPBEngIKVHeNiYAF, 45YoSojuN4xCqr7H), sold (HDBvJerG2MUX-Npc)
+// Markets: H8siHnv5aFjc-thg (Downtown Modernism), Gww9arnESzhOtAOl (PCC Flea)
+// Dealers: zcYMRz9HT2WoIYoi (Test Dealer)
+
+const PAGES = [
+  // ── Public / Landing ──
+  { id: "landing", title: "Landing Page", path: "/", desc: "Homepage, logged out. Hero, value prop, sign in CTA.", badge: "live", badgeClass: "badge-live" },
+  { id: "privacy", title: "Privacy Policy", path: "/privacy", desc: "Static legal page.", badge: "static", badgeClass: "badge-static" },
+  { id: "terms", title: "Terms of Service", path: "/terms", desc: "Static legal page.", badge: "static", badgeClass: "badge-static" },
+
+  // ── Auth Flow ──
+  { id: "auth-start", title: "Auth — Phone Entry", path: "/home", desc: "Phone number input for magic link. Shows when logged out.", badge: "auth", badgeClass: "badge-auth" },
+  { id: "auth-verify", title: "Auth — Verify Pending", path: "/auth/verify", desc: "Waiting for magic link tap. Check your texts message.", badge: "auth", badgeClass: "badge-auth" },
+  { id: "onboarding", title: "Onboarding", path: "/onboarding", desc: "First-time user: set display name, optional avatar.", badge: "auth", badgeClass: "badge-auth" },
+
+  // ── Buyer Screens ──
+  { id: "buy-grid", title: "Buy — Item Grid", path: "/buy?market_id=H8siHnv5aFjc-thg", desc: "Main browsing grid. Downtown Modernism market.", badge: "live", badgeClass: "badge-live" },
+  { id: "item-live-buyer", title: "Item Detail — Buyer View (Live)", path: "/item/uAkbhcZoxWw7jMl4", desc: "Walnut Credenza. Live item, buyer perspective. Inquiry CTA.", badge: "live", badgeClass: "badge-live" },
+  { id: "item-hold-buyer", title: "Item Detail — Buyer View (Hold)", path: "/item/yPBEngIKVHeNiYAF", desc: "Teak Nesting Tables. On hold, buyer sees status.", badge: "live", badgeClass: "badge-live" },
+  { id: "item-sold-buyer", title: "Item Detail — Buyer View (Sold)", path: "/item/HDBvJerG2MUX-Npc", desc: "Enamel Kitchen Table. Sold, buyer sees sold badge.", badge: "live", badgeClass: "badge-live" },
+  { id: "watching", title: "Watching Tab", path: "/watching", desc: "Favorited + inquired items. Empty state if none.", badge: "live", badgeClass: "badge-live" },
+
+  // ── Account ──
+  { id: "account", title: "Account Page", path: "/account", desc: "Profile, notification prefs, dealer application, sign out.", badge: "live", badgeClass: "badge-live" },
+
+  // ── Dealer Screens ──
+  { id: "sell-inventory", title: "Sell — Inventory List", path: "/sell", desc: "Dealer inventory grid with status badges. Add item CTA.", badge: "dealer", badgeClass: "badge-dealer" },
+  { id: "sell-add", title: "Sell — Add Item", path: "/sell/add", desc: "New item form: photos, title, price, description, market.", badge: "dealer", badgeClass: "badge-dealer" },
+  { id: "item-dealer-own", title: "Item Detail — Dealer Own", path: "/item/uAkbhcZoxWw7jMl4", desc: "Walnut Credenza from dealer's perspective. Edit, status controls, inquiry log.", badge: "dealer", badgeClass: "badge-dealer" },
+  { id: "dealer-share", title: "Dealer Share Page", path: "/d/zcYMRz9HT2WoIYoi", desc: "Public dealer page. Shows business name, items grid.", badge: "live", badgeClass: "badge-live" },
+
+  // ── Invite Flow ──
+  { id: "invite-page", title: "Invite Landing", path: "/invite/TESTCODE", desc: "Dealer invite code landing. May 404 with bad code.", badge: "auth", badgeClass: "badge-auth" },
+
+  // ── Admin ──
+  { id: "admin", title: "Admin CMS", path: "/admin", desc: "Admin panel. Invite links, dealer applications.", badge: "admin", badgeClass: "badge-admin" },
+
+  // ── Different Markets ──
+  { id: "buy-pcc", title: "Buy — PCC Flea (Upcoming)", path: "/buy?market_id=Gww9arnESzhOtAOl", desc: "PCC Flea market. Upcoming status, may have no items yet.", badge: "live", badgeClass: "badge-live" },
+  { id: "buy-rosebowl", title: "Buy — Rose Bowl (Upcoming)", path: "/buy?market_id=uX2wJ92BSCJv-SLK", desc: "Rose Bowl Flea. Upcoming.", badge: "live", badgeClass: "badge-live" },
+
+  // ── Edge States ──
+  { id: "buy-empty", title: "Buy — Empty Market", path: "/buy?market_id=nonexistent", desc: "What happens with a bad market_id? Error/empty state.", badge: "live", badgeClass: "badge-live" },
+  { id: "item-404", title: "Item — 404", path: "/item/nonexistent-id-12345", desc: "Item that doesn't exist. Should show error state.", badge: "live", badgeClass: "badge-live" },
+];
+
+const STORAGE_KEY = "eb-qa-comments";
+let currentIndex = 0;
+
+// ── Storage ──
+function loadComments() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+  } catch { return {}; }
+}
+
+function saveComments(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+// ── Render ──
+function renderPage() {
+  const page = PAGES[currentIndex];
+
+  // Update iframe
+  const frame = document.getElementById("phoneFrame");
+  frame.src = page.path;
+
+  // Update URL bar
+  document.getElementById("urlBar").textContent = "earlybird.la" + page.path;
+
+  // Update info
+  document.getElementById("pageCounter").textContent = `${currentIndex + 1} / ${PAGES.length}`;
+  document.getElementById("pageTitle").textContent = page.title;
+  document.getElementById("pageDesc").textContent = page.desc;
+
+  const badge = document.getElementById("pageBadge");
+  badge.textContent = page.badge;
+  badge.className = "badge " + page.badgeClass;
+
+  // Update select
+  document.getElementById("pageSelect").value = currentIndex;
+
+  // Update nav buttons
+  document.getElementById("prevBtn").disabled = currentIndex === 0;
+  document.getElementById("nextBtn").disabled = currentIndex === PAGES.length - 1;
+
+  // Render comments
+  renderComments();
+  updateStats();
+}
+
+function renderComments() {
+  const page = PAGES[currentIndex];
+  const allComments = loadComments();
+  const pageComments = allComments[page.id] || [];
+  const list = document.getElementById("commentsList");
+
+  if (pageComments.length === 0) {
+    list.innerHTML = '<div class="no-comments">No comments on this page yet.</div>';
+    return;
+  }
+
+  list.innerHTML = pageComments.map((c, i) => `
+    <div class="comment-card">
+      <button class="delete-comment" onclick="deleteComment(${i})" title="Delete">&times;</button>
+      <div class="comment-meta">${formatTime(c.time)}</div>
+      <div class="comment-text">${escapeHtml(c.text)}</div>
+    </div>
+  `).join("");
+}
+
+function updateStats() {
+  const allComments = loadComments();
+  let totalNotes = 0;
+  let commented = 0;
+
+  for (const page of PAGES) {
+    const c = allComments[page.id] || [];
+    if (c.length > 0) commented++;
+    totalNotes += c.length;
+  }
+
+  document.getElementById("statPages").textContent = PAGES.length;
+  document.getElementById("statCommented").textContent = commented;
+  document.getElementById("statNotes").textContent = totalNotes;
+}
+
+// ── Actions ──
+function navigate(dir) {
+  const next = currentIndex + dir;
+  if (next >= 0 && next < PAGES.length) {
+    currentIndex = next;
+    renderPage();
+  }
+}
+
+function jumpToPage(val) {
+  currentIndex = parseInt(val, 10);
+  renderPage();
+}
+
+function addComment() {
+  const input = document.getElementById("commentInput");
+  const text = input.value.trim();
+  if (!text) return;
+
+  const page = PAGES[currentIndex];
+  const allComments = loadComments();
+  if (!allComments[page.id]) allComments[page.id] = [];
+  allComments[page.id].push({ text, time: Date.now() });
+  saveComments(allComments);
+
+  input.value = "";
+  renderComments();
+  updateStats();
+}
+
+function deleteComment(index) {
+  const page = PAGES[currentIndex];
+  const allComments = loadComments();
+  const pageComments = allComments[page.id] || [];
+  pageComments.splice(index, 1);
+  if (pageComments.length === 0) delete allComments[page.id];
+  else allComments[page.id] = pageComments;
+  saveComments(allComments);
+  renderComments();
+  updateStats();
+}
+
+function clearAllComments() {
+  if (!confirm("Delete ALL comments across all pages? This cannot be undone.")) return;
+  localStorage.removeItem(STORAGE_KEY);
+  renderComments();
+  updateStats();
+  closeModal();
+}
+
+// ── View All Comments Modal ──
+function openAllComments() {
+  const allComments = loadComments();
+  const body = document.getElementById("modalBody");
+  let html = "";
+  let hasAny = false;
+
+  for (const page of PAGES) {
+    const comments = allComments[page.id] || [];
+    if (comments.length === 0) continue;
+    hasAny = true;
+    const idx = PAGES.indexOf(page);
+    html += `<div class="all-page-group">`;
+    html += `<div class="all-page-title" onclick="closeModal(); currentIndex=${idx}; renderPage();">${page.title} (${page.path})</div>`;
+    for (const c of comments) {
+      html += `<div class="all-comment"><div class="all-comment-meta">${formatTime(c.time)}</div>${escapeHtml(c.text)}</div>`;
+    }
+    html += `</div>`;
+  }
+
+  if (!hasAny) {
+    html = '<div class="no-comments-at-all">No comments yet. Start reviewing!</div>';
+  }
+
+  body.innerHTML = html;
+  document.getElementById("modalOverlay").classList.add("open");
+}
+
+function closeModal() {
+  document.getElementById("modalOverlay").classList.remove("open");
+}
+
+// ── Export to Markdown ──
+function exportMarkdown() {
+  const allComments = loadComments();
+  const now = new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+  let md = `# Early Bird QA Review Notes\n`;
+  md += `_Exported ${now}_\n\n`;
+
+  let hasAny = false;
+  for (const page of PAGES) {
+    const comments = allComments[page.id] || [];
+    if (comments.length === 0) continue;
+    hasAny = true;
+    md += `## ${page.title}\n`;
+    md += `**Path:** \`${page.path}\`\n`;
+    md += `**Category:** ${page.badge}\n\n`;
+    for (const c of comments) {
+      const t = new Date(c.time).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+      md += `- [${t}] ${c.text}\n`;
+    }
+    md += `\n`;
+  }
+
+  if (!hasAny) {
+    md += `_No comments recorded._\n`;
+  }
+
+  // Summary
+  let totalNotes = 0;
+  let commented = 0;
+  for (const page of PAGES) {
+    const c = allComments[page.id] || [];
+    if (c.length > 0) commented++;
+    totalNotes += c.length;
+  }
+  md += `---\n\n`;
+  md += `**Summary:** ${totalNotes} notes across ${commented} of ${PAGES.length} pages.\n`;
+
+  // Download
+  const blob = new Blob([md], { type: "text/markdown" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `eb-qa-review-${new Date().toISOString().slice(0,10)}.md`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ── Helpers ──
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function formatTime(ts) {
+  return new Date(ts).toLocaleString("en-US", {
+    month: "short", day: "numeric", hour: "numeric", minute: "2-digit"
+  });
+}
+
+// ── Keyboard Shortcuts ──
+document.addEventListener("keydown", (e) => {
+  // Arrow keys for nav (unless typing in textarea)
+  if (e.target.tagName === "TEXTAREA") {
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      addComment();
+    }
+    return;
+  }
+  if (e.key === "ArrowLeft") navigate(-1);
+  if (e.key === "ArrowRight") navigate(1);
+  if (e.key === "Escape") closeModal();
+});
+
+// ── Init ──
+function init() {
+  // Build select dropdown with optgroups
+  const select = document.getElementById("pageSelect");
+  let currentGroup = "";
+  const groups = {
+    "landing": "Public",
+    "auth-start": "Auth Flow",
+    "buy-grid": "Buyer Screens",
+    "account": "Account",
+    "sell-inventory": "Dealer Screens",
+    "invite-page": "Invite Flow",
+    "admin": "Admin",
+    "buy-pcc": "Other Markets",
+    "buy-empty": "Edge States",
+  };
+
+  let optgroup = null;
+  PAGES.forEach((page, i) => {
+    if (groups[page.id]) {
+      optgroup = document.createElement("optgroup");
+      optgroup.label = groups[page.id];
+      select.appendChild(optgroup);
+    }
+    const opt = document.createElement("option");
+    opt.value = i;
+    opt.textContent = `${page.title}`;
+    (optgroup || select).appendChild(opt);
+  });
+
+  renderPage();
+}
+
+init();
+</script>
+</body>
+</html>
