@@ -244,8 +244,10 @@ function BuyFeedContent() {
                   )}
                   <div className="eb-body">
                     <div className="eb-title">{item.title}</div>
-                    <div className="eb-price">{formatPrice(item.price)}</div>
-                    {isHeld && <span className="eb-tag-hold">HELD</span>}
+                    <div className="flex items-center gap-2">
+                      <div className="eb-price">{formatPrice(item.price)}</div>
+                      {isHeld && <span className="eb-tag-hold">HELD</span>}
+                    </div>
                     {user && (
                       <div className="eb-dealer">
                         <span className="eb-avatar eb-avatar-sm">
