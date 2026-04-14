@@ -37,6 +37,23 @@ export default function LandingPage() {
   const [markets, setMarkets] = useState<Market[]>([]);
   const [previewItems, setPreviewItems] = useState<PreviewItem[]>([]);
 
+  // Persist dealer mode via URL hash
+  useEffect(() => {
+    if (window.location.hash === "#dealer") {
+      setMode("dealer");
+    }
+  }, []);
+
+  const toggleMode = () => {
+    const next = mode === "buyer" ? "dealer" : "buyer";
+    setMode(next);
+    window.history.replaceState(
+      null,
+      "",
+      next === "dealer" ? "#dealer" : window.location.pathname
+    );
+  };
+
   // If already logged in, redirect to home
   useEffect(() => {
     if (!authLoading && user) {
@@ -143,7 +160,7 @@ export default function LandingPage() {
             <div className="eb-sub">Los Angeles flea market classifieds</div>
           </div>
           <button
-            onClick={() => setMode(mode === "buyer" ? "dealer" : "buyer")}
+            onClick={toggleMode}
             className="text-eb-meta uppercase tracking-widest text-eb-muted"
           >
             {mode === "buyer" ? "Dealer \u2192" : "Buyer \u2192"}
@@ -370,7 +387,7 @@ export default function LandingPage() {
           <footer className="px-6 py-6 border-t border-eb-border space-y-3">
             <p className="text-eb-meta text-center text-eb-muted">
               Selling at a market?{" "}
-              <button onClick={() => setMode("dealer")} className="font-bold text-eb-pop">
+              <button onClick={toggleMode} className="font-bold text-eb-pop">
                 Dealer sign up
               </button>
             </p>
@@ -390,9 +407,23 @@ export default function LandingPage() {
               Sell before <span className="text-eb-pop">sunrise.</span>
             </h2>
             <p className="mt-4 text-eb-body text-eb-muted">
-              Post inventory the night before. Serious buyers reach out before
-              you&apos;ve unloaded the truck. Free {"\u2014"} no fees, no cut.
+              Apply to sell at LA flea markets. We{"\u2019"}ll check out
+              your Instagram, and once approved you can start posting
+              items for free {"\u2014"} no fees, no cut.
             </p>
+          </section>
+
+          <section className="px-6 pb-2">
+            <div className="bg-eb-cream border-l-2 border-eb-pop px-4 py-3 mb-5">
+              <div className="text-eb-caption font-bold text-eb-black uppercase tracking-wider">
+                How it works
+              </div>
+              <p className="text-eb-meta text-eb-muted mt-0.5 leading-relaxed">
+                Sign up {"\u2192"} fill out a quick application {"\u2192"} we
+                review your Instagram {"\u2192"} you get a text when
+                you{"\u2019"}re approved.
+              </p>
+            </div>
           </section>
 
           <section className="px-6 pb-8">{phoneForm}</section>
@@ -421,7 +452,7 @@ export default function LandingPage() {
           <footer className="px-6 py-6 mt-auto border-t border-eb-border">
             <p className="text-eb-meta text-center text-eb-muted">
               Just here to shop?{" "}
-              <button onClick={() => setMode("buyer")} className="font-bold text-eb-pop">
+              <button onClick={toggleMode} className="font-bold text-eb-pop">
                 Browse as a buyer {"\u2192"}
               </button>
             </p>

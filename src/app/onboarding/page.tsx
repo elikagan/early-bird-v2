@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
-import { formatPhone } from "@/lib/format";
+import { processImage } from "@/lib/image-processing";
+import { formatPhone, getInitials } from "@/lib/format";
 
 interface Market {
   id: string;
@@ -31,6 +34,13 @@ function OnboardingContent() {
   const [businessName, setBusinessName] = useState("");
   const [instagram, setInstagram] = useState("");
   const [dealerError, setDealerError] = useState<string | null>(null);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  // Avatar upload
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   // Detect dealer signup from query param (set by verify page from SMS link)
   useEffect(() => {
@@ -77,9 +87,41 @@ function OnboardingContent() {
     setNotifPrefs((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
+  const uploadAvatar = async (file: File) => {
+    if (
+      !file.type.startsWith("image/") &&
+      !file.name.toLowerCase().endsWith(".heic")
+    ) {
+      return;
+    }
+    setAvatarUploading(true);
+    try {
+      const processed = await processImage(file);
+      const formData = new FormData();
+      formData.append("file", processed.blob, "avatar.jpg");
+      const uploadRes = await apiFetch("/api/upload/avatar", {
+        method: "POST",
+        body: formData,
+      });
+      if (!uploadRes.ok) throw new Error("Upload failed");
+      const { url } = await uploadRes.json();
+      await apiFetch("/api/users/me", {
+        method: "PATCH",
+        body: JSON.stringify({ avatar_url: url }),
+      });
+      setAvatarUrl(url);
+    } catch {
+      // Silent fail — avatar stays as initials
+    } finally {
+      setAvatarUploading(false);
+      if (avatarInputRef.current) avatarInputRef.current.value = "";
+    }
+  };
+
   const handleContinue = async () => {
     if (!displayName || saving) return;
     if (isDealerSignup && (!businessName.trim() || !instagram.trim())) return;
+    if (isDealerSignup && !agreedToTerms) return;
     setSaving(true);
     setDealerError(null);
 
@@ -117,7 +159,12 @@ function OnboardingContent() {
 
     await refreshUser();
     setSaving(false);
-    router.replace("/home");
+
+    if (isDealerSignup) {
+      setSubmitted(true);
+    } else {
+      router.replace("/home");
+    }
   };
 
   if (authLoading || !user) {
@@ -128,8 +175,62 @@ function OnboardingContent() {
     );
   }
 
+  // ── Dealer confirmation screen ──
+  if (submitted) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <div className="eb-masthead">
+          <h1>EARLY BIRD</h1>
+        </div>
+
+        <section className="px-6 pt-12 pb-6 flex-1 flex flex-col items-center justify-center text-center">
+          <div className="text-eb-hero text-eb-pop mb-4">{"\u2713"}</div>
+          <h2 className="text-eb-display text-eb-black mb-2">
+            Application submitted.
+          </h2>
+          <p className="text-eb-body text-eb-muted leading-relaxed max-w-xs">
+            We{"\u2019"}re reviewing your Instagram and will text you at{" "}
+            {formatPhone(user.phone)} when you{"\u2019"}re approved.
+          </p>
+          <p className="text-eb-caption text-eb-muted mt-4 leading-relaxed max-w-xs">
+            In the meantime, you can browse items and save things to your
+            watchlist as a buyer.
+          </p>
+        </section>
+
+        <footer className="px-6 py-6 border-t-2 border-eb-black">
+          <button
+            className="eb-cta"
+            onClick={() => router.replace("/home")}
+          >
+            START BROWSING
+          </button>
+        </footer>
+      </div>
+    );
+  }
+
+  // ── Step numbering ──
+  let step = 0;
+  const nextStep = () => {
+    step += 1;
+    return String(step).padStart(2, "0");
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
+      {/* Hidden avatar file input */}
+      <input
+        ref={avatarInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) uploadAvatar(file);
+        }}
+      />
+
       {/* Masthead */}
       <div className="eb-masthead">
         <h1>EARLY BIRD</h1>
@@ -138,19 +239,21 @@ function OnboardingContent() {
       {/* Intro */}
       <section className="px-6 pt-8 pb-4">
         <h2 className="text-eb-display text-eb-black">
-          {isDealerSignup ? "Set up your dealer account." : "Get set up."}
+          {isDealerSignup ? "Apply to sell." : "Get set up."}
         </h2>
         <p className="mt-2 text-eb-body text-eb-muted">
           {isDealerSignup
-            ? "We\u2019ll review your application. You can browse as a buyer in the meantime."
+            ? "Fill this out and we\u2019ll review your application. Takes about a minute."
             : "Takes 30 seconds. Then you can start shopping."}
         </p>
       </section>
 
-      {/* Step 1: Display Name */}
+      {/* Your name */}
       <section className="px-6 py-5 border-t-2 border-eb-black">
         <div className="flex items-baseline gap-3 mb-3">
-          <span className="text-eb-body font-bold text-eb-pop">01</span>
+          <span className="text-eb-body font-bold text-eb-pop">
+            {nextStep()}
+          </span>
           <span className="text-eb-meta uppercase tracking-widest text-eb-muted">
             Your name
           </span>
@@ -163,14 +266,18 @@ function OnboardingContent() {
           onChange={(e) => setDisplayName(e.target.value)}
         />
         <p className="text-eb-meta text-eb-muted mt-1.5">
-          This is what dealers see when you message them.
+          {isDealerSignup
+            ? "This is what buyers see on your listings."
+            : "This is what dealers see when you message them."}
         </p>
       </section>
 
-      {/* Step 2: Phone (readonly) */}
+      {/* Phone (readonly) */}
       <section className="px-6 py-5 border-t border-eb-border">
         <div className="flex items-baseline gap-3 mb-3">
-          <span className="text-eb-body font-bold text-eb-pop">02</span>
+          <span className="text-eb-body font-bold text-eb-pop">
+            {nextStep()}
+          </span>
           <div className="flex-1 flex justify-between items-center">
             <span className="text-eb-meta uppercase tracking-widest text-eb-muted">
               Phone
@@ -188,55 +295,117 @@ function OnboardingContent() {
         />
       </section>
 
-      {/* Dealer fields: Business Name + Instagram */}
+      {/* Dealer: Photo */}
       {isDealerSignup && (
-        <>
-          <section className="px-6 py-5 border-t border-eb-border">
-            <div className="flex items-baseline gap-3 mb-3">
-              <span className="text-eb-body font-bold text-eb-pop">03</span>
-              <span className="text-eb-meta uppercase tracking-widest text-eb-muted">
-                Business name
-              </span>
+        <section className="px-6 py-5 border-t border-eb-border">
+          <div className="flex items-baseline gap-3 mb-3">
+            <span className="text-eb-body font-bold text-eb-pop">
+              {nextStep()}
+            </span>
+            <span className="text-eb-meta uppercase tracking-widest text-eb-muted">
+              Your photo
+            </span>
+          </div>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => avatarInputRef.current?.click()}
+              disabled={avatarUploading}
+              className="relative shrink-0"
+            >
+              {avatarUrl ? (
+                <Image
+                  src={avatarUrl}
+                  alt={displayName || "Photo"}
+                  width={96}
+                  height={96}
+                  sizes="48px"
+                  className="eb-avatar eb-avatar-xl object-cover"
+                />
+              ) : (
+                <span className="eb-avatar eb-avatar-xl">
+                  {displayName ? getInitials(displayName) : "+"}
+                </span>
+              )}
+              {avatarUploading && (
+                <span className="absolute inset-0 flex items-center justify-center bg-eb-black/40 rounded-full">
+                  <span className="eb-spinner-sm" />
+                </span>
+              )}
+            </button>
+            <div className="flex-1">
+              <button
+                onClick={() => avatarInputRef.current?.click()}
+                disabled={avatarUploading}
+                className="text-eb-caption font-bold text-eb-pop uppercase tracking-wider"
+              >
+                {avatarUploading
+                  ? "Uploading\u2026"
+                  : avatarUrl
+                    ? "Change photo"
+                    : "Upload a photo"}
+              </button>
+              <p className="text-eb-meta text-eb-muted mt-0.5">
+                Buyers see this on your profile.
+              </p>
             </div>
-            <input
-              type="text"
-              placeholder="Vintage Finds LA"
-              className="eb-input"
-              value={businessName}
-              onChange={(e) => setBusinessName(e.target.value.slice(0, 60))}
-            />
-          </section>
-
-          <section className="px-6 py-5 border-t border-eb-border">
-            <div className="flex items-baseline gap-3 mb-3">
-              <span className="text-eb-body font-bold text-eb-pop">04</span>
-              <span className="text-eb-meta uppercase tracking-widest text-eb-muted">
-                Instagram
-              </span>
-            </div>
-            <input
-              type="text"
-              placeholder="@yourhandle"
-              className="eb-input"
-              value={instagram}
-              onChange={(e) => setInstagram(e.target.value.slice(0, 31))}
-            />
-            <p className="text-eb-meta text-eb-muted mt-1.5">
-              We review your Instagram to verify your business.
-            </p>
-          </section>
-        </>
+          </div>
+        </section>
       )}
 
-      {/* Follow Markets */}
+      {/* Dealer: Business name */}
+      {isDealerSignup && (
+        <section className="px-6 py-5 border-t border-eb-border">
+          <div className="flex items-baseline gap-3 mb-3">
+            <span className="text-eb-body font-bold text-eb-pop">
+              {nextStep()}
+            </span>
+            <span className="text-eb-meta uppercase tracking-widest text-eb-muted">
+              Business name
+            </span>
+          </div>
+          <input
+            type="text"
+            placeholder="Vintage Finds LA"
+            className="eb-input"
+            value={businessName}
+            onChange={(e) => setBusinessName(e.target.value.slice(0, 60))}
+          />
+        </section>
+      )}
+
+      {/* Dealer: Instagram */}
+      {isDealerSignup && (
+        <section className="px-6 py-5 border-t border-eb-border">
+          <div className="flex items-baseline gap-3 mb-3">
+            <span className="text-eb-body font-bold text-eb-pop">
+              {nextStep()}
+            </span>
+            <span className="text-eb-meta uppercase tracking-widest text-eb-muted">
+              Instagram
+            </span>
+          </div>
+          <input
+            type="text"
+            placeholder="@yourhandle"
+            className="eb-input"
+            value={instagram}
+            onChange={(e) => setInstagram(e.target.value.slice(0, 31))}
+          />
+          <p className="text-eb-meta text-eb-muted mt-1.5">
+            We review your Instagram to verify your business.
+          </p>
+        </section>
+      )}
+
+      {/* Markets */}
       {markets.length > 0 && (
         <section className="px-6 py-5 border-t border-eb-border">
           <div className="flex items-baseline gap-3 mb-3">
             <span className="text-eb-body font-bold text-eb-pop">
-              {isDealerSignup ? "05" : "03"}
+              {nextStep()}
             </span>
             <span className="text-eb-meta uppercase tracking-widest text-eb-muted">
-              Follow markets
+              {isDealerSignup ? "Markets you sell at" : "Follow markets"}
             </span>
           </div>
           <div className="space-y-2">
@@ -266,7 +435,7 @@ function OnboardingContent() {
       <section className="px-6 py-5 border-t border-eb-border">
         <div className="flex items-baseline gap-3 mb-3">
           <span className="text-eb-body font-bold text-eb-pop">
-            {isDealerSignup ? "06" : "04"}
+            {nextStep()}
           </span>
           <span className="text-eb-meta uppercase tracking-widest text-eb-muted">
             Notifications
@@ -315,6 +484,30 @@ function OnboardingContent() {
         </div>
       </section>
 
+      {/* Dealer: Terms */}
+      {isDealerSignup && (
+        <section className="px-6 py-5 border-t border-eb-border">
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={agreedToTerms}
+              onChange={() => setAgreedToTerms(!agreedToTerms)}
+              className="eb-check mt-0.5"
+            />
+            <span className="text-eb-body text-eb-muted">
+              I agree to the Early Bird{" "}
+              <Link
+                href="/terms"
+                target="_blank"
+                className="font-bold text-eb-black underline"
+              >
+                Terms of Service
+              </Link>
+            </span>
+          </label>
+        </section>
+      )}
+
       {/* Continue */}
       <footer className="px-6 py-6 mt-auto border-t-2 border-eb-black">
         {dealerError && (
@@ -326,13 +519,16 @@ function OnboardingContent() {
           disabled={
             !displayName ||
             saving ||
-            (isDealerSignup && (!businessName.trim() || !instagram.trim()))
+            (isDealerSignup &&
+              (!businessName.trim() ||
+                !instagram.trim() ||
+                !agreedToTerms))
           }
         >
           {saving
             ? "SAVING\u2026"
             : isDealerSignup
-              ? "SUBMIT & START BROWSING"
+              ? "SUBMIT APPLICATION"
               : "START SHOPPING"}
         </button>
       </footer>
@@ -345,7 +541,7 @@ export default function OnboardingPage() {
     <Suspense
       fallback={
         <div className="min-h-screen flex items-center justify-center">
-          <span className="text-eb-body text-eb-muted">Loading\u2026</span>
+          <span className="text-eb-body text-eb-muted">Loading{"\u2026"}</span>
         </div>
       }
     >
