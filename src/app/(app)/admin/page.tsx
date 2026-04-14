@@ -1344,14 +1344,250 @@ function ItemsTab() {
 }
 
 /* ════════════════════════════════════════════════════
-   SMS TAB (stub — Session 3)
+   SMS TAB
    ════════════════════════════════════════════════════ */
 
+interface SmsBlast {
+  id: string;
+  market_id: string | null;
+  market_name: string | null;
+  audience: string;
+  message: string;
+  sent_count: number;
+  fail_count: number;
+  total_count: number;
+  errors: { phone: string; error: string }[] | null;
+  created_at: string;
+}
+
 function SmsTab() {
+  const [markets, setMarkets] = useState<Market[]>([]);
+  const [blasts, setBlasts] = useState<SmsBlast[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Compose form
+  const [market, setMarket] = useState("");
+  const [audience, setAudience] = useState<"all" | "buyers" | "dealers">("all");
+  const [message, setMessage] = useState("");
+  const [preview, setPreview] = useState<number | null>(null);
+  const [previewing, setPreviewing] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [sendResult, setSendResult] = useState<{ sent: number; failed: number; total: number } | null>(null);
+  const [confirming, setConfirming] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const [mRes, bRes] = await Promise.all([
+        apiFetch("/api/admin/markets"),
+        apiFetch("/api/admin/sms-blasts"),
+      ]);
+      if (mRes.ok) setMarkets(await mRes.json());
+      if (bRes.ok) setBlasts(await bRes.json());
+      setLoading(false);
+    })();
+  }, []);
+
+  const loadPreview = async () => {
+    setPreviewing(true);
+    const params = new URLSearchParams({ audience });
+    if (market) params.set("market_id", market);
+    const res = await apiFetch(`/api/admin/sms-blast-preview?${params}`);
+    if (res.ok) {
+      const data = await res.json();
+      setPreview(data.count);
+    }
+    setPreviewing(false);
+  };
+
+  const sendBlast = async () => {
+    if (sending) return;
+    setSending(true);
+    setSendResult(null);
+    const res = await apiFetch("/api/admin/sms-blast", {
+      method: "POST",
+      body: JSON.stringify({
+        audience,
+        message,
+        market_id: market || null,
+      }),
+    });
+    if (res.ok) {
+      const result = await res.json();
+      setSendResult(result);
+      setMessage("");
+      setConfirming(false);
+      setPreview(null);
+      // Reload blast history
+      const bRes = await apiFetch("/api/admin/sms-blasts");
+      if (bRes.ok) setBlasts(await bRes.json());
+    } else {
+      const data = await res.json();
+      setSendResult({ sent: 0, failed: 0, total: 0 });
+      alert(data.error || "Failed to send");
+    }
+    setSending(false);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-12">
+        <span className="eb-spinner" />
+      </div>
+    );
+  }
+
   return (
-    <div className="eb-empty">
-      <div className="eb-icon">{"\u2709"}</div>
-      <p>SMS blasts coming in Session 3</p>
-    </div>
+    <>
+      {/* Compose */}
+      <div className="px-5 py-4 border-b border-eb-border">
+        <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-3">
+          Send SMS Blast
+        </div>
+        <div className="space-y-3">
+          <div>
+            <label className="text-eb-micro text-eb-muted block mb-1">Market (optional)</label>
+            <select
+              className="eb-input text-eb-caption"
+              value={market}
+              onChange={(e) => { setMarket(e.target.value); setPreview(null); }}
+            >
+              <option value="">General (no market)</option>
+              {markets.filter((m) => !m.archived).map((m) => (
+                <option key={m.id} value={m.id}>{m.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="text-eb-micro text-eb-muted block mb-1">Audience</label>
+            <div className="flex gap-2">
+              {(["all", "buyers", "dealers"] as const).map((a) => (
+                <button
+                  key={a}
+                  onClick={() => { setAudience(a); setPreview(null); }}
+                  className={`flex-1 py-2 text-eb-caption font-bold uppercase tracking-wider border-2 ${
+                    audience === a ? "border-eb-black text-eb-black" : "border-eb-border text-eb-muted"
+                  }`}
+                >
+                  {a}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-eb-micro text-eb-muted block mb-1">
+              Message ({message.length} chars)
+            </label>
+            <textarea
+              className="eb-input min-h-[100px] resize-y"
+              placeholder="Type your message..."
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+            />
+          </div>
+
+          {/* Preview + Send */}
+          <div className="flex gap-2">
+            <button
+              onClick={loadPreview}
+              disabled={previewing}
+              className="flex-1 py-2 text-eb-caption font-bold uppercase tracking-wider border-2 border-eb-border text-eb-muted"
+            >
+              {previewing ? "Counting\u2026" : "Preview"}
+            </button>
+            <button
+              onClick={() => setConfirming(true)}
+              disabled={!message.trim() || sending}
+              className="flex-1 eb-btn"
+            >
+              Send
+            </button>
+          </div>
+
+          {preview !== null && (
+            <div className="text-eb-caption text-eb-text py-2 px-3 bg-eb-cream border border-eb-border">
+              Will send to <span className="font-bold">{preview}</span> recipient{preview !== 1 ? "s" : ""}
+            </div>
+          )}
+
+          {/* Confirmation step */}
+          {confirming && (
+            <div className="py-3 px-4 border-2 border-eb-pop bg-eb-pop-light">
+              <div className="text-eb-caption font-bold text-eb-pop mb-2">
+                Send to {preview !== null ? preview : "?"} people?
+              </div>
+              <div className="text-eb-micro text-eb-text mb-3 break-words">
+                {message.slice(0, 120)}{message.length > 120 ? "\u2026" : ""}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setConfirming(false)}
+                  className="flex-1 py-2 text-eb-caption font-bold uppercase tracking-wider border-2 border-eb-border text-eb-muted"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={sendBlast}
+                  disabled={sending}
+                  className="flex-1 py-2 text-eb-caption font-bold uppercase tracking-wider bg-eb-pop text-white"
+                >
+                  {sending ? "Sending\u2026" : "Confirm Send"}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Send result */}
+          {sendResult && (
+            <div className={`text-eb-caption py-2 px-3 border ${
+              sendResult.failed > 0 ? "border-eb-red text-eb-red bg-red-50" : "border-eb-green text-eb-green bg-green-50"
+            }`}>
+              Sent {sendResult.sent}/{sendResult.total}
+              {sendResult.failed > 0 && ` (${sendResult.failed} failed)`}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Blast history */}
+      <div className="px-5 pt-4">
+        <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-3">
+          Blast History
+        </div>
+        {blasts.length === 0 ? (
+          <div className="eb-empty">
+            <p>No blasts sent yet</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {blasts.map((b) => (
+              <div key={b.id} className="border-2 border-eb-border p-3">
+                <div className="flex justify-between items-start">
+                  <div className="flex gap-2 items-center">
+                    <span className="text-eb-micro font-bold uppercase px-1.5 py-0.5 bg-eb-cream text-eb-muted">
+                      {b.audience}
+                    </span>
+                    {b.market_name && (
+                      <span className="text-eb-micro text-eb-muted">{b.market_name}</span>
+                    )}
+                  </div>
+                  <span className="text-eb-micro text-eb-light">{timeAgo(b.created_at)}</span>
+                </div>
+                <div className="text-eb-caption text-eb-text mt-2 break-words">
+                  {b.message.length > 120 ? b.message.slice(0, 120) + "\u2026" : b.message}
+                </div>
+                <div className={`text-eb-micro font-bold mt-2 ${
+                  Number(b.fail_count) > 0 ? "text-eb-red" : "text-eb-green"
+                }`}>
+                  {b.sent_count}/{b.total_count} sent
+                  {Number(b.fail_count) > 0 && ` · ${b.fail_count} failed`}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </>
   );
 }
