@@ -251,20 +251,51 @@ export default function LandingPage() {
               {/* ════════════════════════════════════
                   NO LIVE MARKET — build anticipation
               ════════════════════════════════════ */}
-              <section className="px-6 pt-12 pb-8">
+              <section className="px-6 pt-12 pb-6">
                 <h2 className="text-eb-hero tracking-tight text-eb-black">
                   Shop before <span className="text-eb-pop">sunrise.</span>
                 </h2>
-                <p className="mt-4 text-eb-body text-eb-muted">
+                <p className="mt-4 text-eb-body text-eb-muted leading-relaxed">
                   Dealers post prices the night before. You browse from your couch,
                   text the ones you want, and show up first.
                 </p>
               </section>
 
-              <section className="px-6 pb-8">
-                <h3 className="text-eb-meta uppercase tracking-widest text-eb-muted mb-3">
-                  Get notified when items drop
+              {/* Value props — same as live, always relevant */}
+              <section className="px-6 py-6 border-t border-eb-border">
+                <div className="grid grid-cols-3 gap-4 text-center">
+                  <div>
+                    <div className="text-eb-display text-eb-black">{"\u2709"}</div>
+                    <div className="text-eb-micro uppercase tracking-widest text-eb-muted mt-1">
+                      Text the dealer directly
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-eb-display text-eb-black">{"\u2764"}</div>
+                    <div className="text-eb-micro uppercase tracking-widest text-eb-muted mt-1">
+                      Save items to your watchlist
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-eb-display text-eb-black">{"\u26a1"}</div>
+                    <div className="text-eb-micro uppercase tracking-widest text-eb-muted mt-1">
+                      Get notified on price drops
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              {/* Signup — prominent when no market to browse */}
+              <section className="px-6 pt-6 pb-8 border-t border-eb-border bg-eb-cream">
+                <h3 className="text-eb-body font-bold text-eb-black mb-1">
+                  {upcomingMarkets.length > 0
+                    ? "Sign up to get notified when items drop"
+                    : "Sign up for drop notifications"
+                  }
                 </h3>
+                <p className="text-eb-caption text-eb-muted mb-4">
+                  We{"\u2019"}ll text you when dealers start posting for the next market.
+                </p>
                 {phoneForm}
               </section>
             </>
