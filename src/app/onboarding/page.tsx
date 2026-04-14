@@ -34,7 +34,7 @@ function OnboardingContent() {
 
   // Detect dealer signup from sessionStorage or query param
   useEffect(() => {
-    const fromStorage = sessionStorage.getItem("eb_dealer_signup") === "1";
+    const fromStorage = localStorage.getItem("eb_dealer_signup") === "1";
     const fromParam = searchParams.get("dealer") === "1";
     if (fromStorage || fromParam) {
       setIsDealerSignup(true);
@@ -115,7 +115,7 @@ function OnboardingContent() {
         setSaving(false);
         return;
       }
-      sessionStorage.removeItem("eb_dealer_signup");
+      localStorage.removeItem("eb_dealer_signup");
     }
 
     await refreshUser();

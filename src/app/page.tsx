@@ -72,9 +72,9 @@ export default function LandingPage() {
   const handleSend = async () => {
     if (!phone || sending) return;
     if (mode === "dealer") {
-      sessionStorage.setItem("eb_dealer_signup", "1");
+      localStorage.setItem("eb_dealer_signup", "1");
     } else {
-      sessionStorage.removeItem("eb_dealer_signup");
+      localStorage.removeItem("eb_dealer_signup");
     }
     setSending(true);
     const digits = phone.replace(/\D/g, "");

@@ -35,7 +35,7 @@ export default function VerifyShortPage() {
 
         let dest = "/home";
         const isDealerSignup = typeof window !== "undefined" &&
-          sessionStorage.getItem("eb_dealer_signup") === "1";
+          localStorage.getItem("eb_dealer_signup") === "1";
         if (data.phone_changed) {
           dest = "/account";
         } else if (data.user.needs_onboarding) {
