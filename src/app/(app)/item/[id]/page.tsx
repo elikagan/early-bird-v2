@@ -384,14 +384,6 @@ export default function ItemDetailPage() {
     [item, id]
   );
 
-  if (loading || !item) {
-    return (
-      <div className="flex-1 flex items-center justify-center">
-        <span className="eb-spinner" />
-      </div>
-    );
-  }
-
   const deleteItem = useCallback(async () => {
     setDeleting(true);
     const res = await apiFetch(`/api/items/${id}`, { method: "DELETE" });
@@ -402,6 +394,14 @@ export default function ItemDetailPage() {
       setShowDeleteConfirm(false);
     }
   }, [id, router]);
+
+  if (loading || !item) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <span className="eb-spinner" />
+      </div>
+    );
+  }
 
   const currentPhoto = item.photos[photoIndex]?.url;
   const marketDate = item.market ? formatDate(item.market.starts_at) : "";
