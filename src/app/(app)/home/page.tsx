@@ -105,8 +105,8 @@ export default function HomePage() {
               </div>
             )}
 
-            {/* CTA */}
-            {heroMarket.status === "live" && !isDealer && (
+            {/* CTA — always buy-side; dealers access sell via Sell tab */}
+            {heroMarket.status === "live" && (
               <Link
                 href={`/buy?market=${heroMarket.id}`}
                 className="eb-btn mt-5 text-center"
@@ -114,23 +114,7 @@ export default function HomePage() {
                 Browse the market →
               </Link>
             )}
-            {heroMarket.status === "live" && isDealer && (
-              <Link
-                href={`/sell?market=${heroMarket.id}`}
-                className="eb-btn mt-5 text-center"
-              >
-                Manage your booth →
-              </Link>
-            )}
-            {heroMarket.status === "upcoming" && isDealer && (
-              <Link
-                href={`/sell?market=${heroMarket.id}`}
-                className="eb-btn mt-5 text-center"
-              >
-                Set up your booth →
-              </Link>
-            )}
-            {heroMarket.status === "upcoming" && !isDealer && (
+            {heroMarket.status === "upcoming" && (
               <Link
                 href={`/buy?market=${heroMarket.id}`}
                 className="eb-btn mt-5 text-center"
@@ -150,9 +134,7 @@ export default function HomePage() {
             {otherMarkets.map((m) => (
               <Link
                 key={m.id}
-                href={
-                  isDealer ? `/sell?market=${m.id}` : `/buy?market=${m.id}`
-                }
+                href={`/buy?market=${m.id}`}
                 className="block px-5 py-4 border-b border-eb-border"
               >
                 <div className="flex items-baseline justify-between gap-3">
