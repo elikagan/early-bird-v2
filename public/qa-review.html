@@ -679,8 +679,11 @@ const PAGES = [
   // NO LOGIN NEEDED — these work for anyone
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  { id: "landing", title: "Landing Page", path: "/", desc: "Hero with market preview grid, item thumbnails with prices, and value prop icons at the bottom.", badge: "live", badgeClass: "badge-live",
-    context: "First thing anyone sees. Shows the current live market (Downtown Modernism), preview of items with prices, and three value prop icons at the bottom (text dealer, save items, price drop alerts)." },
+  { id: "landing", title: "Landing — Buyer Mode", path: "/", desc: "Hero with market preview grid, item thumbnails with prices, and value prop icons at the bottom.", badge: "live", badgeClass: "badge-live",
+    context: "Default landing for buyers. Shows the current live market, preview of items with prices, three value prop icons, and a phone signup form. 'Dealer →' toggle in the top right switches to dealer mode." },
+
+  { id: "landing-dealer", title: "Landing — Dealer Mode", path: "/#dealer", desc: "Dealer landing with 'Sell before sunrise' hero, approval process explainer, and phone signup form.", badge: "live", badgeClass: "badge-live",
+    context: "Dealer-specific landing. Copy explains the approval process ('We'll check out your Instagram, and once approved...'). 'How it works' box shows the 4-step flow. Persists on reload via URL hash. 'Buyer →' toggle to switch back." },
 
   { id: "home", title: "Home Hub", path: "/home", desc: "Market hub — live market with Browse CTA, upcoming markets with countdown, How It Works section, Sign Up at bottom.", badge: "live", badgeClass: "badge-live",
     context: "The main hub. Shows Downtown Modernism as live with a Browse button, PCC Flea and Rose Bowl as upcoming with day countdowns, and a How It Works explainer. Sign Up button at the very bottom." },
@@ -706,6 +709,15 @@ const PAGES = [
   { id: "invite-valid", title: "Invite Landing (Valid Code)", path: "/invite/TESTCODE", desc: "'YOU'RE INVITED' — dealer invite page with setup prompt.", badge: "auth", badgeClass: "badge-auth",
     context: "A dealer clicked their invite link. Shows the invite welcome message and prompts them to set up their seller account." },
 
+  { id: "onboarding-buyer", title: "Onboarding — Buyer", path: "/onboarding", desc: "4-step buyer setup: name, phone (verified), follow markets, notification prefs. 'START SHOPPING' button.", badge: "auth", badgeClass: "badge-auth",
+    context: "⚠️ Only renders mid-signup flow (redirects otherwise). Steps: 01 Your name, 02 Phone (verified/readonly), 03 Follow markets (checkboxes), 04 Notifications. Heading says 'Get set up.' 30-second promise." },
+
+  { id: "onboarding-dealer", title: "Onboarding — Dealer Application", path: "/onboarding?dealer=1", desc: "8-step dealer application: name, phone, photo upload, business name, Instagram, markets you sell at, notifications, terms checkbox. 'SUBMIT APPLICATION' button.", badge: "auth", badgeClass: "badge-auth",
+    context: "⚠️ Only renders mid-signup flow with dealer flag. Heading says 'Apply to sell.' Extra dealer steps: photo upload (avatar), business name (required), Instagram (required, used for verification), 'Markets you sell at' framing, and Terms of Service agreement. Button says 'SUBMIT APPLICATION'." },
+
+  { id: "onboarding-confirm", title: "Dealer — Application Submitted", path: "/onboarding?dealer=1", desc: "Confirmation screen after dealer submits: checkmark, 'Application submitted', text about IG review, 'START BROWSING' CTA.", badge: "auth", badgeClass: "badge-auth",
+    context: "⚠️ This screen appears AFTER the dealer submits the application form. Can't be previewed by URL — it's a state within the onboarding page. Shows a big checkmark, 'Application submitted', 'We're reviewing your Instagram and will text you...', and a 'START BROWSING' button to enter buyer mode." },
+
   { id: "privacy", title: "Privacy Policy", path: "/privacy", desc: "Full privacy policy. Effective April 2026. Covers data collection, usage, and what we don't do.", badge: "static", badgeClass: "badge-static",
     context: "Linked from the footer. Scroll through and make sure the language is clear and covers phone numbers, photos, browsing activity, and SMS notifications." },
 
@@ -716,8 +728,8 @@ const PAGES = [
   // LOG IN AS BUYER FIRST — then review these
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  { id: "home-buyer", title: "Home Hub (as Buyer)", path: "/home", desc: "Same hub but with 'Your markets' subtitle, preview buttons for upcoming. Compare to logged-out version above.", badge: "live", badgeClass: "badge-live",
-    context: "⚠️ Log in as a buyer first. The home hub should now say 'Your markets', show preview buttons on upcoming markets, and have no Sign Up CTA." },
+  { id: "home-buyer", title: "Home Hub (as Buyer)", path: "/home", desc: "Buyer hub with 'Your markets' subtitle, preview buttons for upcoming. If the buyer has a pending dealer application, shows an 'Application under review' banner below the masthead.", badge: "live", badgeClass: "badge-live",
+    context: "⚠️ Log in as a buyer first. Shows 'Your markets', preview buttons on upcoming markets, no Sign Up CTA. If this buyer submitted a dealer application, an orange-bordered banner says 'Application under review — We're reviewing your dealer application. Browse as a buyer in the meantime.'" },
 
   { id: "buy-grid-buyer", title: "Buy Grid (as Buyer)", path: "/buy?market_id=H8siHnv5aFjc-thg", desc: "Same grid but items should now show dealer names and avatars on the cards.", badge: "live", badgeClass: "badge-live",
     context: "⚠️ Log in as a buyer first. Compare to the logged-out grid — dealer names/avatars should now appear on item cards." },
@@ -728,8 +740,8 @@ const PAGES = [
   { id: "watching-buyer", title: "Watching (as Buyer)", path: "/watching", desc: "Your watchlist — items you've favorited or inquired about, with status badges.", badge: "live", badgeClass: "badge-live",
     context: "⚠️ Log in as a buyer first. If you have favorites/inquiries, they show here with live/hold/sold badges. If empty, check the empty state messaging." },
 
-  { id: "account-buyer", title: "Account (Buyer)", path: "/account", desc: "Profile, stats, notification prefs, 'Become A Seller' section, sign out.", badge: "live", badgeClass: "badge-live",
-    context: "⚠️ Log in as a buyer first. Shows your stats (watching, inquiries), notification preferences, and the dealer application section. Redirects to landing if not logged in." },
+  { id: "account-buyer", title: "Account (Buyer)", path: "/account", desc: "Profile with avatar, stats, notification prefs, 'Become A Seller' section with application status card, sign out.", badge: "live", badgeClass: "badge-live",
+    context: "⚠️ Log in as a buyer first. Shows stats, notifications, and the 'Become A Seller' section. If no application: shows 'Apply to Sell' button. If pending: orange-bordered 'Application under review' card. If approved: green-bordered 'Approved' card." },
 
   { id: "dealer-page-buyer", title: "Dealer Page (as Buyer)", path: "/d/zcYMRz9HT2WoIYoi", desc: "Same dealer page but items are now tappable links, not signup buttons.", badge: "live", badgeClass: "badge-live",
     context: "⚠️ Log in as a buyer first. Compare to the logged-out dealer page — items should now link directly to item detail instead of triggering signup." },
