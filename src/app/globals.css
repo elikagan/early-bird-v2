@@ -40,6 +40,17 @@
     font-weight: 700;
     letter-spacing: 0.08em;
     color: var(--eb-black);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .eb-masthead h1::before {
+    content: "";
+    display: inline-block;
+    width: 20px;
+    height: 16px;
+    background: url("/logo.svg") no-repeat center / contain;
+    flex-shrink: 0;
   }
   .eb-masthead .eb-sub {
     font-size: 10px;
