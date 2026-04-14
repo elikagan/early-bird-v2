@@ -896,7 +896,7 @@ function iframeNav(dir) {
   } catch (e) { /* cross-origin safety */ }
 }
 
-// Track iframe URL changes and update the URL bar
+// Track iframe URL changes, update URL bar, hide Next.js dev tools
 (function() {
   const frame = document.getElementById("phoneFrame");
   frame.addEventListener("load", () => {
@@ -904,6 +904,13 @@ function iframeNav(dir) {
       const loc = frame.contentWindow.location;
       const path = loc.pathname + loc.search;
       document.getElementById("urlBar").textContent = "earlybird.la" + path;
+      // Hide Next.js dev overlay inside iframe
+      const doc = frame.contentDocument;
+      if (doc) {
+        const style = doc.createElement("style");
+        style.textContent = "nextjs-portal, [data-nextjs-dev-overlay] { display: none !important; }";
+        doc.head.appendChild(style);
+      }
     } catch (e) { /* cross-origin */ }
   });
 })();
