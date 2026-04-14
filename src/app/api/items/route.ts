@@ -31,6 +31,9 @@ export async function GET(request: Request) {
   if (dealerId) {
     sql += ` AND i.dealer_id = ?`;
     args.push(dealerId);
+  } else {
+    // Buyers don't see deleted items
+    sql += ` AND i.status != 'deleted'`;
   }
 
   sql += ` ORDER BY i.created_at DESC`;

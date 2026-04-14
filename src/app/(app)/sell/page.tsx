@@ -125,7 +125,7 @@ function SellContent() {
         <div className="flex-1 flex items-center justify-center">
           <span className="eb-spinner" />
         </div>
-        <BottomNav active="sell" sellCount={items.length} />
+        <BottomNav active="sell" sellCount={items.filter(i => i.status !== "deleted").length} />
       </>
     );
   }
@@ -213,11 +213,12 @@ function SellContent() {
             {items.map((item) => {
               const isSold = item.status === "sold";
               const isHeld = item.status === "hold";
+              const isDeleted = item.status === "deleted";
               return (
                 <Link
                   key={item.id}
                   href={`/item/${item.id}`}
-                  className={`eb-grid-card${isSold ? " eb-sold" : ""}`}
+                  className={`eb-grid-card${isSold || isDeleted ? " eb-sold" : ""}`}
                 >
                   {item.photo_url ? (
                     <img
@@ -328,7 +329,7 @@ function SellContent() {
         +
       </Link>
 
-      <BottomNav active="sell" sellCount={items.length} />
+      <BottomNav active="sell" sellCount={items.filter(i => i.status !== "deleted").length} />
     </>
   );
 }

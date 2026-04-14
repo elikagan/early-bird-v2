@@ -368,10 +368,11 @@ export async function DELETE(
   });
   if (existing.rows.length === 0) return error("Item not found or not yours", 404);
 
-  await db.execute({ sql: `DELETE FROM item_photos WHERE item_id = ?`, args: [id] });
-  await db.execute({ sql: `DELETE FROM inquiries WHERE item_id = ?`, args: [id] });
-  await db.execute({ sql: `DELETE FROM favorites WHERE item_id = ?`, args: [id] });
-  await db.execute({ sql: `DELETE FROM items WHERE id = ?`, args: [id] });
+  // Soft-delete: keep all data, just mark as deleted
+  await db.execute({
+    sql: `UPDATE items SET status = 'deleted' WHERE id = ?`,
+    args: [id],
+  });
 
   return json({ deleted: true });
 }

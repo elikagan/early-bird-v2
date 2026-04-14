@@ -1000,16 +1000,51 @@ export default function ItemDetailPage() {
         </>
       )}
 
-      {/* Buyer / dealer-browsing: CTA — hidden in edit mode */}
+      {/* Buyer / dealer-browsing: Status banner + CTA — hidden in edit mode */}
       {!isOwner && !editing && (
         <>
-          <button className="eb-cta" onClick={() => setShowInquiry(true)}>
-            I&apos;M INTERESTED {"\u2192"}
-          </button>
-          <p className="text-eb-meta text-eb-muted text-center px-5 pb-8 leading-relaxed">
-            Sends {item.dealer_name} a text with your name and number. You deal
-            directly.
-          </p>
+          {item.status === "hold" && (
+            <section className="mx-5 mb-4 p-4 border border-eb-amber bg-eb-pop-bg">
+              <div className="text-eb-meta font-bold uppercase tracking-wider text-eb-black mb-1">
+                On Hold
+              </div>
+              <p className="text-eb-meta text-eb-muted leading-relaxed">
+                The dealer is holding this item for another buyer. You can still
+                inquire in case it falls through.
+              </p>
+            </section>
+          )}
+          {item.status === "sold" && (
+            <section className="mx-5 mb-4 p-4 border border-eb-muted">
+              <div className="text-eb-meta font-bold uppercase tracking-wider text-eb-black mb-1">
+                Sold
+              </div>
+              <p className="text-eb-meta text-eb-muted leading-relaxed">
+                This item has been sold.
+              </p>
+            </section>
+          )}
+          {item.status === "deleted" && (
+            <section className="mx-5 mb-4 p-4 border border-eb-muted">
+              <div className="text-eb-meta font-bold uppercase tracking-wider text-eb-black mb-1">
+                Removed
+              </div>
+              <p className="text-eb-meta text-eb-muted leading-relaxed">
+                The dealer has removed this listing.
+              </p>
+            </section>
+          )}
+          {(item.status === "live" || item.status === "hold") && (
+            <>
+              <button className="eb-cta" onClick={() => setShowInquiry(true)}>
+                I&apos;M INTERESTED {"\u2192"}
+              </button>
+              <p className="text-eb-meta text-eb-muted text-center px-5 pb-8 leading-relaxed">
+                Sends {item.dealer_name} a text with your name and number. You deal
+                directly.
+              </p>
+            </>
+          )}
         </>
       )}
 

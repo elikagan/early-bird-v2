@@ -65,12 +65,13 @@ export default function WatchingPage() {
               {items.map((item) => {
                 const isSold = item.status === "sold";
                 const isHeld = item.status === "hold";
+                const isDeleted = item.status === "deleted";
 
                 return (
                   <Link
                     key={item.favorite_id}
                     href={`/item/${item.id}`}
-                    className={`eb-grid-card${isSold ? " eb-sold" : ""}`}
+                    className={`eb-grid-card${isSold || isDeleted ? " eb-sold" : ""}`}
                   >
                     {item.photo_url ? (
                       <img
@@ -112,8 +113,15 @@ export default function WatchingPage() {
                           <span>Sold</span>
                         </div>
                       )}
+                      {isDeleted && (
+                        <div className="eb-status">
+                          <span className="eb-dot eb-dot-red" />
+                          <span>Removed by dealer</span>
+                        </div>
+                      )}
                       {!isHeld &&
                         !isSold &&
+                        !isDeleted &&
                         item.my_inquiry_status && (
                           <div className="eb-status">
                             <span className="eb-dot eb-dot-amber" />
