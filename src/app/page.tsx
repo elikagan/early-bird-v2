@@ -332,12 +332,16 @@ export default function LandingPage() {
           <div className="py-6 text-center text-eb-meta text-eb-light italic">
             The early bird gets the credenza.
           </div>
-          <footer className="px-6 py-6 border-t border-eb-border">
+          <footer className="px-6 py-6 border-t border-eb-border space-y-3">
             <p className="text-eb-meta text-center text-eb-muted">
               Selling at a market?{" "}
               <button onClick={() => setMode("dealer")} className="font-bold text-eb-pop">
                 Dealer sign up
               </button>
+            </p>
+            <p className="text-eb-micro text-center text-eb-light leading-relaxed">
+              Early Bird is not affiliated with any market or organizer. We simply
+              allow dealers to post items they{"\u2019"}re bringing.
             </p>
           </footer>
         </>
