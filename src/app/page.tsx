@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
 import { formatDate, heroCountdown } from "@/lib/format";
@@ -14,7 +15,11 @@ interface Market {
   starts_at: string;
   status: string;
   dealer_count: number;
+  item_count: number;
 }
+
+const PROMO_IMAGES = ["/promo/hero.png", "/promo/2.png", "/promo/3.png"];
+const CYCLE_INTERVAL = 5000;
 
 export default function LandingPage() {
   const router = useRouter();
@@ -24,6 +29,7 @@ export default function LandingPage() {
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [markets, setMarkets] = useState<Market[]>([]);
+  const [promoIndex, setPromoIndex] = useState(0);
 
   // If already logged in, redirect to home
   useEffect(() => {
@@ -32,7 +38,7 @@ export default function LandingPage() {
     }
   }, [authLoading, user, router]);
 
-  // Fetch markets for the upcoming drops section
+  // Fetch markets
   useEffect(() => {
     async function load() {
       try {
@@ -43,6 +49,15 @@ export default function LandingPage() {
       }
     }
     load();
+  }, []);
+
+  // Image slideshow
+  useEffect(() => {
+    const interval = setInterval(
+      () => setPromoIndex((i) => (i + 1) % PROMO_IMAGES.length),
+      CYCLE_INTERVAL
+    );
+    return () => clearInterval(interval);
   }, []);
 
   const handleSend = async () => {
@@ -63,21 +78,20 @@ export default function LandingPage() {
     if (res.ok) setSent(true);
   };
 
-  const upcomingMarkets = markets.filter(
-    (m) => m.status === "upcoming" || m.status === "live"
-  );
+  const liveMarket = markets.find((m) => m.status === "live");
+  const upcomingMarkets = markets.filter((m) => m.status === "upcoming");
 
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <span className="text-eb-body text-eb-muted">Loading…</span>
+        <span className="text-eb-body text-eb-muted">{"\u2026"}</span>
       </div>
     );
   }
 
   if (user) return null; // redirect is happening
 
-  // Phone form — shared between buyer and dealer modes
+  // Phone form
   const phoneForm = sent ? (
     <div>
       <p className="text-eb-display font-bold text-eb-black">Check your texts</p>
@@ -113,7 +127,7 @@ export default function LandingPage() {
         onClick={handleSend}
         disabled={sending}
       >
-        {sending ? "SENDING…" : "TEXT ME A SIGN-IN LINK"}
+        {sending ? "SENDING\u2026" : "TEXT ME A SIGN-IN LINK"}
       </button>
       <p className="text-eb-meta text-eb-muted mt-2 text-center">
         No passwords. No codes. Just a link.
@@ -134,26 +148,82 @@ export default function LandingPage() {
             onClick={() => setMode(mode === "buyer" ? "dealer" : "buyer")}
             className="text-eb-meta uppercase tracking-widest text-eb-muted"
           >
-            {mode === "buyer" ? "Dealer →" : "Buyer →"}
+            {mode === "buyer" ? "Dealer \u2192" : "Buyer \u2192"}
           </button>
         </div>
       </div>
 
       {mode === "buyer" ? (
         <>
-          {/* Hero */}
-          <section className="px-6 pt-12 pb-8">
-            <h2 className="text-eb-hero tracking-tight text-eb-black">
-              Shop before <span className="text-eb-pop">sunrise.</span>
-            </h2>
-            <p className="mt-4 text-eb-body text-eb-muted">
-              Dealers post prices the night before. You browse from your couch,
-              text the ones you want, and show up first.
-            </p>
-          </section>
+          {/* === LIVE MARKET HERO === */}
+          {liveMarket ? (
+            <>
+              <section className="px-6 pt-8 pb-6">
+                <span className="inline-block text-eb-micro uppercase tracking-wider text-eb-pop bg-eb-pop-light px-1.5 py-0.5 mb-3 font-bold">
+                  LIVE NOW
+                </span>
+                <h2 className="text-eb-hero tracking-tight text-eb-black">
+                  {liveMarket.name}
+                </h2>
+                <p className="mt-2 text-eb-body text-eb-muted">
+                  {formatDate(liveMarket.starts_at)} {"\u00b7"} {liveMarket.location}
+                  {liveMarket.item_count > 0 && (
+                    <> {"\u00b7"} {liveMarket.item_count} items</>
+                  )}
+                </p>
+              </section>
 
-          {/* Phone form */}
-          <section className="px-6 pb-8">{phoneForm}</section>
+              {/* Promo slideshow */}
+              <div className="eb-promo">
+                {PROMO_IMAGES.map((src, i) => (
+                  <img
+                    key={src}
+                    src={src}
+                    alt=""
+                    className={i === promoIndex ? "eb-promo-active" : ""}
+                  />
+                ))}
+              </div>
+
+              {/* Browse CTA */}
+              <section className="px-6 pt-6 pb-4">
+                <Link
+                  href={`/buy?market=${liveMarket.id}`}
+                  className="eb-btn text-center block"
+                >
+                  BROWSE THE MARKET {"\u2192"}
+                </Link>
+              </section>
+
+              {/* Signup section — secondary */}
+              <section className="px-6 pt-6 pb-8 border-t border-eb-border mt-4">
+                <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-1">
+                  Sign up to contact dealers
+                </div>
+                <p className="text-eb-caption text-eb-muted mb-4">
+                  Browse free. Sign up to save items, message dealers, and get
+                  notified about drops.
+                </p>
+                {phoneForm}
+              </section>
+            </>
+          ) : (
+            <>
+              {/* === NO LIVE MARKET — upcoming teaser === */}
+              <section className="px-6 pt-12 pb-8">
+                <h2 className="text-eb-hero tracking-tight text-eb-black">
+                  Shop before <span className="text-eb-pop">sunrise.</span>
+                </h2>
+                <p className="mt-4 text-eb-body text-eb-muted">
+                  Dealers post prices the night before. You browse from your couch,
+                  text the ones you want, and show up first.
+                </p>
+              </section>
+
+              {/* Phone form — primary when no live market */}
+              <section className="px-6 pb-8">{phoneForm}</section>
+            </>
+          )}
 
           {/* Upcoming markets */}
           {upcomingMarkets.length > 0 && (
@@ -171,19 +241,13 @@ export default function LandingPage() {
                       {m.name}
                     </div>
                     <div className="text-eb-meta text-eb-muted mt-0.5">
-                      {formatDate(m.starts_at)} · {m.location}
+                      {formatDate(m.starts_at)} {"\u00b7"} {m.location}
                     </div>
                   </div>
                   <div className="text-right">
                     <div className="text-eb-meta text-eb-muted">Drop in</div>
-                    <div
-                      className={
-                        m.status === "live"
-                          ? "text-eb-meta font-bold text-eb-pop"
-                          : "text-eb-meta font-bold text-eb-black"
-                      }
-                    >
-                      {m.status === "live" ? "LIVE" : heroCountdown(m.drop_at)}
+                    <div className="text-eb-meta font-bold text-eb-black">
+                      {heroCountdown(m.drop_at)}
                     </div>
                   </div>
                 </div>
@@ -228,25 +292,6 @@ export default function LandingPage() {
                 </div>
               </div>
             ))}
-          </section>
-
-          {/* About */}
-          <section className="px-6 pb-8">
-            <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-3">
-              About
-            </div>
-            <p className="text-eb-body text-eb-muted leading-relaxed">
-              Every weekend, thousands of people wake up before dawn to go
-              treasure hunting at LA flea markets. The best stuff goes fast. If
-              you&apos;re not there at 4am with a flashlight, you&apos;re too
-              late.
-            </p>
-            <p className="text-eb-body text-eb-muted leading-relaxed mt-3">
-              Early Bird moves the hunt to the night before. Dealers show what
-              they&apos;re bringing. Buyers shop from bed. The early bird still
-              gets the worm &mdash; but now &ldquo;early&rdquo; means the couch,
-              not the cold.
-            </p>
           </section>
 
           {/* Footer */}
@@ -330,26 +375,6 @@ export default function LandingPage() {
             ))}
           </section>
 
-          {/* Stats */}
-          <section className="px-6 pb-8">
-            <div className="flex border-t border-eb-border">
-              {[
-                { value: "214", label: "Dealers" },
-                { value: "9", label: "Markets" },
-                { value: "1,842", label: "Inquiries" },
-              ].map((stat, i) => (
-                <div key={i} className="flex-1 py-4 text-center">
-                  <div className="text-eb-display text-eb-black">
-                    {stat.value}
-                  </div>
-                  <div className="text-eb-micro uppercase tracking-widest text-eb-muted mt-1">
-                    {stat.label}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
           {/* Dealer FAQ */}
           <section className="px-6 pb-8">
             <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-3">
@@ -376,10 +401,6 @@ export default function LandingPage() {
                 q: "What happens when a buyer is interested?",
                 a: "We text you the buyer\u2019s first name, last initial, phone number, and a short note. You call or text them directly.",
               },
-              {
-                q: "Do I need to set up for every market?",
-                a: "Once. Your booth location and payment methods carry forward. Add items per market, keep the rest on autopilot.",
-              },
             ].map((faq, i) => (
               <div key={i} className="py-3 border-t border-eb-border">
                 <div className="text-eb-body font-bold text-eb-black">
@@ -392,20 +413,6 @@ export default function LandingPage() {
             ))}
           </section>
 
-          {/* About */}
-          <section className="px-6 pb-8">
-            <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-3">
-              About
-            </div>
-            <p className="text-eb-body text-eb-muted leading-relaxed">
-              Early Bird is the marketplace for LA flea market dealers and the
-              people who shop them. Dealers post inventory the night before each
-              market. Buyers browse from the couch and reach out before sunrise.
-              No fees. No cut. You and the buyer handle the transaction directly
-              at the booth &mdash; the app is a matchmaker, not a middleman.
-            </p>
-          </section>
-
           {/* Footer */}
           <footer className="px-6 py-8 mt-auto border-t border-eb-border">
             <p className="text-eb-meta text-center text-eb-muted">
@@ -414,7 +421,7 @@ export default function LandingPage() {
                 onClick={() => setMode("buyer")}
                 className="font-bold text-eb-pop"
               >
-                Browse as a buyer →
+                Browse as a buyer {"\u2192"}
               </button>
             </p>
           </footer>
