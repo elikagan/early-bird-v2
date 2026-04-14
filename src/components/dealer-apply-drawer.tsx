@@ -20,7 +20,7 @@ export function DealerApplyDrawer({ open, onClose, onSubmitted }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   const submit = useCallback(async () => {
-    if (!name.trim() || !biz.trim()) return;
+    if (!name.trim() || !biz.trim() || !ig.trim()) return;
     setSubmitting(true);
     setError(null);
     try {
@@ -94,7 +94,6 @@ export function DealerApplyDrawer({ open, onClose, onSubmitted }: Props) {
           <div>
             <label className="text-eb-micro text-eb-muted uppercase tracking-widest block mb-1">
               Instagram
-              <span className="text-eb-light ml-1">optional</span>
             </label>
             <input
               type="text"
@@ -106,6 +105,7 @@ export function DealerApplyDrawer({ open, onClose, onSubmitted }: Props) {
           </div>
 
           <p className="text-eb-micro text-eb-muted">
+            We review your Instagram to verify your business.
             We&apos;ll text you at {formatPhone(user.phone)} when approved.
           </p>
 
@@ -114,7 +114,7 @@ export function DealerApplyDrawer({ open, onClose, onSubmitted }: Props) {
           <div className="flex gap-2">
             <button
               onClick={submit}
-              disabled={submitting || !name.trim() || !biz.trim()}
+              disabled={submitting || !name.trim() || !biz.trim() || !ig.trim()}
               className="eb-btn flex-1"
             >
               {submitting ? "Submitting\u2026" : "Submit Application"}
