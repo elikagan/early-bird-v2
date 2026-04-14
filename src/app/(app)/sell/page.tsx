@@ -39,6 +39,7 @@ function SellContent() {
   const [boothNumber, setBoothNumber] = useState("");
   const [boothSaving, setBoothSaving] = useState(false);
   const [boothSaved, setBoothSaved] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   const marketId = searchParams.get("market");
 
@@ -194,6 +195,39 @@ function SellContent() {
           <p className="text-eb-micro text-eb-muted mt-1">
             Buyers see this on your listings so they can find you.
           </p>
+        </div>
+      )}
+
+      {/* Share your booth */}
+      {market && user?.dealer_id && (
+        <div className="px-5 py-4 border-b border-eb-border">
+          <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-2">
+            Share your booth
+          </div>
+          <p className="text-eb-caption text-eb-muted mb-3 leading-relaxed">
+            Post this link on social media so buyers can see everything you{"\u2019"}re bringing.
+          </p>
+          <button
+            onClick={async () => {
+              const url = `${window.location.origin}/d/${user.dealer_id}?market=${market.id}`;
+              try {
+                if (navigator.share) {
+                  await navigator.share({ title: `${user.business_name || "My booth"} at ${market.name}`, url });
+                } else {
+                  await navigator.clipboard.writeText(url);
+                  setLinkCopied(true);
+                  setTimeout(() => setLinkCopied(false), 2000);
+                }
+              } catch {
+                await navigator.clipboard.writeText(url);
+                setLinkCopied(true);
+                setTimeout(() => setLinkCopied(false), 2000);
+              }
+            }}
+            className="eb-btn"
+          >
+            {linkCopied ? "Link Copied!" : "Share Booth Link"}
+          </button>
         </div>
       )}
 
