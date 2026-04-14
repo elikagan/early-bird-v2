@@ -34,10 +34,12 @@ export default function VerifyShortPage() {
         localStorage.setItem("eb_token", data.session_token);
 
         let dest = "/home";
+        const isDealerSignup = typeof window !== "undefined" &&
+          sessionStorage.getItem("eb_dealer_signup") === "1";
         if (data.phone_changed) {
           dest = "/account";
         } else if (data.user.needs_onboarding) {
-          dest = "/onboarding";
+          dest = isDealerSignup ? "/onboarding?dealer=1" : "/onboarding";
         } else {
           const returnTo = localStorage.getItem("eb_return_to");
           if (returnTo && returnTo.startsWith("/")) {
