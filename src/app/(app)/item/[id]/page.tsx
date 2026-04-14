@@ -40,6 +40,7 @@ interface ItemDetail {
   status: string;
   held_for: string | null;
   sold_to: string | null;
+  dealer_ref: string;
   dealer_name: string;
   dealer_instagram: string | null;
   dealer_display_name: string | null;
@@ -804,32 +805,33 @@ export default function ItemDetailPage() {
         </>
       )}
 
-      {/* Dealer card (buyer + dealer-browsing) — only for logged-in, hidden in edit mode */}
-      {!isOwner && !editing && user && (
-        <section className="mx-5 mb-5 p-4 border border-eb-border flex gap-3 items-center">
+      {/* Dealer card — links to dealer page */}
+      {!isOwner && !editing && (
+        <Link
+          href={`/d/${item.dealer_ref}${item.market ? `?market=${item.market.id}` : ""}`}
+          className="mx-5 mb-5 p-4 border border-eb-border flex gap-3 items-center"
+        >
           <span className="eb-avatar eb-avatar-lg">
             {getInitials(item.dealer_display_name || item.dealer_name)}
           </span>
-          <div>
-            <div className="text-eb-body font-bold text-eb-black">
-              {item.dealer_name}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between">
+              <div className="text-eb-body font-bold text-eb-black">
+                {item.dealer_name}
+              </div>
+              <span className="text-eb-meta text-eb-muted">{"\u2192"}</span>
             </div>
             <div className="text-eb-meta text-eb-muted mt-0.5">
-              {boothStr ? `${boothStr} \u00b7 ` : ""}
+              {boothStr ? `${boothStr} ${"\u00b7"} ` : ""}
               {item.market?.name} {"\u00b7"} {marketDate}
             </div>
             {item.dealer_instagram && (
-              <a
-                href={`https://instagram.com/${item.dealer_instagram.replace("@", "")}`}
-                className="text-eb-meta text-eb-muted mt-0.5 inline-block"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {item.dealer_instagram} {"\u2197"}
-              </a>
+              <div className="text-eb-meta text-eb-muted mt-0.5">
+                @{item.dealer_instagram.replace("@", "")}
+              </div>
             )}
           </div>
-        </section>
+        </Link>
       )}
 
       {/* Market context — hidden in edit mode */}
