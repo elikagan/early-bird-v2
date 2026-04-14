@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
+import { useRequireAuth } from "@/lib/require-auth";
 import { apiFetch } from "@/lib/api-client";
 import { processImage } from "@/lib/image-processing";
 import { getInitials, formatPhone } from "@/lib/format";
@@ -36,6 +37,7 @@ const PAYMENT_METHODS = [
 ];
 
 export default function AccountPage() {
+  useRequireAuth();
   const { user, logout, refreshUser } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);

@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api-client";
+import { useRequireAuth } from "@/lib/require-auth";
 import { processImage, createThumbnail } from "@/lib/image-processing";
 import { BottomNav } from "@/components/bottom-nav";
 
@@ -31,6 +32,7 @@ const MAX_RAW_SIZE = 15 * 1024 * 1024; // 15MB per raw file
 const ACCEPTED_TYPES = "image/jpeg,image/png,image/webp,image/heic,image/heif";
 
 function AddItemContent() {
+  useRequireAuth();
   const searchParams = useSearchParams();
   const router = useRouter();
   const marketId = searchParams.get("market");

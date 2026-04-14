@@ -3,6 +3,7 @@
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
 import { getInitials, formatPrice, formatDate } from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
@@ -31,6 +32,7 @@ interface Market {
 }
 
 function BuyFeedContent() {
+  const { user } = useAuth();
   const searchParams = useSearchParams();
   const router = useRouter();
   const marketId = searchParams.get("market");
@@ -47,16 +49,19 @@ function BuyFeedContent() {
     }
 
     async function load() {
-      const [itemsRes, marketRes, favsRes] = await Promise.all([
+      const fetches: Promise<Response>[] = [
         apiFetch(`/api/items?market_id=${marketId}`),
         apiFetch(`/api/markets/${marketId}`),
-        apiFetch("/api/favorites"),
-      ]);
+      ];
+      // Only fetch favorites if logged in
+      if (user) fetches.push(apiFetch("/api/favorites"));
+
+      const [itemsRes, marketRes, favsRes] = await Promise.all(fetches);
 
       if (itemsRes.ok) setItems(await itemsRes.json());
       if (marketRes.ok) setMarket(await marketRes.json());
 
-      if (favsRes.ok) {
+      if (favsRes?.ok) {
         const favs = await favsRes.json();
         setFavCount(favs.length);
       }
@@ -65,7 +70,7 @@ function BuyFeedContent() {
     }
 
     load();
-  }, [marketId, router]);
+  }, [marketId, router, user]);
 
   // Countdown timer (ticks every second for pre-drop)
   const [now, setNow] = useState(() => Date.now());
@@ -243,16 +248,18 @@ function BuyFeedContent() {
                     <div className="eb-title">{item.title}</div>
                     <div className="eb-price">{formatPrice(item.price)}</div>
                     {isHeld && <span className="eb-tag-hold">HELD</span>}
-                    <div className="eb-dealer">
-                      <span className="eb-avatar eb-avatar-sm">
-                        {getInitials(
-                          item.dealer_display_name || item.dealer_name
-                        )}
-                      </span>
-                      <span className="eb-dealer-name">
-                        {item.dealer_display_name || item.dealer_name}
-                      </span>
-                    </div>
+                    {user && (
+                      <div className="eb-dealer">
+                        <span className="eb-avatar eb-avatar-sm">
+                          {getInitials(
+                            item.dealer_display_name || item.dealer_name
+                          )}
+                        </span>
+                        <span className="eb-dealer-name">
+                          {item.dealer_display_name || item.dealer_name}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </Link>
               );

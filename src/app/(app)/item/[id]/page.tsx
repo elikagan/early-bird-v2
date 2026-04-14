@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
 import { processImage, createThumbnail } from "@/lib/image-processing";
@@ -428,7 +429,7 @@ export default function ItemDetailPage() {
           >
             Edit
           </button>
-        ) : !isOwner ? (
+        ) : !isOwner && user ? (
           <button
             onClick={toggleFavorite}
             className={`text-eb-title ${isFav ? "text-eb-pop" : "text-eb-muted"}`}
@@ -789,8 +790,8 @@ export default function ItemDetailPage() {
         </>
       )}
 
-      {/* Dealer card (buyer + dealer-browsing) — hidden in edit mode */}
-      {!isOwner && !editing && (
+      {/* Dealer card (buyer + dealer-browsing) — only for logged-in, hidden in edit mode */}
+      {!isOwner && !editing && user && (
         <section className="mx-5 mb-5 p-4 border border-eb-border flex gap-3 items-center">
           <span className="eb-avatar eb-avatar-lg">
             {getInitials(item.dealer_display_name || item.dealer_name)}
@@ -1034,7 +1035,7 @@ export default function ItemDetailPage() {
               </p>
             </section>
           )}
-          {(item.status === "live" || item.status === "hold") && (
+          {(item.status === "live" || item.status === "hold") && user && (
             <>
               <button className="eb-cta" onClick={() => setShowInquiry(true)}>
                 I&apos;M INTERESTED {"\u2192"}
@@ -1044,6 +1045,11 @@ export default function ItemDetailPage() {
                 directly.
               </p>
             </>
+          )}
+          {(item.status === "live" || item.status === "hold") && !user && (
+            <Link href="/" className="eb-cta text-center block">
+              Sign up to contact this dealer {"\u2192"}
+            </Link>
           )}
         </>
       )}

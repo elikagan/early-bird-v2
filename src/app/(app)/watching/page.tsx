@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { apiFetch } from "@/lib/api-client";
+import { useRequireAuth } from "@/lib/require-auth";
 import { getInitials, formatPrice } from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
 
@@ -23,6 +24,7 @@ interface FavItem {
 }
 
 export default function WatchingPage() {
+  useRequireAuth();
   const [items, setItems] = useState<FavItem[]>([]);
   const [loading, setLoading] = useState(true);
 

@@ -56,7 +56,7 @@ export default function HomePage() {
     <>
       <header className="eb-masthead">
         <h1>EARLY BIRD</h1>
-        <div className="eb-sub">Your markets</div>
+        <div className="eb-sub">{user ? "Your markets" : "LA flea markets"}</div>
       </header>
 
       <main className="pb-24">
@@ -105,21 +105,29 @@ export default function HomePage() {
               </div>
             )}
 
-            {/* CTA — always buy-side; dealers access sell via Sell tab */}
+            {/* CTA */}
             {heroMarket.status === "live" && (
               <Link
                 href={`/buy?market=${heroMarket.id}`}
                 className="eb-btn mt-5 text-center"
               >
-                Browse the market →
+                Browse the market {"\u2192"}
               </Link>
             )}
-            {heroMarket.status === "upcoming" && (
+            {heroMarket.status === "upcoming" && user && (
               <Link
                 href={`/buy?market=${heroMarket.id}`}
                 className="eb-btn mt-5 text-center"
               >
-                Preview items →
+                Preview items {"\u2192"}
+              </Link>
+            )}
+            {heroMarket.status === "upcoming" && !user && (
+              <Link
+                href="/"
+                className="eb-btn mt-5 text-center"
+              >
+                Sign up to get texted when items drop {"\u2192"}
               </Link>
             )}
           </section>
@@ -159,7 +167,7 @@ export default function HomePage() {
         </div>
         <section className="px-5 pb-8">
           <div className="text-eb-body text-eb-muted leading-relaxed space-y-3">
-            {isDealer ? (
+            {user && isDealer ? (
               <>
                 <p>
                   Your items go live the moment you publish, and they sit in

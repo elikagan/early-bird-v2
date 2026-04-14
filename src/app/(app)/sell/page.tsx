@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
+import { useRequireAuth } from "@/lib/require-auth";
 import { apiFetch } from "@/lib/api-client";
 import { formatPrice } from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
@@ -31,7 +32,7 @@ interface Market {
 
 function SellContent() {
   const searchParams = useSearchParams();
-  const { user } = useAuth();
+  const { user } = useRequireAuth();
   const [items, setItems] = useState<Item[]>([]);
   const [market, setMarket] = useState<Market | null>(null);
   const [loading, setLoading] = useState(true);
