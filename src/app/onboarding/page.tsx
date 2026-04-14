@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
 import { formatPhone } from "@/lib/format";
@@ -12,8 +12,9 @@ interface Market {
   starts_at: string;
 }
 
-export default function OnboardingPage() {
+function OnboardingContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, loading: authLoading, refreshUser } = useAuth();
   const [displayName, setDisplayName] = useState("");
   const [markets, setMarkets] = useState<Market[]>([]);
@@ -26,6 +27,19 @@ export default function OnboardingPage() {
     new_markets: false,
   });
   const [saving, setSaving] = useState(false);
+  const [isDealerSignup, setIsDealerSignup] = useState(false);
+  const [businessName, setBusinessName] = useState("");
+  const [instagram, setInstagram] = useState("");
+  const [dealerError, setDealerError] = useState<string | null>(null);
+
+  // Detect dealer signup from sessionStorage or query param
+  useEffect(() => {
+    const fromStorage = sessionStorage.getItem("eb_dealer_signup") === "1";
+    const fromParam = searchParams.get("dealer") === "1";
+    if (fromStorage || fromParam) {
+      setIsDealerSignup(true);
+    }
+  }, [searchParams]);
 
   // Redirect if not logged in
   useEffect(() => {
@@ -67,7 +81,9 @@ export default function OnboardingPage() {
 
   const handleContinue = async () => {
     if (!displayName || saving) return;
+    if (isDealerSignup && (!businessName.trim() || !instagram.trim())) return;
     setSaving(true);
+    setDealerError(null);
 
     await apiFetch("/api/users/me", {
       method: "PATCH",
@@ -82,6 +98,25 @@ export default function OnboardingPage() {
         ),
       }),
     });
+
+    // Submit dealer application if this is a dealer signup
+    if (isDealerSignup) {
+      const appRes = await apiFetch("/api/dealer-applications", {
+        method: "POST",
+        body: JSON.stringify({
+          name: displayName.trim(),
+          business_name: businessName.trim(),
+          instagram_handle: instagram.trim(),
+        }),
+      });
+      if (!appRes.ok) {
+        const data = await appRes.json().catch(() => ({}));
+        setDealerError(data.error || "Failed to submit application");
+        setSaving(false);
+        return;
+      }
+      sessionStorage.removeItem("eb_dealer_signup");
+    }
 
     await refreshUser();
     setSaving(false);
@@ -106,10 +141,12 @@ export default function OnboardingPage() {
       {/* Intro */}
       <section className="px-6 pt-8 pb-4">
         <h2 className="text-eb-display text-eb-black">
-          Get set up.
+          {isDealerSignup ? "Set up your dealer account." : "Get set up."}
         </h2>
         <p className="mt-2 text-eb-body text-eb-muted">
-          Takes 30 seconds. Then you can start shopping.
+          {isDealerSignup
+            ? "We\u2019ll review your application. You can browse as a buyer in the meantime."
+            : "Takes 30 seconds. Then you can start shopping."}
         </p>
       </section>
 
@@ -154,11 +191,53 @@ export default function OnboardingPage() {
         />
       </section>
 
-      {/* Step 3: Follow Markets */}
+      {/* Dealer fields: Business Name + Instagram */}
+      {isDealerSignup && (
+        <>
+          <section className="px-6 py-5 border-t border-eb-border">
+            <div className="flex items-baseline gap-3 mb-3">
+              <span className="text-eb-body font-bold text-eb-pop">03</span>
+              <span className="text-eb-meta uppercase tracking-widest text-eb-muted">
+                Business name
+              </span>
+            </div>
+            <input
+              type="text"
+              placeholder="Vintage Finds LA"
+              className="eb-input"
+              value={businessName}
+              onChange={(e) => setBusinessName(e.target.value.slice(0, 60))}
+            />
+          </section>
+
+          <section className="px-6 py-5 border-t border-eb-border">
+            <div className="flex items-baseline gap-3 mb-3">
+              <span className="text-eb-body font-bold text-eb-pop">04</span>
+              <span className="text-eb-meta uppercase tracking-widest text-eb-muted">
+                Instagram
+              </span>
+            </div>
+            <input
+              type="text"
+              placeholder="@yourhandle"
+              className="eb-input"
+              value={instagram}
+              onChange={(e) => setInstagram(e.target.value.slice(0, 31))}
+            />
+            <p className="text-eb-meta text-eb-muted mt-1.5">
+              We review your Instagram to verify your business.
+            </p>
+          </section>
+        </>
+      )}
+
+      {/* Follow Markets */}
       {markets.length > 0 && (
         <section className="px-6 py-5 border-t border-eb-border">
           <div className="flex items-baseline gap-3 mb-3">
-            <span className="text-eb-body font-bold text-eb-pop">03</span>
+            <span className="text-eb-body font-bold text-eb-pop">
+              {isDealerSignup ? "05" : "03"}
+            </span>
             <span className="text-eb-meta uppercase tracking-widest text-eb-muted">
               Follow markets
             </span>
@@ -186,10 +265,12 @@ export default function OnboardingPage() {
         </section>
       )}
 
-      {/* Step 4: Notifications */}
+      {/* Notifications */}
       <section className="px-6 py-5 border-t border-eb-border">
         <div className="flex items-baseline gap-3 mb-3">
-          <span className="text-eb-body font-bold text-eb-pop">04</span>
+          <span className="text-eb-body font-bold text-eb-pop">
+            {isDealerSignup ? "06" : "04"}
+          </span>
           <span className="text-eb-meta uppercase tracking-widest text-eb-muted">
             Notifications
           </span>
@@ -239,14 +320,39 @@ export default function OnboardingPage() {
 
       {/* Continue */}
       <footer className="px-6 py-6 mt-auto border-t-2 border-eb-black">
+        {dealerError && (
+          <p className="text-eb-meta text-eb-red mb-3">{dealerError}</p>
+        )}
         <button
           className="eb-cta"
           onClick={handleContinue}
-          disabled={!displayName || saving}
+          disabled={
+            !displayName ||
+            saving ||
+            (isDealerSignup && (!businessName.trim() || !instagram.trim()))
+          }
         >
-          {saving ? "SAVING…" : "START SHOPPING"}
+          {saving
+            ? "SAVING\u2026"
+            : isDealerSignup
+              ? "SUBMIT & START BROWSING"
+              : "START SHOPPING"}
         </button>
       </footer>
     </div>
+  );
+}
+
+export default function OnboardingPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <span className="text-eb-body text-eb-muted">Loading\u2026</span>
+        </div>
+      }
+    >
+      <OnboardingContent />
+    </Suspense>
   );
 }
