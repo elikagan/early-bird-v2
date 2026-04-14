@@ -805,8 +805,8 @@ export default function ItemDetailPage() {
         </>
       )}
 
-      {/* Dealer card — links to dealer page */}
-      {!isOwner && !editing && (
+      {/* Dealer card — links to dealer page (logged-in only) */}
+      {!isOwner && !editing && user && (
         <Link
           href={`/d/${item.dealer_ref}${item.market ? `?market=${item.market.id}` : ""}`}
           className="mx-5 mb-5 p-4 border border-eb-border flex gap-3 items-center"
