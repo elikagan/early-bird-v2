@@ -85,6 +85,11 @@ export default function ItemDetailPage() {
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [loading, setLoading] = useState(true);
   const [photoIndex, setPhotoIndex] = useState(0);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const [transition, setTransition] = useState(false);
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef<{ sx: number; sy: number; dx: number; swiping: boolean } | null>(null);
 
   // Favorites
   const [isFav, setIsFav] = useState(false);
@@ -503,23 +508,50 @@ export default function ItemDetailPage() {
         </section>
       ) : (
         <>
-          {/* VIEW MODE: Swipeable photo carousel */}
+          {/* VIEW MODE: Sliding photo carousel */}
           <div
-            className="relative w-full overflow-hidden touch-pan-y"
+            className="relative w-full overflow-hidden"
+            ref={carouselRef}
             onTouchStart={(e) => {
               const t = e.touches[0];
-              (e.currentTarget as HTMLElement).dataset.sx = String(t.clientX);
-              (e.currentTarget as HTMLElement).dataset.sy = String(t.clientY);
+              dragRef.current = { sx: t.clientX, sy: t.clientY, dx: 0, swiping: false };
+              setDragging(true);
+              setTransition(false);
             }}
-            onTouchEnd={(e) => {
-              const el = e.currentTarget as HTMLElement;
-              const sx = Number(el.dataset.sx || 0);
-              const sy = Number(el.dataset.sy || 0);
-              const ex = e.changedTouches[0].clientX;
-              const ey = e.changedTouches[0].clientY;
-              const dx = ex - sx;
-              const dy = ey - sy;
-              if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
+            onTouchMove={(e) => {
+              if (!dragRef.current) return;
+              const t = e.touches[0];
+              const dx = t.clientX - dragRef.current.sx;
+              const dy = t.clientY - dragRef.current.sy;
+              // Lock to horizontal once we know direction
+              if (!dragRef.current.swiping && Math.abs(dx) > 8) {
+                if (Math.abs(dx) > Math.abs(dy)) {
+                  dragRef.current.swiping = true;
+                } else {
+                  dragRef.current = null;
+                  setDragging(false);
+                  return;
+                }
+              }
+              if (dragRef.current.swiping) {
+                e.preventDefault();
+                // Resist at edges
+                let clamped = dx;
+                if ((photoIndex === 0 && dx > 0) || (photoIndex === item.photos.length - 1 && dx < 0)) {
+                  clamped = dx * 0.3;
+                }
+                dragRef.current.dx = clamped;
+                setDragOffset(clamped);
+              }
+            }}
+            onTouchEnd={() => {
+              if (!dragRef.current) return;
+              const { dx, swiping } = dragRef.current;
+              dragRef.current = null;
+              setDragging(false);
+              setTransition(true);
+              setDragOffset(0);
+              if (swiping && Math.abs(dx) > 40) {
                 if (dx < 0 && photoIndex < item.photos.length - 1) {
                   setPhotoIndex(photoIndex + 1);
                 } else if (dx > 0 && photoIndex > 0) {
@@ -528,16 +560,23 @@ export default function ItemDetailPage() {
               }
             }}
           >
-            {currentPhoto ? (
-              <img
-                src={currentPhoto}
-                alt={item.title}
-                className="w-full block"
-                draggable={false}
-              />
-            ) : (
-              <div className="w-full aspect-[4/3] bg-eb-border" />
-            )}
+            <div
+              className="flex"
+              style={{
+                transform: `translateX(calc(-${photoIndex * 100}% + ${dragOffset}px))`,
+                transition: transition && !dragging ? "transform 300ms cubic-bezier(0.25, 1, 0.5, 1)" : "none",
+              }}
+            >
+              {item.photos.map((photo, i) => (
+                <img
+                  key={photo.id}
+                  src={photo.url}
+                  alt={i === 0 ? item.title : `${item.title} photo ${i + 1}`}
+                  className="w-full shrink-0 block"
+                  draggable={false}
+                />
+              ))}
+            </div>
           </div>
           {/* Photo dots */}
           {item.photos.length > 1 && (
