@@ -1,5 +1,5 @@
 import db from "@/lib/db";
-import { json } from "@/lib/api";
+import { cachedJson } from "@/lib/api";
 
 export async function GET() {
   const result = await db.execute(`
@@ -11,5 +11,5 @@ export async function GET() {
     ORDER BY m.drop_at ASC
   `);
 
-  return json(result.rows);
+  return cachedJson(result.rows);
 }

@@ -1,5 +1,5 @@
 import db from "@/lib/db";
-import { json, error } from "@/lib/api";
+import { json, error, cachedJson } from "@/lib/api";
 import { getSession } from "@/lib/auth";
 import { newId } from "@/lib/id";
 
@@ -39,7 +39,7 @@ export async function GET(request: Request) {
   sql += ` ORDER BY i.created_at DESC`;
 
   const result = await db.execute({ sql, args });
-  return json(result.rows);
+  return cachedJson(result.rows);
 }
 
 export async function POST(request: Request) {

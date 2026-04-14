@@ -1,5 +1,5 @@
 import db from "@/lib/db";
-import { json, error } from "@/lib/api";
+import { json, error, cachedJson } from "@/lib/api";
 
 export async function GET(
   _request: Request,
@@ -20,5 +20,5 @@ export async function GET(
   });
 
   if (result.rows.length === 0) return error("Market not found", 404);
-  return json(result.rows[0]);
+  return cachedJson(result.rows[0]);
 }

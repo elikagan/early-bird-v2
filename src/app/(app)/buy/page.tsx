@@ -8,7 +8,7 @@ import { apiFetch } from "@/lib/api-client";
 import { getInitials, formatPrice, formatDate } from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
 
-const PROMO_IMAGES = ["/promo/hero.png", "/promo/2.png", "/promo/3.png"];
+const PROMO_IMAGES = ["/promo/hero.webp", "/promo/2.webp", "/promo/3.webp"];
 const CYCLE_INTERVAL = 5000; // 5s per image
 
 interface Item {
