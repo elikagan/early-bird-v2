@@ -45,6 +45,7 @@ interface ItemDetail {
   view_count: number;
   watcher_count: number;
   inquiry_count: number;
+  hidden: number;
   booth_number: string | null;
   photos: Photo[];
   market: Market | null;
@@ -102,6 +103,11 @@ export default function ItemDetailPage() {
 
   // Confirm drawer (dealer-own)
   const [confirmInquiry, setConfirmInquiry] = useState<Inquiry | null>(null);
+
+  // Delete / hide
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [hiding, setHiding] = useState(false);
 
   // ── Edit mode state ──
   const [editing, setEditing] = useState(false);
@@ -382,6 +388,31 @@ export default function ItemDetailPage() {
       </div>
     );
   }
+
+  const deleteItem = useCallback(async () => {
+    setDeleting(true);
+    const res = await apiFetch(`/api/items/${id}`, { method: "DELETE" });
+    if (res.ok) {
+      router.replace("/sell");
+    } else {
+      setDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  }, [id, router]);
+
+  const toggleHidden = useCallback(async () => {
+    if (!item) return;
+    setHiding(true);
+    const newVal = item.hidden ? 0 : 1;
+    const res = await apiFetch(`/api/items/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ hidden: newVal }),
+    });
+    if (res.ok) {
+      setItem({ ...item, hidden: newVal });
+    }
+    setHiding(false);
+  }, [id, item]);
 
   const currentPhoto = item.photos[photoIndex]?.url;
   const marketDate = item.market ? formatDate(item.market.starts_at) : "";
@@ -937,6 +968,70 @@ export default function ItemDetailPage() {
             })}
           </div>
         </section>
+      )}
+
+      {/* Dealer-own: Hide + Delete — hidden in edit mode */}
+      {isOwner && !editing && (
+        <section className="px-5 py-5 border-t border-eb-border">
+          {/* Hidden banner */}
+          {item.hidden === 1 && (
+            <div className="mb-4 px-3 py-2 border border-eb-amber bg-eb-pop-bg text-eb-meta text-eb-amber uppercase tracking-wider font-bold text-center">
+              Hidden from buyers
+            </div>
+          )}
+          <div className="flex gap-3">
+            <button
+              onClick={toggleHidden}
+              disabled={hiding}
+              className="flex-1 py-2.5 text-eb-caption font-bold border border-eb-border text-eb-text uppercase tracking-wider"
+            >
+              {hiding ? "..." : item.hidden ? "Show Listing" : "Hide Listing"}
+            </button>
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="py-2.5 px-4 text-eb-caption font-bold border border-eb-red text-eb-red uppercase tracking-wider"
+            >
+              Delete
+            </button>
+          </div>
+          <p className="text-eb-micro text-eb-muted mt-2 leading-relaxed">
+            Hidden items stay in your booth but buyers can&apos;t see them. Delete is permanent.
+          </p>
+        </section>
+      )}
+
+      {/* Delete confirmation drawer */}
+      {showDeleteConfirm && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/40 z-40"
+            onClick={() => setShowDeleteConfirm(false)}
+          />
+          <div className="fixed bottom-0 left-0 right-0 max-w-[430px] mx-auto bg-white rounded-t-2xl border-t border-eb-border z-50 px-6 pt-3 pb-6">
+            <div className="w-12 h-1 bg-eb-border rounded-full mx-auto mb-4" />
+            <h3 className="text-eb-body font-bold uppercase tracking-widest text-eb-black mb-3">
+              Delete this listing?
+            </h3>
+            <p className="text-eb-caption text-eb-muted mb-5 leading-relaxed">
+              This removes &ldquo;{item.title}&rdquo; and all its photos permanently. This can&apos;t be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={deleteItem}
+                disabled={deleting}
+                className="flex-1 py-2.5 text-eb-caption font-bold bg-eb-red text-white uppercase tracking-wider"
+              >
+                {deleting ? "Deleting..." : "Yes, Delete"}
+              </button>
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="flex-1 py-2.5 text-eb-caption font-bold border border-eb-border text-eb-muted uppercase tracking-wider"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </>
       )}
 
       {/* Buyer / dealer-browsing: CTA — hidden in edit mode */}

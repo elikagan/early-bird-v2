@@ -157,6 +157,10 @@ export async function PATCH(
     updates.push("sold_to = ?");
     args.push(body.sold_to);
   }
+  if (body.hidden !== undefined) {
+    updates.push("hidden = ?");
+    args.push(body.hidden ? 1 : 0);
+  }
 
   const hasFieldUpdates = updates.length > 0;
 

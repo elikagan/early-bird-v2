@@ -276,16 +276,6 @@
     color: var(--eb-black);
     font-weight: 700;
   }
-  .eb-bnav-dot {
-    display: inline-block;
-    width: 5px;
-    height: 5px;
-    background: var(--eb-pop);
-    border-radius: 50%;
-    vertical-align: super;
-    margin-left: 2px;
-  }
-
   /* ---- CTA button ---- */
   .eb-cta {
     display: block;

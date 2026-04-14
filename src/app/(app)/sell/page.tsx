@@ -15,6 +15,7 @@ interface Item {
   original_price: number | null;
   status: string;
   photo_url: string | null;
+  hidden: number;
   view_count: number;
   watcher_count: number;
   inquiry_count: number;
@@ -125,7 +126,7 @@ function SellContent() {
         <div className="flex-1 flex items-center justify-center">
           <span className="eb-spinner" />
         </div>
-        <BottomNav active="sell" />
+        <BottomNav active="sell" sellCount={items.length} />
       </>
     );
   }
@@ -213,12 +214,13 @@ function SellContent() {
             {items.map((item) => {
               const isSold = item.status === "sold";
               const isHeld = item.status === "hold";
+              const isHidden = item.hidden === 1;
 
               return (
                 <Link
                   key={item.id}
                   href={`/item/${item.id}`}
-                  className={`eb-grid-card${isSold ? " eb-sold" : ""}`}
+                  className={`eb-grid-card${isSold ? " eb-sold" : ""}${isHidden ? " opacity-50" : ""}`}
                 >
                   {item.photo_url ? (
                     <img
@@ -239,6 +241,11 @@ function SellContent() {
                         </span>
                       )}
                     </div>
+                    {isHidden && (
+                      <span className="text-eb-micro uppercase tracking-wider text-eb-muted border border-eb-muted px-1 mt-1 inline-block">
+                        Hidden
+                      </span>
+                    )}
                     {!isSold &&
                       (item.watcher_count > 0 ||
                         item.inquiry_count > 0) && (
@@ -329,7 +336,7 @@ function SellContent() {
         +
       </Link>
 
-      <BottomNav active="sell" />
+      <BottomNav active="sell" sellCount={items.length} />
     </>
   );
 }
