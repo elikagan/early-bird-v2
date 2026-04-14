@@ -213,7 +213,7 @@ function AddItemContent() {
             onClick={() => router.back()}
             className="text-eb-body text-eb-muted"
           >
-            \u2715
+            {"\u2715"}
           </button>
         </div>
         {market && <div className="eb-sub">{market.name}</div>}
@@ -261,7 +261,7 @@ function AddItemContent() {
                 onClick={() => removePhoto(photo.id)}
                 className="absolute top-1 right-1 w-6 h-6 bg-eb-black text-eb-white flex items-center justify-center text-eb-micro font-bold"
               >
-                \u2715
+                {"\u2715"}
               </button>
 
               {/* Position badge */}

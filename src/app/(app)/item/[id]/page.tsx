@@ -721,7 +721,7 @@ export default function ItemDetailPage() {
             </div>
             <div className="text-eb-meta text-eb-muted mt-0.5">
               {boothStr ? `${boothStr} \u00b7 ` : ""}
-              {item.market?.name} \u00b7 {marketDate}
+              {item.market?.name} {"\u00b7"} {marketDate}
             </div>
             {item.dealer_instagram && (
               <a
@@ -730,7 +730,7 @@ export default function ItemDetailPage() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                {item.dealer_instagram} \u2197
+                {item.dealer_instagram} {"\u2197"}
               </a>
             )}
           </div>
@@ -750,7 +750,7 @@ export default function ItemDetailPage() {
                   {item.market.name}
                 </div>
                 <div className="text-eb-meta text-eb-muted mt-0.5">
-                  {marketDate} \u00b7{" "}
+                  {marketDate} {"\u00b7"}{" "}
                   {isOwner && boothStr ? boothStr : item.market.location}
                 </div>
               </div>
@@ -878,7 +878,7 @@ export default function ItemDetailPage() {
       {!isOwner && !editing && (
         <>
           <button className="eb-cta" onClick={() => setShowInquiry(true)}>
-            I&apos;M INTERESTED \u2192
+            I&apos;M INTERESTED {"\u2192"}
           </button>
           <p className="text-eb-meta text-eb-muted text-center px-5 pb-8 leading-relaxed">
             Sends {item.dealer_name} a text with your name and number. You deal
@@ -904,7 +904,7 @@ export default function ItemDetailPage() {
               aria-label="Close"
               onClick={() => setShowInquiry(false)}
             >
-              \u2715
+              {"\u2715"}
             </button>
             <h3 className="text-eb-body font-bold uppercase tracking-widest text-eb-black mb-3">
               Send Inquiry
@@ -956,7 +956,7 @@ export default function ItemDetailPage() {
               aria-label="Close"
               onClick={() => setConfirmInquiry(null)}
             >
-              \u2715
+              {"\u2715"}
             </button>
             <h3 className="text-eb-body font-bold uppercase tracking-widest text-eb-black mb-3">
               Sell To{" "}
