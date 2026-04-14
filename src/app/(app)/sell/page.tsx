@@ -205,29 +205,24 @@ function SellContent() {
             Share your booth
           </div>
           <p className="text-eb-caption text-eb-muted mb-3 leading-relaxed">
-            Post this link on social media so buyers can see everything you{"\u2019"}re bringing.
+            Post this link so buyers can see everything you{"\u2019"}re bringing.
           </p>
-          <button
-            onClick={async () => {
-              const url = `${window.location.origin}/d/${user.dealer_id}?market=${market.id}`;
-              try {
-                if (navigator.share) {
-                  await navigator.share({ title: `${user.business_name || "My booth"} at ${market.name}`, url });
-                } else {
-                  await navigator.clipboard.writeText(url);
-                  setLinkCopied(true);
-                  setTimeout(() => setLinkCopied(false), 2000);
-                }
-              } catch {
+          <div className="flex gap-2">
+            <div className="flex-1 py-3 px-4 bg-white border-2 border-eb-border text-eb-caption text-eb-text truncate">
+              earlybird.la/d/{user.dealer_id}
+            </div>
+            <button
+              onClick={async () => {
+                const url = `${window.location.origin}/d/${user.dealer_id}?market=${market.id}`;
                 await navigator.clipboard.writeText(url);
                 setLinkCopied(true);
                 setTimeout(() => setLinkCopied(false), 2000);
-              }
-            }}
-            className="eb-btn"
-          >
-            {linkCopied ? "Link Copied!" : "Share Booth Link"}
-          </button>
+              }}
+              className="px-4 py-3 bg-eb-black text-white text-eb-caption font-bold uppercase tracking-wider shrink-0"
+            >
+              {linkCopied ? "Copied!" : "Copy"}
+            </button>
+          </div>
         </div>
       )}
 
