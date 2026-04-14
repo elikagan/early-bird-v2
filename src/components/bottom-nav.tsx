@@ -24,18 +24,26 @@ export function BottomNav({
   const sellLabel =
     sellCount != null && sellCount > 0 ? `Sell (${sellCount})` : "Sell";
 
+  if (!isLoggedIn) {
+    return (
+      <nav className="eb-bnav">
+        <Link href="/">
+          <span className="eb-active">Sign Up</span>
+        </Link>
+      </nav>
+    );
+  }
+
   return (
     <nav className="eb-bnav">
       <Link href="/home">
         <span className={active === "buy" ? "eb-active" : ""}>Buy</span>
       </Link>
-      {isLoggedIn && (
-        <Link href="/watching">
-          <span className={active === "watching" ? "eb-active" : ""}>
-            {watchLabel}
-          </span>
-        </Link>
-      )}
+      <Link href="/watching">
+        <span className={active === "watching" ? "eb-active" : ""}>
+          {watchLabel}
+        </span>
+      </Link>
       {isDealer && (
         <Link href="/sell">
           <span className={active === "sell" ? "eb-active" : ""}>
@@ -43,17 +51,11 @@ export function BottomNav({
           </span>
         </Link>
       )}
-      {isLoggedIn ? (
-        <Link href="/account">
-          <span className={active === "account" ? "eb-active" : ""}>
-            Account
-          </span>
-        </Link>
-      ) : (
-        <Link href="/">
-          <span className="">Sign Up</span>
-        </Link>
-      )}
+      <Link href="/account">
+        <span className={active === "account" ? "eb-active" : ""}>
+          Account
+        </span>
+      </Link>
     </nav>
   );
 }

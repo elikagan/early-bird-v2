@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
-import { formatDate, heroCountdown } from "@/lib/format";
+import { formatDate, heroCountdown, formatPrice } from "@/lib/format";
 
 interface Market {
   id: string;
@@ -18,8 +18,12 @@ interface Market {
   item_count: number;
 }
 
-const PROMO_IMAGES = ["/promo/hero.png", "/promo/2.png", "/promo/3.png"];
-const CYCLE_INTERVAL = 5000;
+interface PreviewItem {
+  id: string;
+  title: string;
+  price: number;
+  photo_url: string | null;
+}
 
 export default function LandingPage() {
   const router = useRouter();
@@ -29,7 +33,7 @@ export default function LandingPage() {
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [markets, setMarkets] = useState<Market[]>([]);
-  const [promoIndex, setPromoIndex] = useState(0);
+  const [previewItems, setPreviewItems] = useState<PreviewItem[]>([]);
 
   // If already logged in, redirect to home
   useEffect(() => {
@@ -38,26 +42,29 @@ export default function LandingPage() {
     }
   }, [authLoading, user, router]);
 
-  // Fetch markets
+  // Fetch markets + preview items
   useEffect(() => {
     async function load() {
       try {
         const res = await fetch("/api/markets");
-        if (res.ok) setMarkets(await res.json());
+        if (!res.ok) return;
+        const data: Market[] = await res.json();
+        setMarkets(data);
+
+        // Fetch items from the live market for preview
+        const live = data.find((m) => m.status === "live");
+        if (live) {
+          const itemsRes = await fetch(`/api/items?market_id=${live.id}`);
+          if (itemsRes.ok) {
+            const items = await itemsRes.json();
+            setPreviewItems(items.slice(0, 6));
+          }
+        }
       } catch {
         // ignore
       }
     }
     load();
-  }, []);
-
-  // Image slideshow
-  useEffect(() => {
-    const interval = setInterval(
-      () => setPromoIndex((i) => (i + 1) % PROMO_IMAGES.length),
-      CYCLE_INTERVAL
-    );
-    return () => clearInterval(interval);
   }, []);
 
   const handleSend = async () => {
@@ -89,32 +96,24 @@ export default function LandingPage() {
     );
   }
 
-  if (user) return null; // redirect is happening
+  if (user) return null;
 
-  // Phone form
+  // Shared phone form
   const phoneForm = sent ? (
     <div>
       <p className="text-eb-display font-bold text-eb-black">Check your texts</p>
       <p className="text-eb-body text-eb-muted mt-2">
-        We texted a sign-in link to {phone}.
-        <br />
-        Tap it to get in.
+        We texted a sign-in link to {phone}. Tap it to get in.
       </p>
       <button
-        onClick={() => {
-          setSent(false);
-          setPhone("");
-        }}
-        className="text-eb-meta text-eb-light mt-6"
+        onClick={() => { setSent(false); setPhone(""); }}
+        className="text-eb-meta text-eb-light mt-4"
       >
         Didn&apos;t get it? Try again
       </button>
     </div>
   ) : (
     <>
-      <label className="text-eb-meta uppercase tracking-widest text-eb-muted block mb-1.5">
-        Your phone number
-      </label>
       <input
         type="tel"
         placeholder="(213) 555-0134"
@@ -129,15 +128,15 @@ export default function LandingPage() {
       >
         {sending ? "SENDING\u2026" : "TEXT ME A SIGN-IN LINK"}
       </button>
-      <p className="text-eb-meta text-eb-muted mt-2 text-center">
-        No passwords. No codes. Just a link.
+      <p className="text-eb-micro text-eb-muted mt-2 text-center">
+        Free forever {"\u00b7"} No passwords {"\u00b7"} No spam
       </p>
     </>
   );
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Masthead */}
+      {/* ─── Masthead ─── */}
       <div className="eb-masthead">
         <div className="flex justify-between items-start">
           <div>
@@ -155,61 +154,106 @@ export default function LandingPage() {
 
       {mode === "buyer" ? (
         <>
-          {/* === LIVE MARKET HERO === */}
+          {/* ════════════════════════════════════
+              LIVE MARKET — the main event
+          ════════════════════════════════════ */}
           {liveMarket ? (
             <>
-              <section className="px-6 pt-8 pb-6">
-                <span className="inline-block text-eb-micro uppercase tracking-wider text-eb-pop bg-eb-pop-light px-1.5 py-0.5 mb-3 font-bold">
+              {/* Hero */}
+              <section className="px-6 pt-10 pb-2">
+                <span className="inline-block text-eb-micro uppercase tracking-wider text-eb-pop bg-eb-pop-light px-1.5 py-0.5 mb-4 font-bold">
                   LIVE NOW
                 </span>
-                <h2 className="text-eb-hero tracking-tight text-eb-black">
+                <h2 className="text-eb-hero tracking-tight text-eb-black leading-none">
                   {liveMarket.name}
                 </h2>
-                <p className="mt-2 text-eb-body text-eb-muted">
-                  {formatDate(liveMarket.starts_at)} {"\u00b7"} {liveMarket.location}
-                  {liveMarket.item_count > 0 && (
-                    <> {"\u00b7"} {liveMarket.item_count} items</>
-                  )}
+                <p className="mt-3 text-eb-body text-eb-muted">
+                  {liveMarket.item_count} items from {liveMarket.dealer_count} dealers.
+                  Browse now, show up first.
                 </p>
               </section>
 
-              {/* Promo slideshow */}
-              <div className="eb-promo">
-                {PROMO_IMAGES.map((src, i) => (
-                  <img
-                    key={src}
-                    src={src}
-                    alt=""
-                    className={i === promoIndex ? "eb-promo-active" : ""}
-                  />
-                ))}
-              </div>
+              {/* Preview grid — real items from the market */}
+              {previewItems.length > 0 && (
+                <section className="px-4 pt-4 pb-2">
+                  <div className="grid grid-cols-3 gap-1">
+                    {previewItems.map((item) => (
+                      <Link
+                        key={item.id}
+                        href={`/buy?market=${liveMarket.id}`}
+                        className="relative aspect-square overflow-hidden bg-eb-cream"
+                      >
+                        {item.photo_url ? (
+                          <img
+                            src={item.photo_url}
+                            alt={item.title}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-eb-border" />
+                        )}
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-1.5 pt-4">
+                          <span className="text-eb-micro text-white font-bold">
+                            {formatPrice(item.price)}
+                          </span>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </section>
+              )}
 
               {/* Browse CTA */}
-              <section className="px-6 pt-6 pb-4">
+              <section className="px-6 pt-4 pb-6">
                 <Link
                   href={`/buy?market=${liveMarket.id}`}
                   className="eb-btn text-center block"
                 >
-                  BROWSE THE MARKET {"\u2192"}
+                  BROWSE {liveMarket.item_count > 0 ? `ALL ${liveMarket.item_count} ITEMS` : "THE MARKET"} {"\u2192"}
                 </Link>
               </section>
 
-              {/* Signup section — secondary */}
-              <section className="px-6 pt-6 pb-8 border-t border-eb-border mt-4">
-                <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-1">
-                  Sign up to contact dealers
+              {/* Value props — tight, scannable */}
+              <section className="px-6 py-6 border-t border-eb-border">
+                <div className="grid grid-cols-3 gap-4 text-center">
+                  <div>
+                    <div className="text-eb-display text-eb-black">{"\u2709"}</div>
+                    <div className="text-eb-micro uppercase tracking-widest text-eb-muted mt-1">
+                      Text the dealer directly
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-eb-display text-eb-black">{"\u2764"}</div>
+                    <div className="text-eb-micro uppercase tracking-widest text-eb-muted mt-1">
+                      Save items to your watchlist
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-eb-display text-eb-black">{"\u26a1"}</div>
+                    <div className="text-eb-micro uppercase tracking-widest text-eb-muted mt-1">
+                      Get notified on price drops
+                    </div>
+                  </div>
                 </div>
+              </section>
+
+              {/* Signup — positioned after they've seen the goods */}
+              <section className="px-6 pt-6 pb-8 border-t border-eb-border bg-eb-cream">
+                <h3 className="text-eb-body font-bold text-eb-black mb-1">
+                  Sign up to contact dealers
+                </h3>
                 <p className="text-eb-caption text-eb-muted mb-4">
-                  Browse free. Sign up to save items, message dealers, and get
-                  notified about drops.
+                  Browse free. Sign up to message dealers, save items,
+                  and get drop notifications.
                 </p>
                 {phoneForm}
               </section>
             </>
           ) : (
             <>
-              {/* === NO LIVE MARKET — upcoming teaser === */}
+              {/* ════════════════════════════════════
+                  NO LIVE MARKET — build anticipation
+              ════════════════════════════════════ */}
               <section className="px-6 pt-12 pb-8">
                 <h2 className="text-eb-hero tracking-tight text-eb-black">
                   Shop before <span className="text-eb-pop">sunrise.</span>
@@ -220,16 +264,20 @@ export default function LandingPage() {
                 </p>
               </section>
 
-              {/* Phone form — primary when no live market */}
-              <section className="px-6 pb-8">{phoneForm}</section>
+              <section className="px-6 pb-8">
+                <h3 className="text-eb-meta uppercase tracking-widest text-eb-muted mb-3">
+                  Get notified when items drop
+                </h3>
+                {phoneForm}
+              </section>
             </>
           )}
 
           {/* Upcoming markets */}
           {upcomingMarkets.length > 0 && (
-            <section className="px-6 pb-8">
+            <section className="px-6 pb-6">
               <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-3">
-                Upcoming markets
+                Coming up
               </div>
               {upcomingMarkets.map((m) => (
                 <div
@@ -255,53 +303,42 @@ export default function LandingPage() {
             </section>
           )}
 
-          {/* Tagline */}
+          {/* How it works */}
+          <section className="px-6 py-6 border-t border-eb-border">
+            <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-4">
+              How it works
+            </div>
+            <div className="space-y-4">
+              {[
+                { num: "1", title: "Browse", desc: "Dealers post the night before. See photos, prices, and booth locations from your couch." },
+                { num: "2", title: "Claim", desc: "Tap \u201cI\u2019m Interested\u201d and the dealer gets your number. They hold it for you." },
+                { num: "3", title: "Pick up", desc: "Show up at the booth. Pay the dealer directly \u2014 cash, Venmo, whatever they take." },
+              ].map((step) => (
+                <div key={step.num} className="flex gap-4">
+                  <span className="text-eb-display font-bold text-eb-light leading-none">
+                    {step.num}
+                  </span>
+                  <div>
+                    <div className="text-eb-body font-bold text-eb-black">
+                      {step.title}
+                    </div>
+                    <div className="text-eb-caption text-eb-muted mt-0.5 leading-relaxed">
+                      {step.desc}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Tagline + footer */}
           <div className="py-6 text-center text-eb-meta text-eb-light italic">
             The early bird gets the credenza.
           </div>
-
-          {/* FAQ */}
-          <section className="px-6 pb-8">
-            <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-3">
-              FAQ
-            </div>
-            {[
-              {
-                q: "How does it work?",
-                a: "Dealers post what they\u2019re bringing the night before a market. You browse, favorite pieces, and tap \u201cI\u2019m Interested\u201d to message the dealer directly. They hold it for you until pickup at the booth.",
-              },
-              {
-                q: "Is it free?",
-                a: "Yes. Early Bird is free for buyers. We don\u2019t take a cut \u2014 you pay the dealer directly at the booth, however they prefer (cash, Venmo, Zelle, etc.).",
-              },
-              {
-                q: "Do I still need to show up at 4am?",
-                a: "No. That\u2019s the point. Skip the flashlight scramble and show up when the market opens \u2014 your pieces will be waiting at the dealer\u2019s booth.",
-              },
-              {
-                q: "What if I miss the drop?",
-                a: "Inventory stays visible for the whole market. Anything still available is yours to claim \u2014 and sold pieces stay visible too, so you can see what you missed and follow that dealer for their next drop.",
-              },
-            ].map((faq, i) => (
-              <div key={i} className="py-3 border-t border-eb-border">
-                <div className="text-eb-body font-bold text-eb-black">
-                  {faq.q}
-                </div>
-                <div className="text-eb-caption text-eb-muted mt-1.5 leading-relaxed">
-                  {faq.a}
-                </div>
-              </div>
-            ))}
-          </section>
-
-          {/* Footer */}
-          <footer className="px-6 py-8 mt-auto border-t border-eb-border">
+          <footer className="px-6 py-6 border-t border-eb-border">
             <p className="text-eb-meta text-center text-eb-muted">
               Selling at a market?{" "}
-              <button
-                onClick={() => setMode("dealer")}
-                className="font-bold text-eb-pop"
-              >
+              <button onClick={() => setMode("dealer")} className="font-bold text-eb-pop">
                 Dealer sign up
               </button>
             </p>
@@ -309,118 +346,46 @@ export default function LandingPage() {
         </>
       ) : (
         <>
-          {/* Dealer Hero */}
+          {/* ════════════════════════════════════
+              DEALER MODE
+          ════════════════════════════════════ */}
           <section className="px-6 pt-12 pb-6">
             <h2 className="text-eb-hero tracking-tight text-eb-black">
               Sell before <span className="text-eb-pop">sunrise.</span>
             </h2>
             <p className="mt-4 text-eb-body text-eb-muted">
-              Post inventory the night before the market. Serious buyers reach
-              out before you&apos;ve unloaded the truck. Free to use &mdash; no
-              fees, no cut. You transact directly with the buyer.
+              Post inventory the night before. Serious buyers reach out before
+              you&apos;ve unloaded the truck. Free {"\u2014"} no fees, no cut.
             </p>
           </section>
 
-          {/* Phone form */}
           <section className="px-6 pb-8">{phoneForm}</section>
 
-          {/* Value Props */}
           <section className="px-6 pb-8">
             <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-3">
               Why dealers use it
             </div>
             {[
-              {
-                num: "01",
-                title: "Free. No fees, no cut.",
-                desc: "No listing fees, no commissions. You keep every dollar of every sale.",
-              },
-              {
-                num: "02",
-                title: "Direct buyer contact",
-                desc: "We text you the buyer\u2019s name and number. You call or text them directly. No in-app chat.",
-              },
-              {
-                num: "03",
-                title: "Sell without haggling at 5am",
-                desc: "Buyers commit to pieces before they arrive. No cold-booth bargaining in the dark.",
-              },
-              {
-                num: "04",
-                title: "Price drops = sales",
-                desc: "Didn\u2019t move by noon? Lower the price, and every watcher gets a text.",
-              },
-              {
-                num: "05",
-                title: "Dealers shop too",
-                desc: "Same login, both sides of the market. Browse other booths while you sell your own.",
-              },
+              { num: "01", title: "Free. No fees, no cut.", desc: "No listing fees, no commissions. You keep every dollar." },
+              { num: "02", title: "Direct buyer contact", desc: "We text you the buyer\u2019s name and number. No in-app chat." },
+              { num: "03", title: "Sell without haggling at 5am", desc: "Buyers commit before they arrive. No cold-booth bargaining." },
+              { num: "04", title: "Price drops = sales", desc: "Lower the price and every watcher gets a text." },
+              { num: "05", title: "Dealers shop too", desc: "Same login, both sides of the market." },
             ].map((item) => (
-              <div
-                key={item.num}
-                className="py-3 border-t border-eb-border flex gap-3"
-              >
-                <span className="text-eb-body font-bold text-eb-light">
-                  {item.num}
-                </span>
+              <div key={item.num} className="py-3 border-t border-eb-border flex gap-3">
+                <span className="text-eb-body font-bold text-eb-light">{item.num}</span>
                 <div>
-                  <div className="text-eb-body font-bold text-eb-black">
-                    {item.title}
-                  </div>
-                  <div className="text-eb-caption text-eb-muted mt-1">
-                    {item.desc}
-                  </div>
+                  <div className="text-eb-body font-bold text-eb-black">{item.title}</div>
+                  <div className="text-eb-caption text-eb-muted mt-1">{item.desc}</div>
                 </div>
               </div>
             ))}
           </section>
 
-          {/* Dealer FAQ */}
-          <section className="px-6 pb-8">
-            <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-3">
-              FAQ
-            </div>
-            {[
-              {
-                q: "How much does it cost?",
-                a: "Free. No listing fees, no commissions, no cut. You keep every dollar of every sale.",
-              },
-              {
-                q: "How does payment work?",
-                a: "The buyer pays you directly at the booth \u2014 cash, Venmo, Zelle, Apple Pay, card, whatever you accept. Early Bird never touches the money.",
-              },
-              {
-                q: "Can I also shop other booths?",
-                a: "Yes. Every dealer account is also a buyer account. Same login, both experiences.",
-              },
-              {
-                q: "When does inventory go live?",
-                a: "The evening before each market \u2014 the drop. All dealer inventory becomes visible simultaneously.",
-              },
-              {
-                q: "What happens when a buyer is interested?",
-                a: "We text you the buyer\u2019s first name, last initial, phone number, and a short note. You call or text them directly.",
-              },
-            ].map((faq, i) => (
-              <div key={i} className="py-3 border-t border-eb-border">
-                <div className="text-eb-body font-bold text-eb-black">
-                  {faq.q}
-                </div>
-                <div className="text-eb-caption text-eb-muted mt-1.5 leading-relaxed">
-                  {faq.a}
-                </div>
-              </div>
-            ))}
-          </section>
-
-          {/* Footer */}
-          <footer className="px-6 py-8 mt-auto border-t border-eb-border">
+          <footer className="px-6 py-6 mt-auto border-t border-eb-border">
             <p className="text-eb-meta text-center text-eb-muted">
               Just here to shop?{" "}
-              <button
-                onClick={() => setMode("buyer")}
-                className="font-bold text-eb-pop"
-              >
+              <button onClick={() => setMode("buyer")} className="font-bold text-eb-pop">
                 Browse as a buyer {"\u2192"}
               </button>
             </p>
