@@ -675,115 +675,103 @@
 // Dealers: zcYMRz9HT2WoIYoi (Test Dealer)
 
 const PAGES = [
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // LOG OUT FIRST — review these logged out
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // NO LOGIN NEEDED — these work for anyone
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  // ── Public Pages ──
-  { id: "landing", title: "Landing Page", path: "/", desc: "Homepage. Hero, value prop, sign in CTA.", badge: "live", badgeClass: "badge-live",
-    context: "First thing anyone sees when they hit the site. Should sell the concept and get them to sign up." },
-  { id: "privacy", title: "Privacy Policy", path: "/privacy", desc: "Static legal page.", badge: "static", badgeClass: "badge-static",
-    context: "Linked from the footer. Just needs to exist and be readable." },
-  { id: "terms", title: "Terms of Service", path: "/terms", desc: "Static legal page.", badge: "static", badgeClass: "badge-static",
-    context: "Linked from the footer. Just needs to exist and be readable." },
+  { id: "landing", title: "Landing Page", path: "/", desc: "Hero with market preview grid, item thumbnails with prices, and value prop icons at the bottom.", badge: "live", badgeClass: "badge-live",
+    context: "First thing anyone sees. Shows the current live market (Downtown Modernism), preview of items with prices, and three value prop icons at the bottom (text dealer, save items, price drop alerts)." },
 
-  // ── Auth Flow ──
-  { id: "auth-start", title: "Auth — Phone Entry", path: "/home", desc: "Phone number input for magic link.", badge: "auth", badgeClass: "badge-auth",
-    context: "User tapped Sign In. They enter their phone number here and we text them a magic link. No passwords, no codes." },
-  { id: "auth-verify", title: "Auth — Verify Pending", path: "/auth/verify", desc: "Waiting for magic link tap. 'Check your texts' message.", badge: "auth", badgeClass: "badge-auth",
-    context: "After entering their phone, they land here while waiting for the magic link SMS. Should feel clear, not confusing." },
-  { id: "onboarding", title: "Onboarding", path: "/onboarding", desc: "First-time user: set display name, optional avatar.", badge: "auth", badgeClass: "badge-auth",
-    context: "Brand new user just verified their phone for the first time. They pick a display name and optionally upload a photo." },
+  { id: "home", title: "Home Hub", path: "/home", desc: "Market hub — live market with Browse CTA, upcoming markets with countdown, How It Works section, Sign Up at bottom.", badge: "live", badgeClass: "badge-live",
+    context: "The main hub. Shows Downtown Modernism as live with a Browse button, PCC Flea and Rose Bowl as upcoming with day countdowns, and a How It Works explainer. Sign Up button at the very bottom." },
 
-  // ── Logged Out Browsing ──
-  { id: "home-out", title: "Home Hub (Logged Out)", path: "/home", desc: "Generic 'LA flea markets' subtitle. Sign-up CTA instead of preview buttons.", badge: "live", badgeClass: "badge-live",
-    context: "Someone who isn't signed in lands on the home hub. They can see upcoming markets but get nudged to sign up instead of previewing items." },
-  { id: "buy-grid-out", title: "Buy Grid (Logged Out)", path: "/buy?market_id=H8siHnv5aFjc-thg", desc: "Item grid WITHOUT dealer names/avatars on cards.", badge: "live", badgeClass: "badge-live",
-    context: "A visitor browsing items without an account. They can see the grid but dealer info is hidden. Compare this to the logged-in version." },
-  { id: "item-live-out", title: "Item Detail (Logged Out)", path: "/item/uAkbhcZoxWw7jMl4", desc: "Walnut Credenza. Should show signup CTA instead of 'I'm Interested' button.", badge: "live", badgeClass: "badge-live",
-    context: "Visitor tapped an item. Instead of the inquiry button, they should see a prompt to sign up. This is where we convert browsers into users." },
-  { id: "watching-out", title: "Watching (Logged Out)", path: "/watching", desc: "Should show signup prompt: 'Sign up to save items.'", badge: "live", badgeClass: "badge-live",
-    context: "Visitor tapped the Watching tab. Since they're not logged in, this should show a signup prompt, not an empty list." },
-  { id: "dealer-share-out", title: "Dealer Page (Logged Out)", path: "/d/zcYMRz9HT2WoIYoi", desc: "Items render as buttons (trigger signup), not links.", badge: "live", badgeClass: "badge-live",
-    context: "A dealer shared their page link on Instagram. The visitor isn't logged in, so tapping any item should trigger signup instead of navigating." },
-  { id: "invite-page", title: "Invite Landing", path: "/invite/TESTCODE", desc: "Dealer invite code landing. May 404 with bad code.", badge: "auth", badgeClass: "badge-auth",
-    context: "A potential dealer clicked an invite link we sent them. This is their entry point into becoming a seller." },
+  { id: "buy-grid", title: "Buy — Downtown Modernism", path: "/buy?market_id=H8siHnv5aFjc-thg", desc: "Market header with date/dealer/item counts, then a scrollable grid of item cards with photos and prices.", badge: "live", badgeClass: "badge-live",
+    context: "The main browsing experience. Header shows market name, date, dealer count, item count. Below is the item grid — each card has a photo and price overlay." },
 
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // LOG IN AS BUYER — review these next
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  { id: "item-credenza", title: "Item — Walnut Credenza (Live)", path: "/item/uAkbhcZoxWw7jMl4", desc: "Item photo, title, $450 FIRM, description, market info. Scroll down for dealer info and inquiry CTA.", badge: "live", badgeClass: "badge-live",
+    context: "A live item detail page. Photo at top, then title/price/description, the market it's listed at, and the dealer's info. At the bottom is where the inquiry action lives (sign up or I'm Interested depending on auth)." },
 
-  // ── Buyer: Browsing ──
-  { id: "home-in", title: "Home Hub (Logged In)", path: "/home", desc: "'Your markets' subtitle. Preview buttons for upcoming markets.", badge: "live", badgeClass: "badge-live",
-    context: "A logged-in buyer opens the app. They see their markets with preview buttons for upcoming ones. Compare to the logged-out version." },
-  { id: "buy-grid-in", title: "Buy Grid (Logged In)", path: "/buy?market_id=H8siHnv5aFjc-thg", desc: "Downtown Modernism. Items show dealer names/avatars.", badge: "live", badgeClass: "badge-live",
-    context: "Buyer browsing items at Downtown Modernism. Cards should show dealer names and avatars now that they're logged in." },
-  { id: "item-live-buyer", title: "Item Detail — Live", path: "/item/uAkbhcZoxWw7jMl4", desc: "Walnut Credenza. 'I'm Interested' button + compose drawer.", badge: "live", badgeClass: "badge-live",
-    context: "Buyer looking at a live item. The key action is the 'I'm Interested' button which opens a compose drawer to message the dealer." },
-  { id: "item-hold-buyer", title: "Item Detail — On Hold", path: "/item/yPBEngIKVHeNiYAF", desc: "Teak Nesting Tables. Hold badge visible.", badge: "live", badgeClass: "badge-live",
-    context: "Buyer looking at an item someone else has first dibs on. Should clearly show it's on hold so they know not to get their hopes up." },
-  { id: "item-sold-buyer", title: "Item Detail — Sold", path: "/item/HDBvJerG2MUX-Npc", desc: "Enamel Kitchen Table. Sold badge, inquiry disabled.", badge: "live", badgeClass: "badge-live",
-    context: "Buyer looking at a sold item. The inquiry button should be gone or disabled. This is what they'd see if they bookmarked it and came back too late." },
+  { id: "item-nesting", title: "Item — Teak Nesting Tables (On Hold)", path: "/item/yPBEngIKVHeNiYAF", desc: "Same layout as live item but with hold status. $220, set of 3 Danish teak tables.", badge: "live", badgeClass: "badge-live",
+    context: "An item that's been put on hold for a buyer. Check that the hold status is clearly visible and the inquiry button reflects this state." },
 
-  // ── Buyer: Watching ──
-  { id: "watching-in", title: "Watching (With Items)", path: "/watching", desc: "Favorited + inquired items grid with status indicators.", badge: "live", badgeClass: "badge-live",
-    context: "Buyer who has favorited some items and sent some inquiries. Their saved items show up here with live/hold/sold status badges." },
-  { id: "watching-empty", title: "Watching (Empty)", path: "/watching", desc: "Logged in but no favorites or inquiries yet. Empty state.", badge: "live", badgeClass: "badge-live",
-    context: "Buyer who just signed up and hasn't saved anything yet. Should be a friendly nudge to go browse, not a sad empty page." },
+  { id: "item-enamel", title: "Item — Enamel Kitchen Table (Sold)", path: "/item/HDBvJerG2MUX-Npc", desc: "Same layout but with sold status. $140, 1940s enamel-top kitchen table.", badge: "live", badgeClass: "badge-live",
+    context: "A sold item. Check that the sold badge is obvious and the inquiry button is disabled or removed." },
 
-  // ── Buyer: Other ──
-  { id: "dealer-share-in", title: "Dealer Page (Logged In)", path: "/d/zcYMRz9HT2WoIYoi", desc: "Items render as links to item detail (not signup buttons).", badge: "live", badgeClass: "badge-live",
-    context: "Logged-in buyer visiting a dealer's public page. Items are tappable links that go straight to item detail, unlike the logged-out version." },
-  { id: "account-buyer", title: "Account (Buyer)", path: "/account", desc: "Stats, notification prefs, 'Become A Seller' section.", badge: "live", badgeClass: "badge-live",
-    context: "Buyer's account page. Shows their stats, notification preferences, and a section to apply to become a dealer." },
+  { id: "watching", title: "Watching (Not Logged In)", path: "/watching", desc: "Signup prompt: 'Sign up to save items to your watchlist and get notified about price drops.'", badge: "live", badgeClass: "badge-live",
+    context: "When you're not logged in, the Watching tab shows a signup prompt instead of a watchlist. This is a conversion point." },
 
-  // ── Markets ──
-  { id: "buy-pcc", title: "Buy — PCC Flea (Upcoming)", path: "/buy?market_id=Gww9arnESzhOtAOl", desc: "PCC Flea. Upcoming status, may have no items.", badge: "live", badgeClass: "badge-live",
-    context: "An upcoming market that hasn't happened yet. Dealers may have pre-listed items or it may be empty. Check how the upcoming state looks." },
-  { id: "buy-rosebowl", title: "Buy — Rose Bowl (Upcoming)", path: "/buy?market_id=uX2wJ92BSCJv-SLK", desc: "Rose Bowl Flea. Upcoming.", badge: "live", badgeClass: "badge-live",
-    context: "Another upcoming market. Same as PCC — checking that upcoming state renders correctly across markets." },
+  { id: "dealer-page", title: "Dealer Page — Test Dealer", path: "/d/zcYMRz9HT2WoIYoi", desc: "Dealer profile header (name, shop name, booth), then grid of their items.", badge: "live", badgeClass: "badge-live",
+    context: "A dealer's public storefront. Shows their business name, shop name, booth number, and all their listed items. This is what gets shared on Instagram." },
 
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // LOG IN AS DEALER — review these next
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  { id: "invite-valid", title: "Invite Landing (Valid Code)", path: "/invite/TESTCODE", desc: "'YOU'RE INVITED' — dealer invite page with setup prompt.", badge: "auth", badgeClass: "badge-auth",
+    context: "A dealer clicked their invite link. Shows the invite welcome message and prompts them to set up their seller account." },
 
-  // ── Dealer: Home ──
-  { id: "home-dealer", title: "Home Hub (Dealer)", path: "/home", desc: "Dealer-specific onboarding copy and CTAs.", badge: "dealer", badgeClass: "badge-dealer",
-    context: "A dealer opens the app. The home hub should show dealer-specific copy and CTAs — different from what a buyer sees." },
+  { id: "privacy", title: "Privacy Policy", path: "/privacy", desc: "Full privacy policy. Effective April 2026. Covers data collection, usage, and what we don't do.", badge: "static", badgeClass: "badge-static",
+    context: "Linked from the footer. Scroll through and make sure the language is clear and covers phone numbers, photos, browsing activity, and SMS notifications." },
 
-  // ── Dealer: Sell Tab ──
-  { id: "sell-inventory", title: "Sell — Inventory List", path: "/sell", desc: "Items grid with status badges, stats, booth #, share link.", badge: "dealer", badgeClass: "badge-dealer",
-    context: "Dealer's main workspace. All their listed items with status badges, stats at the top, booth number, and a shareable link to their page." },
-  { id: "sell-empty", title: "Sell — Empty Inventory", path: "/sell", desc: "Dealer with no items listed yet. Empty state + Add CTA.", badge: "dealer", badgeClass: "badge-dealer",
-    context: "Brand new dealer who hasn't listed anything. Should guide them to add their first item, not just show a blank page." },
-  { id: "sell-add", title: "Sell — Add Item", path: "/sell/add", desc: "New item form: photos, title, price, description, market.", badge: "dealer", badgeClass: "badge-dealer",
-    context: "Dealer adding a new item to sell. Photos, title, price, description, market picker. This is where their inventory comes from." },
+  { id: "terms", title: "Terms of Service", path: "/terms", desc: "Full terms of use. Covers accounts, listings, transactions, and liability.", badge: "static", badgeClass: "badge-static",
+    context: "Linked from the footer. Scroll through and make sure it covers the key points: in-person transactions, dealer responsibilities, and account rules." },
 
-  // ── Dealer: Item Management ──
-  { id: "item-dealer-own", title: "Item Detail — Dealer Own", path: "/item/uAkbhcZoxWw7jMl4", desc: "Walnut Credenza. Edit, status controls, inquiry log.", badge: "dealer", badgeClass: "badge-dealer",
-    context: "Dealer viewing their own listing. They can edit details, change status (hold/sold), and see a log of buyer inquiries." },
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // LOG IN AS BUYER FIRST — then review these
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  // ── Dealer: Account ──
-  { id: "account-dealer", title: "Account (Dealer)", path: "/account", desc: "Business name, Instagram, payment methods, dealer notifications.", badge: "dealer", badgeClass: "badge-dealer",
-    context: "Dealer's account settings. Business info, Instagram handle, accepted payment methods, and notification preferences for their listings." },
+  { id: "home-buyer", title: "Home Hub (as Buyer)", path: "/home", desc: "Same hub but with 'Your markets' subtitle, preview buttons for upcoming. Compare to logged-out version above.", badge: "live", badgeClass: "badge-live",
+    context: "⚠️ Log in as a buyer first. The home hub should now say 'Your markets', show preview buttons on upcoming markets, and have no Sign Up CTA." },
 
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // ADMIN
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  { id: "admin", title: "Admin CMS", path: "/admin", desc: "Dashboard, markets, dealers, items tabs, SMS logs.", badge: "admin", badgeClass: "badge-admin",
-    context: "Your admin panel. Manage markets, approve dealer applications, view all items, and check SMS delivery logs." },
+  { id: "buy-grid-buyer", title: "Buy Grid (as Buyer)", path: "/buy?market_id=H8siHnv5aFjc-thg", desc: "Same grid but items should now show dealer names and avatars on the cards.", badge: "live", badgeClass: "badge-live",
+    context: "⚠️ Log in as a buyer first. Compare to the logged-out grid — dealer names/avatars should now appear on item cards." },
 
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // EDGE CASES & ERRORS
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  { id: "buy-bad-market", title: "Buy — Bad Market ID", path: "/buy?market_id=nonexistent", desc: "Invalid market_id. Should show error or empty state.", badge: "live", badgeClass: "badge-live",
-    context: "Someone hit a URL with a market ID that doesn't exist. Should fail gracefully, not blow up or show a blank page." },
-  { id: "item-404", title: "Item — 404", path: "/item/nonexistent-id-12345", desc: "Item that doesn't exist. Should show error state.", badge: "live", badgeClass: "badge-live",
-    context: "Someone bookmarked an item that got deleted, or hit a bad link. Should show a clear 'not found' message." },
-  { id: "dealer-404", title: "Dealer Page — 404", path: "/d/nonexistent-dealer-id", desc: "Dealer that doesn't exist. Should show error state.", badge: "live", badgeClass: "badge-live",
-    context: "Someone hit a dealer page URL that doesn't exist. Should show a clear error, not a broken page." },
-  { id: "invite-bad", title: "Invite — Bad Code", path: "/invite/BADCODE999", desc: "Invalid invite code. Should show error.", badge: "auth", badgeClass: "badge-auth",
-    context: "Someone typed in a bad invite code or the link expired. Should explain the problem clearly." },
+  { id: "item-buyer", title: "Item Detail (as Buyer)", path: "/item/uAkbhcZoxWw7jMl4", desc: "Walnut Credenza — now shows 'I'm Interested' button instead of signup CTA.", badge: "live", badgeClass: "badge-live",
+    context: "⚠️ Log in as a buyer first. The key difference: the signup CTA is replaced by the 'I'm Interested' button that opens the compose drawer." },
+
+  { id: "watching-buyer", title: "Watching (as Buyer)", path: "/watching", desc: "Your watchlist — items you've favorited or inquired about, with status badges.", badge: "live", badgeClass: "badge-live",
+    context: "⚠️ Log in as a buyer first. If you have favorites/inquiries, they show here with live/hold/sold badges. If empty, check the empty state messaging." },
+
+  { id: "account-buyer", title: "Account (Buyer)", path: "/account", desc: "Profile, stats, notification prefs, 'Become A Seller' section, sign out.", badge: "live", badgeClass: "badge-live",
+    context: "⚠️ Log in as a buyer first. Shows your stats (watching, inquiries), notification preferences, and the dealer application section. Redirects to landing if not logged in." },
+
+  { id: "dealer-page-buyer", title: "Dealer Page (as Buyer)", path: "/d/zcYMRz9HT2WoIYoi", desc: "Same dealer page but items are now tappable links, not signup buttons.", badge: "live", badgeClass: "badge-live",
+    context: "⚠️ Log in as a buyer first. Compare to the logged-out dealer page — items should now link directly to item detail instead of triggering signup." },
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // LOG IN AS DEALER FIRST — then review these
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  { id: "sell-inventory", title: "Sell — Inventory", path: "/sell", desc: "Dealer dashboard with stats, booth number, share link, and item grid with status badges.", badge: "dealer", badgeClass: "badge-dealer",
+    context: "⚠️ Log in as a dealer first. This is the dealer's main workspace. Redirects to landing if not logged in as a dealer." },
+
+  { id: "sell-add", title: "Sell — Add Item", path: "/sell/add", desc: "New item form: photo upload, title, price, description, market picker.", badge: "dealer", badgeClass: "badge-dealer",
+    context: "⚠️ Log in as a dealer first. The form for listing a new item. Redirects to landing if not logged in as a dealer." },
+
+  { id: "item-dealer-own", title: "Item Detail (as Owner)", path: "/item/uAkbhcZoxWw7jMl4", desc: "Walnut Credenza from the dealer's perspective — edit controls, status buttons, inquiry log.", badge: "dealer", badgeClass: "badge-dealer",
+    context: "⚠️ Log in as the dealer who owns this item. Same URL as the buyer view, but shows edit mode, hold/sold controls, and a log of buyer inquiries." },
+
+  { id: "account-dealer", title: "Account (Dealer)", path: "/account", desc: "Business name, Instagram, payment methods, dealer notification prefs.", badge: "dealer", badgeClass: "badge-dealer",
+    context: "⚠️ Log in as a dealer first. The account page shows dealer-specific fields (business info, payment methods) instead of the buyer 'Become A Seller' section." },
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // ADMIN — log in as admin first
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  { id: "admin", title: "Admin CMS", path: "/admin", desc: "Markets, dealers, items, SMS logs. Redirects to landing if not admin.", badge: "admin", badgeClass: "badge-admin",
+    context: "⚠️ Log in as admin first. The admin panel for managing markets, approving dealers, viewing all items, and checking SMS logs. Redirects if not authenticated." },
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // EDGE CASES — broken URLs, 404s, bad data
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  { id: "buy-bad-market", title: "Buy — Bad Market ID", path: "/buy?market_id=nonexistent", desc: "Falls back to the market hub showing Downtown Modernism. No error shown for the invalid market ID.", badge: "live", badgeClass: "badge-live",
+    context: "Invalid market ID in the URL. Instead of showing an error, it just shows the default market hub. Decide if this is OK or if it should show a 'market not found' message." },
+
+  { id: "item-404", title: "Item — 404", path: "/item/nonexistent-id-12345", desc: "Shows a minimal page with just a 'Sign Up' button. No 'item not found' message.", badge: "live", badgeClass: "badge-live",
+    context: "Invalid item ID. Shows a near-empty page with just a Sign Up button. Could use a clear 'item not found' message with a link back to browsing." },
+
+  { id: "dealer-404", title: "Dealer Page — 404", path: "/d/nonexistent-dealer-id", desc: "Shows 'Dealer not found' with an empty-state icon. This one handles the error correctly.", badge: "live", badgeClass: "badge-live",
+    context: "Invalid dealer ID. Correctly shows a 'Dealer not found' error with the empty-state icon. Good reference for how the other 404s should work." },
+
+  { id: "invite-bad", title: "Invite — Bad Code", path: "/invite/BADCODE999", desc: "Shows 'YOU'RE INVITED' for any code — doesn't validate. Same page as a valid invite.", badge: "auth", badgeClass: "badge-auth",
+    context: "Invalid invite code, but the page shows the same 'You're Invited' welcome as a valid code. Invite codes aren't being validated on this page." },
 ];
 
 const STORAGE_KEY = "eb-qa-comments";
@@ -1066,19 +1054,12 @@ function init() {
   const select = document.getElementById("pageSelect");
   let currentGroup = "";
   const groups = {
-    "landing": "🔓 Logged Out — Public",
-    "auth-start": "🔓 Logged Out — Auth Flow",
-    "home-out": "🔓 Logged Out — Browsing",
-    "home-in": "👤 Logged In — Buyer",
-    "watching-in": "👤 Logged In — Watching",
-    "dealer-share-in": "👤 Logged In — Other",
-    "buy-pcc": "👤 Logged In — Markets",
-    "home-dealer": "🏪 Logged In — Dealer",
-    "sell-inventory": "🏪 Dealer — Sell Tab",
-    "item-dealer-own": "🏪 Dealer — Items",
-    "account-dealer": "🏪 Dealer — Account",
-    "admin": "🔑 Admin",
-    "buy-bad-market": "⚠️ Edge Cases & Errors",
+    "landing": "No Login Needed",
+    "privacy": "Static Pages",
+    "home-buyer": "⚠️ Log In as Buyer First",
+    "sell-inventory": "⚠️ Log In as Dealer First",
+    "admin": "⚠️ Log In as Admin First",
+    "buy-bad-market": "Edge Cases & 404s",
   };
 
   let optgroup = null;
