@@ -177,7 +177,7 @@ export default function LandingPage() {
                     {previewItems.map((item) => (
                       <Link
                         key={item.id}
-                        href={`/buy?market=${liveMarket.id}`}
+                        href={`/item/${item.id}`}
                         className="relative aspect-square overflow-hidden bg-eb-cream"
                       >
                         {item.photo_url ? (

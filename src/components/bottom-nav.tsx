@@ -27,8 +27,14 @@ export function BottomNav({
   if (!isLoggedIn) {
     return (
       <nav className="eb-bnav">
+        <Link href="/home">
+          <span className={active === "buy" ? "eb-active" : ""}>Browse</span>
+        </Link>
+        <Link href="/watching">
+          <span className={active === "watching" ? "eb-active" : ""}>Watching</span>
+        </Link>
         <Link href="/">
-          <span className="eb-active">Sign Up</span>
+          <span className={active === "account" ? "eb-active" : ""}>Sign Up</span>
         </Link>
       </nav>
     );

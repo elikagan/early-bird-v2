@@ -7,7 +7,6 @@ import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
 import { getInitials, formatPrice, formatDate } from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
-import { SignupDrawer } from "@/components/signup-drawer";
 
 const PROMO_IMAGES = ["/promo/hero.png", "/promo/2.png", "/promo/3.png"];
 const CYCLE_INTERVAL = 5000; // 5s per image
@@ -42,7 +41,6 @@ function BuyFeedContent() {
   const [market, setMarket] = useState<Market | null>(null);
   const [favCount, setFavCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [showSignup, setShowSignup] = useState(false);
 
   useEffect(() => {
     if (!marketId) {
@@ -264,7 +262,7 @@ function BuyFeedContent() {
                 </>
               );
 
-              return user ? (
+              return (
                 <Link
                   key={item.id}
                   href={`/item/${item.id}`}
@@ -272,14 +270,6 @@ function BuyFeedContent() {
                 >
                   {cardContent}
                 </Link>
-              ) : (
-                <button
-                  key={item.id}
-                  onClick={() => setShowSignup(true)}
-                  className={`eb-grid-card text-left${isSold ? " eb-sold" : ""}`}
-                >
-                  {cardContent}
-                </button>
               );
             })}
           </div>
@@ -297,12 +287,6 @@ function BuyFeedContent() {
 
       <BottomNav active="buy" watchingCount={favCount} />
 
-      <SignupDrawer
-        open={showSignup}
-        onClose={() => setShowSignup(false)}
-        headline="Sign up to see details"
-        subtext="Get item details, contact dealers, save favorites, and get notified about drops."
-      />
     </>
   );
 }

@@ -33,11 +33,18 @@ export default function VerifyShortPage() {
         const data = await res.json();
         localStorage.setItem("eb_token", data.session_token);
 
-        const dest = data.phone_changed
-          ? "/account"
-          : data.user.needs_onboarding
-            ? "/onboarding"
-            : "/home";
+        let dest = "/home";
+        if (data.phone_changed) {
+          dest = "/account";
+        } else if (data.user.needs_onboarding) {
+          dest = "/onboarding";
+        } else {
+          const returnTo = localStorage.getItem("eb_return_to");
+          if (returnTo && returnTo.startsWith("/")) {
+            dest = returnTo;
+            localStorage.removeItem("eb_return_to");
+          }
+        }
         window.location.href = dest;
       } catch {
         if (!cancelled) setError("Something went wrong. Please try again.");

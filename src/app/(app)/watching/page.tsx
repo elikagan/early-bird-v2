@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
-import { useRequireAuth } from "@/lib/require-auth";
 import { getInitials, formatPrice } from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
+import { SignupDrawer } from "@/components/signup-drawer";
 
 interface FavItem {
   id: string;
@@ -24,18 +25,24 @@ interface FavItem {
 }
 
 export default function WatchingPage() {
-  useRequireAuth();
+  const { user, loading: authLoading } = useAuth();
   const [items, setItems] = useState<FavItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showSignup, setShowSignup] = useState(false);
 
   useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
     async function load() {
       const res = await apiFetch("/api/favorites");
       if (res.ok) setItems(await res.json());
       setLoading(false);
     }
     load();
-  }, []);
+  }, [user, authLoading]);
 
   if (loading) {
     return (
@@ -44,6 +51,43 @@ export default function WatchingPage() {
           <span className="eb-spinner" />
         </div>
         <BottomNav active="watching" />
+      </>
+    );
+  }
+
+  // Logged-out: prompt to sign up
+  if (!user) {
+    return (
+      <>
+        <header className="eb-masthead">
+          <Link href="/home">
+            <h1>EARLY BIRD</h1>
+          </Link>
+          <div className="eb-sub">Watchlist</div>
+        </header>
+        <div className="eb-empty">
+          <div className="eb-icon">{"\u2661"}</div>
+          <p>
+            Sign up to save items to your watchlist
+            and get notified about price drops.
+          </p>
+          <button
+            onClick={() => {
+              localStorage.setItem("eb_return_to", "/watching");
+              setShowSignup(true);
+            }}
+            className="eb-btn mt-4"
+          >
+            Sign up {"\u2192"}
+          </button>
+        </div>
+        <BottomNav active="watching" />
+        <SignupDrawer
+          open={showSignup}
+          onClose={() => setShowSignup(false)}
+          headline="Sign up to watch items"
+          subtext="Save your favorites and get texted when prices drop."
+        />
       </>
     );
   }

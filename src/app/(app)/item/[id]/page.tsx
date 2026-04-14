@@ -14,6 +14,7 @@ import {
   timeAgo,
 } from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
+import { SignupDrawer } from "@/components/signup-drawer";
 
 interface Photo {
   id: string;
@@ -107,6 +108,9 @@ export default function ItemDetailPage() {
   // Delete
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  // Signup drawer (logged-out users)
+  const [showSignup, setShowSignup] = useState(false);
 
   // ── Edit mode state ──
   const [editing, setEditing] = useState(false);
@@ -435,6 +439,16 @@ export default function ItemDetailPage() {
             className={`text-eb-title ${isFav ? "text-eb-pop" : "text-eb-muted"}`}
           >
             {isFav ? "\u2665" : "\u2661"}
+          </button>
+        ) : !isOwner && !user ? (
+          <button
+            onClick={() => {
+              localStorage.setItem("eb_return_to", `/item/${id}`);
+              setShowSignup(true);
+            }}
+            className="text-eb-title text-eb-muted"
+          >
+            {"\u2661"}
           </button>
         ) : null}
       </div>
@@ -1047,9 +1061,15 @@ export default function ItemDetailPage() {
             </>
           )}
           {(item.status === "live" || item.status === "hold") && !user && (
-            <Link href="/" className="eb-cta text-center block">
-              Sign up to contact this dealer {"\u2192"}
-            </Link>
+            <button
+              className="eb-cta"
+              onClick={() => {
+                localStorage.setItem("eb_return_to", `/item/${id}`);
+                setShowSignup(true);
+              }}
+            >
+              I{"\u2019"}M INTERESTED {"\u2192"}
+            </button>
           )}
         </>
       )}
@@ -1197,6 +1217,14 @@ export default function ItemDetailPage() {
           </div>
         </>
       )}
+
+      {/* Signup drawer (logged-out users) */}
+      <SignupDrawer
+        open={showSignup}
+        onClose={() => setShowSignup(false)}
+        headline="Sign up to continue"
+        subtext="Create a free account to save items, contact dealers, and get notified about drops."
+      />
     </>
   );
 }
