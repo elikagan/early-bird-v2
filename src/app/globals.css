@@ -257,6 +257,7 @@
     background: var(--eb-bg);
     border-top: 1px solid var(--eb-border);
     padding: 0 12px;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
     font-size: 12px;
     display: flex;
     justify-content: space-around;
