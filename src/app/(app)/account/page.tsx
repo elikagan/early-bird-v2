@@ -718,14 +718,24 @@ export default function AccountPage() {
               Become A Seller
             </div>
             {appStatus === "pending" ? (
-              <div className="text-eb-body text-eb-text leading-relaxed">
-                Your application is being reviewed. We&apos;ll text you when
-                you&apos;re approved.
+              <div className="bg-eb-cream border-l-2 border-eb-pop px-4 py-3">
+                <div className="text-eb-caption font-bold text-eb-black uppercase tracking-wider">
+                  Application under review
+                </div>
+                <p className="text-eb-meta text-eb-muted mt-0.5">
+                  We{"\u2019"}re reviewing your application. We{"\u2019"}ll
+                  text you when you{"\u2019"}re approved.
+                </p>
               </div>
             ) : appStatus === "approved" ? (
-              <div className="text-eb-body text-eb-text leading-relaxed">
-                You&apos;re approved! Sign out and back in to access your dealer
-                dashboard.
+              <div className="bg-eb-cream border-l-2 border-eb-green px-4 py-3">
+                <div className="text-eb-caption font-bold text-eb-black uppercase tracking-wider">
+                  Approved
+                </div>
+                <p className="text-eb-meta text-eb-muted mt-0.5">
+                  You{"\u2019"}re approved! Sign out and back in to access
+                  your dealer dashboard.
+                </p>
               </div>
             ) : (
               <>
