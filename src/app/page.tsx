@@ -147,6 +147,14 @@ export default function LandingPage() {
       >
         {sending ? "SENDING\u2026" : "TEXT ME A SIGN-IN LINK"}
       </button>
+      <p className="text-eb-micro text-eb-light mt-3 leading-relaxed">
+        By entering your phone number, you consent to receive SMS messages from
+        Early Bird, including sign-in links, drop alerts, price drop
+        notifications, and inquiry updates. Message and data rates may apply.
+        Reply STOP to unsubscribe at any time.{" "}
+        <a href="/privacy" className="underline">Privacy Policy</a>{" · "}
+        <a href="/terms" className="underline">Terms</a>
+      </p>
     </>
   );
 
