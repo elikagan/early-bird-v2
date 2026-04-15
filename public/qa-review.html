@@ -717,115 +717,120 @@ const PAGES = [
   // NO LOGIN NEEDED — these work for anyone
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  { id: "landing", title: "Landing — Buyer Mode", path: "/", desc: "WHO: anonymous visitor (not signed in). WHEN: first visit to earlybird.la, or after signing out. Default toggle is Buyer mode.", badge: "live", badgeClass: "badge-live",
+  { id: "landing", title: "Landing — Buyer Mode", path: "/", role: null, desc: "WHO: anonymous visitor (not signed in). WHEN: first visit to earlybird.la, or after signing out. Default toggle is Buyer mode.", badge: "live", badgeClass: "badge-live",
     context: "This is the public homepage. Anyone who hasn't signed in lands here. Hero with market preview grid, item thumbnails with prices, three value prop icons, and a phone signup form. Below the 'TEXT ME A SIGN-IN LINK' button is the full SMS opt-in disclosure (STOP/HELP/frequency/no third-party sharing). 'Dealer →' toggle in the top right switches to dealer mode." },
 
-  { id: "landing-dealer", title: "Landing — Dealer Mode", path: "/#dealer", desc: "WHO: anonymous visitor (not signed in). WHEN: tapped 'Dealer →' toggle on the landing page, OR followed a dealer-focused marketing link.", badge: "live", badgeClass: "badge-live",
+  { id: "landing-dealer", title: "Landing — Dealer Mode", path: "/#dealer", role: null, desc: "WHO: anonymous visitor (not signed in). WHEN: tapped 'Dealer →' toggle on the landing page, OR followed a dealer-focused marketing link.", badge: "live", badgeClass: "badge-live",
     context: "Same landing page as Buyer Mode, flipped to the dealer pitch via the #dealer hash. Persists on reload. Copy explains the approval process ('We'll check out your Instagram, and once approved...'). 'How it works' box shows the 4-step flow. 'Buyer →' toggle to switch back." },
 
-  { id: "home", title: "Home Hub (Signed Out)", path: "/home", desc: "WHO: anonymous visitor (not signed in). WHEN: navigating to /home directly (bookmark, shared link). Signed-in buyers see 'Home Hub (as Buyer)' instead.", badge: "live", badgeClass: "badge-live",
+  { id: "home", title: "Home Hub (Signed Out)", path: "/home", role: null, desc: "WHO: anonymous visitor (not signed in). WHEN: navigating to /home directly (bookmark, shared link). Signed-in buyers see 'Home Hub (as Buyer)' instead.", badge: "live", badgeClass: "badge-live",
     context: "The signed-out version of the home hub. Shows Downtown Modernism as live with a Browse button, PCC Flea and Rose Bowl as upcoming with day countdowns, How It Works explainer, and a Sign Up CTA at the very bottom (because the visitor has no account yet). Signed-in buyers do NOT see the Sign Up CTA." },
 
-  { id: "buy-grid", title: "Buy Grid (Signed Out)", path: "/buy?market=H8siHnv5aFjc-thg", desc: "WHO: anonymous visitor (not signed in). WHEN: tapped 'Browse the market' from landing or home. Signed-in buyers see 'Buy Grid (as Buyer)'.", badge: "live", badgeClass: "badge-live",
+  { id: "buy-grid", title: "Buy Grid (Signed Out)", path: "/buy?market=H8siHnv5aFjc-thg", role: null, desc: "WHO: anonymous visitor (not signed in). WHEN: tapped 'Browse the market' from landing or home. Signed-in buyers see 'Buy Grid (as Buyer)'.", badge: "live", badgeClass: "badge-live",
     context: "The public market browsing view. Header shows market name, date, dealer count, item count. Item grid below — each card has a photo and price overlay, but NO dealer name/avatar (that only shows when signed in). Tapping a card opens the signed-out item detail." },
 
-  { id: "item-credenza", title: "Item — Walnut Credenza (Live, Signed Out)", path: "/item/uAkbhcZoxWw7jMl4", desc: "WHO: anonymous visitor (not signed in). WHEN: tapped a live item card from the grid. Item status = live (available). Signed-in buyers see 'Item Detail (as Buyer)'.", badge: "live", badgeClass: "badge-live",
+  { id: "item-credenza", title: "Item — Walnut Credenza (Live, Signed Out)", path: "/item/uAkbhcZoxWw7jMl4", role: null, desc: "WHO: anonymous visitor (not signed in). WHEN: tapped a live item card from the grid. Item status = live (available). Signed-in buyers see 'Item Detail (as Buyer)'.", badge: "live", badgeClass: "badge-live",
     context: "Signed-out view of a live (available) item. Photo, title, $450 FIRM price, description, market info, dealer card. At the bottom: a Sign Up CTA (because the visitor can't send an inquiry without an account). Signed-in buyers see an 'I'm Interested' button instead." },
 
-  { id: "item-nesting", title: "Item — Teak Nesting Tables (On Hold, Signed Out)", path: "/item/yPBEngIKVHeNiYAF", desc: "WHO: anonymous visitor (not signed in). WHEN: tapped an item that another buyer has on hold. Item status = on-hold (someone has first dibs).", badge: "live", badgeClass: "badge-live",
+  { id: "item-nesting", title: "Item — Teak Nesting Tables (On Hold, Signed Out)", path: "/item/yPBEngIKVHeNiYAF", role: null, desc: "WHO: anonymous visitor (not signed in). WHEN: tapped an item that another buyer has on hold. Item status = on-hold (someone has first dibs).", badge: "live", badgeClass: "badge-live",
     context: "Signed-out view of an item currently on hold for another buyer. $220, set of 3 Danish teak tables. Check that the on-hold status is clearly visible (badge/label) and the inquiry CTA reflects this state — the visitor shouldn't think it's freely available." },
 
-  { id: "item-enamel", title: "Item — Enamel Kitchen Table (Sold, Signed Out)", path: "/item/HDBvJerG2MUX-Npc", desc: "WHO: anonymous visitor (not signed in). WHEN: tapped (or was linked to) an item that already sold. Item status = sold.", badge: "live", badgeClass: "badge-live",
+  { id: "item-enamel", title: "Item — Enamel Kitchen Table (Sold, Signed Out)", path: "/item/HDBvJerG2MUX-Npc", role: null, desc: "WHO: anonymous visitor (not signed in). WHEN: tapped (or was linked to) an item that already sold. Item status = sold.", badge: "live", badgeClass: "badge-live",
     context: "Signed-out view of a sold item. $140, 1940s enamel-top kitchen table. Check that the SOLD badge is obvious and the inquiry CTA is disabled or removed (no point letting the visitor try to inquire on something that's gone)." },
 
-  { id: "watching", title: "Watching (Signed Out)", path: "/watching", desc: "WHO: anonymous visitor (not signed in). WHEN: tapped the Watching tab in the bottom nav without being signed in. Conversion gate.", badge: "live", badgeClass: "badge-live",
+  { id: "watching", title: "Watching (Signed Out)", path: "/watching", role: null, desc: "WHO: anonymous visitor (not signed in). WHEN: tapped the Watching tab in the bottom nav without being signed in. Conversion gate.", badge: "live", badgeClass: "badge-live",
     context: "The signed-out state of the Watching tab. Instead of a watchlist, shows a conversion prompt: 'Sign up to save items to your watchlist and get notified about price drops.' This is a signup funnel — check the copy and CTA are compelling." },
 
-  { id: "dealer-page", title: "Dealer Storefront (Signed Out)", path: "/d/zcYMRz9HT2WoIYoi", desc: "WHO: anonymous visitor (not signed in). WHEN: tapped a dealer link from Instagram, from an item card, or from a shared URL.", badge: "live", badgeClass: "badge-live",
+  { id: "dealer-page", title: "Dealer Storefront (Signed Out)", path: "/d/zcYMRz9HT2WoIYoi", role: null, desc: "WHO: anonymous visitor (not signed in). WHEN: tapped a dealer link from Instagram, from an item card, or from a shared URL.", badge: "live", badgeClass: "badge-live",
     context: "Public dealer storefront — this is the page dealers share on Instagram. Header shows business name, shop name, booth number. Below is the grid of their listed items. For signed-out visitors, tapping an item should route to the signed-out item detail (which shows the Sign Up CTA)." },
 
-  { id: "invite-valid", title: "Dealer Invite Landing (Valid Code)", path: "/invite/TESTCODE", desc: "WHO: prospective dealer (not yet signed in). WHEN: tapped a personalized invite link we sent them. This is the page BEFORE they start the application.", badge: "auth", badgeClass: "badge-auth",
+  { id: "invite-valid", title: "Dealer Invite Landing (Valid Code)", path: "/invite/TESTCODE", role: null, desc: "WHO: prospective dealer (not yet signed in). WHEN: tapped a personalized invite link we sent them. This is the page BEFORE they start the application.", badge: "auth", badgeClass: "badge-auth",
     context: "The landing a recruited dealer sees after clicking their invite link. Shows 'YOU'RE INVITED' welcome and a prompt to start setting up their seller account. They haven't entered their phone yet — tapping the CTA kicks off the dealer onboarding flow." },
 
-  { id: "onboarding-buyer", title: "Onboarding — Buyer Setup", path: "/onboarding", desc: "WHO: new buyer mid-signup. WHEN: immediately after tapping their first sign-in SMS link as a buyer. Redirects elsewhere if not mid-signup.", badge: "auth", badgeClass: "badge-auth",
-    context: "⚠️ Only renders during the active signup flow. The 4-step buyer setup: 01 Your name, 02 Phone (already verified/readonly from the SMS link), 03 Follow markets (checkboxes), 04 Notification prefs. Heading says 'Get set up.' with a 30-second promise. Ends with 'START SHOPPING' which routes to /home." },
+  { id: "onboarding-buyer", title: "Onboarding — Buyer Setup", path: "/onboarding", role: "buyer", desc: "WHO: new buyer mid-signup. WHEN: immediately after tapping their first sign-in SMS link as a buyer. Auto-signed in as Test Buyer for review.", badge: "auth", badgeClass: "badge-auth",
+    context: "The 4-step buyer setup: 01 Your name, 02 Phone (already verified/readonly from the SMS link), 03 Follow markets (checkboxes), 04 Notification prefs. Heading says 'Get set up.' with a 30-second promise. Ends with 'START SHOPPING' which routes to /home. For QA, the form is pre-filled from Test Buyer's profile." },
 
-  { id: "onboarding-dealer", title: "Onboarding — Dealer Application", path: "/onboarding?dealer=1", desc: "WHO: new dealer mid-application. WHEN: immediately after tapping their first sign-in SMS link in the dealer flow (?dealer=1). Redirects elsewhere if not mid-signup.", badge: "auth", badgeClass: "badge-auth",
-    context: "⚠️ Only renders during the active dealer signup flow. Heading says 'Apply to sell.' The 8-step dealer application: name, phone (verified), avatar photo, business name (required), Instagram handle (required — used for approval review), 'Markets you sell at' checkboxes, notification prefs, Terms of Service checkbox. Button says 'SUBMIT APPLICATION'. At this point the dealer is NOT approved yet — just applying." },
+  { id: "onboarding-dealer", title: "Onboarding — Dealer Application", path: "/onboarding?dealer=1", role: "buyer", desc: "WHO: new dealer mid-application. WHEN: immediately after tapping their first sign-in SMS link in the dealer flow (?dealer=1). Auto-signed in as a user so the form renders.", badge: "auth", badgeClass: "badge-auth",
+    context: "Heading says 'Apply to sell.' The 8-step dealer application: name, phone (verified), avatar photo, business name (required), Instagram handle (required — used for approval review), 'Markets you sell at' checkboxes, notification prefs, Terms of Service checkbox. Button says 'SUBMIT APPLICATION'. At this point the user is NOT a dealer yet — just applying." },
 
-  { id: "onboarding-confirm", title: "Dealer — Application Submitted", path: "/onboarding?dealer=1", desc: "WHO: new dealer who just submitted their application. WHEN: immediately after tapping SUBMIT APPLICATION on the dealer onboarding form. Not reachable by URL alone.", badge: "auth", badgeClass: "badge-auth",
-    context: "⚠️ Post-submit confirmation state of the dealer onboarding page. Can't be previewed by URL — must be reached by submitting the form. Shows a big checkmark, 'Application submitted', 'We're reviewing your Instagram and will text you...', and a 'START BROWSING' button that drops them into buyer mode while they wait for approval." },
+  { id: "onboarding-confirm", title: "Dealer — Application Submitted", path: "/onboarding?dealer=1", role: "buyer", desc: "⚠️ NOT REACHABLE BY URL. This is the post-submit state of the dealer onboarding form. To actually see it, submit the form inside the iframe. QA tool auto-signs in as buyer so the form renders.", badge: "auth", badgeClass: "badge-auth",
+    context: "Post-submit confirmation state of the dealer onboarding page. Can ONLY be reached by actually tapping SUBMIT APPLICATION inside the iframe — there's no URL that jumps directly here. Shows a big checkmark, 'Application submitted', 'We're reviewing your Instagram and will text you...', and a 'START BROWSING' button that drops them into buyer mode while they wait for approval." },
 
-  { id: "privacy", title: "Privacy Policy", path: "/privacy", desc: "WHO: anyone (signed in or out). WHEN: tapped the privacy link from the landing footer, SMS consent text, onboarding, or Account page.", badge: "static", badgeClass: "badge-static",
+  { id: "privacy", title: "Privacy Policy", path: "/privacy", role: null, desc: "WHO: anyone (signed in or out). WHEN: tapped the privacy link from the landing footer, SMS consent text, onboarding, or Account page.", badge: "static", badgeClass: "badge-static",
     context: "Static legal page — same for everyone. 10DLC compliant. Scroll to the 'SMS / Text Messaging' section — must list all message types (sign-in links, drop alerts, price drops, inquiry updates, account notifications), frequency disclosure, STOP to opt out, HELP for assistance, no sharing mobile info with third parties, carrier liability disclaimer. Contact: hi@earlybird.la." },
 
-  { id: "terms", title: "Terms of Service", path: "/terms", desc: "WHO: anyone (signed in or out). WHEN: tapped the terms link from the landing footer, SMS consent, or dealer onboarding (checkbox).", badge: "static", badgeClass: "badge-static",
+  { id: "terms", title: "Terms of Service", path: "/terms", role: null, desc: "WHO: anyone (signed in or out). WHEN: tapped the terms link from the landing footer, SMS consent, or dealer onboarding (checkbox).", badge: "static", badgeClass: "badge-static",
     context: "Static legal page — same for everyone. 10DLC compliant. Scroll to 'SMS Notifications' — lists message types, frequency varies, Reply STOP to opt out, Reply HELP for assistance, manage prefs from Account page, no sharing mobile info with third parties for promotional purposes, carrier not liable for delayed messages." },
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // LOG IN AS BUYER FIRST — then review these
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  { id: "home-buyer", title: "Home Hub (as Buyer)", path: "/home", desc: "WHO: signed-in buyer (completed onboarding, NOT a dealer). WHEN: tapped Home tab, or landed on /home after sign-in.", badge: "live", badgeClass: "badge-live",
-    context: "⚠️ Must be signed in as a buyer. Same URL as the signed-out hub, but personalized: subtitle says 'Your markets', upcoming markets show a Preview button, and the Sign Up CTA at the bottom is GONE (they already have an account). SPECIAL STATE: if this buyer also submitted a dealer application that's pending, an orange-bordered banner appears below the masthead — 'Application under review — We're reviewing your dealer application. Browse as a buyer in the meantime.'" },
+  { id: "home-buyer", title: "Home Hub (as Buyer)", path: "/home", role: "buyer", desc: "WHO: signed-in buyer (completed onboarding, NOT a dealer). WHEN: tapped Home tab, or landed on /home after sign-in. Auto-signed in as Test Buyer.", badge: "live", badgeClass: "badge-live",
+    context: "Same URL as the signed-out hub, but personalized: subtitle says 'Your markets', upcoming markets show a Preview button, and the Sign Up CTA at the bottom is GONE (they already have an account). SPECIAL STATE: if this buyer also submitted a dealer application that's pending, an orange-bordered banner appears below the masthead — 'Application under review — We're reviewing your dealer application. Browse as a buyer in the meantime.'" },
 
-  { id: "buy-grid-buyer", title: "Buy Grid (as Buyer)", path: "/buy?market=H8siHnv5aFjc-thg", desc: "WHO: signed-in buyer. WHEN: tapped 'Browse the market' from Home, or Buy tab in the bottom nav.", badge: "live", badgeClass: "badge-live",
-    context: "⚠️ Must be signed in as a buyer. Same market grid as the signed-out version, BUT item cards should now include the dealer name and avatar. This is the key visual diff from the signed-out grid — check that the dealer info is actually showing." },
+  { id: "buy-grid-buyer", title: "Buy Grid (as Buyer)", path: "/buy?market=H8siHnv5aFjc-thg", role: "buyer", desc: "WHO: signed-in buyer. WHEN: tapped 'Browse the market' from Home, or Buy tab in the bottom nav. Auto-signed in as Test Buyer.", badge: "live", badgeClass: "badge-live",
+    context: "Same market grid as the signed-out version, BUT item cards should now include the dealer name and avatar. This is the key visual diff from the signed-out grid — check that the dealer info is actually showing." },
 
-  { id: "item-buyer", title: "Item Detail (as Buyer)", path: "/item/uAkbhcZoxWw7jMl4", desc: "WHO: signed-in buyer viewing someone else's live item. WHEN: tapped an item card from the grid or dealer storefront. Item status = live.", badge: "live", badgeClass: "badge-live",
-    context: "⚠️ Must be signed in as a buyer (not the dealer who owns this item). The key visual diff from the signed-out view: the bottom Sign Up CTA is replaced by an 'I'm Interested' button that opens the inquiry compose drawer. Everything else (photo, price, description, dealer card) is the same." },
+  { id: "item-buyer", title: "Item Detail (as Buyer)", path: "/item/uAkbhcZoxWw7jMl4", role: "buyer", desc: "WHO: signed-in buyer viewing someone else's live item. WHEN: tapped an item card from the grid or dealer storefront. Item status = live. Auto-signed in as Test Buyer.", badge: "live", badgeClass: "badge-live",
+    context: "The key visual diff from the signed-out view: the bottom Sign Up CTA is replaced by an 'I'm Interested' button that opens the inquiry compose drawer. Everything else (photo, price, description, dealer card) is the same. Test Buyer does not own this item, so the owner view doesn't render." },
 
-  { id: "watching-buyer", title: "Watching (as Buyer)", path: "/watching", desc: "WHO: signed-in buyer. WHEN: tapped the Watching tab in the bottom nav. Shows their actual watchlist (not the signup gate).", badge: "live", badgeClass: "badge-live",
-    context: "⚠️ Must be signed in as a buyer. Shows items the buyer has favorited or inquired about, each with a live/hold/sold status badge. If the buyer hasn't favorited anything yet, check the empty state copy — it should encourage them to explore without being a conversion gate (they're already signed up)." },
+  { id: "watching-buyer", title: "Watching (as Buyer)", path: "/watching", role: "buyer", desc: "WHO: signed-in buyer. WHEN: tapped the Watching tab in the bottom nav. Shows their actual watchlist (not the signup gate). Auto-signed in as Test Buyer.", badge: "live", badgeClass: "badge-live",
+    context: "Shows items the buyer has favorited or inquired about, each with a live/hold/sold status badge. If Test Buyer hasn't favorited anything yet, check the empty state copy — it should encourage them to explore without being a conversion gate (they're already signed up)." },
 
-  { id: "account-buyer", title: "Account (as Buyer)", path: "/account", desc: "WHO: signed-in buyer who is NOT an approved dealer. WHEN: tapped the Account tab in the bottom nav.", badge: "live", badgeClass: "badge-live",
-    context: "⚠️ Must be signed in as a buyer. Shows profile (avatar, name), stats, notification prefs, and a 'Become A Seller' section. The Become A Seller card has three possible states: (1) no application yet → 'Apply to Sell' button, (2) pending application → orange-bordered 'Application under review' card, (3) approved → green-bordered 'Approved' card (at which point they'd typically see the dealer account view instead)." },
+  { id: "account-buyer", title: "Account (as Buyer)", path: "/account", role: "buyer", desc: "WHO: signed-in buyer who is NOT an approved dealer. WHEN: tapped the Account tab in the bottom nav. Auto-signed in as Test Buyer.", badge: "live", badgeClass: "badge-live",
+    context: "Shows profile (avatar, name), stats, notification prefs, and a 'Become A Seller' section. The Become A Seller card has three possible states: (1) no application yet → 'Apply to Sell' button, (2) pending application → orange-bordered 'Application under review' card, (3) approved → green-bordered 'Approved' card (at which point they'd typically see the dealer account view instead)." },
 
-  { id: "dealer-page-buyer", title: "Dealer Storefront (as Buyer)", path: "/d/zcYMRz9HT2WoIYoi", desc: "WHO: signed-in buyer viewing a dealer's public storefront. WHEN: tapped a dealer link from Instagram, an item page, or a share.", badge: "live", badgeClass: "badge-live",
-    context: "⚠️ Must be signed in as a buyer. Same dealer page as the signed-out version, but item cards now link directly to item detail (buyer view with 'I'm Interested' button) instead of triggering the signup CTA." },
+  { id: "dealer-page-buyer", title: "Dealer Storefront (as Buyer)", path: "/d/zcYMRz9HT2WoIYoi", role: "buyer", desc: "WHO: signed-in buyer viewing a dealer's public storefront. WHEN: tapped a dealer link from Instagram, an item page, or a share. Auto-signed in as Test Buyer.", badge: "live", badgeClass: "badge-live",
+    context: "Same dealer page as the signed-out version, but item cards now link directly to item detail (buyer view with 'I'm Interested' button) instead of triggering the signup CTA." },
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // LOG IN AS DEALER FIRST — then review these
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  { id: "sell-inventory", title: "Sell — Inventory (as Dealer)", path: "/sell", desc: "WHO: signed-in APPROVED dealer. WHEN: tapped the Sell tab in the bottom nav. Unapproved/pending dealers and buyers redirect to landing.", badge: "dealer", badgeClass: "badge-dealer",
-    context: "⚠️ Must be signed in as an approved dealer (the Sell tab only shows for dealers). The dealer's main workspace: dashboard stats, booth number for the current market, share link for their storefront, and an inventory grid showing their items with live/hold/sold status badges." },
+  { id: "sell-inventory", title: "Sell — Inventory (as Dealer)", path: "/sell", role: "dealer", desc: "WHO: signed-in APPROVED dealer. WHEN: tapped the Sell tab in the bottom nav. Unapproved/pending dealers and buyers redirect to landing. Auto-signed in as Test Dealer.", badge: "dealer", badgeClass: "badge-dealer",
+    context: "The dealer's main workspace: dashboard stats, booth number for the current market, share link for their storefront, and an inventory grid showing their items with live/hold/sold status badges. Test Dealer's inventory includes the seeded QA test item." },
 
-  { id: "sell-add", title: "Sell — Add Item (as Dealer)", path: "/sell/add", desc: "WHO: signed-in APPROVED dealer. WHEN: tapped 'Add item' from Sell Inventory, or routed here after onboarding.", badge: "dealer", badgeClass: "badge-dealer",
-    context: "⚠️ Must be signed in as an approved dealer. The listing form: photo upload, title, price, description, market picker. Redirects to landing for anyone who isn't a dealer." },
+  { id: "sell-add", title: "Sell — Add Item (as Dealer)", path: "/sell/add", role: "dealer", desc: "WHO: signed-in APPROVED dealer. WHEN: tapped 'Add item' from Sell Inventory, or routed here after onboarding. Auto-signed in as Test Dealer.", badge: "dealer", badgeClass: "badge-dealer",
+    context: "The listing form: photo upload, title, price, description, market picker. Redirects to landing for anyone who isn't a dealer." },
 
-  { id: "item-dealer-own", title: "Item Detail (as Owner Dealer)", path: "/item/uAkbhcZoxWw7jMl4", desc: "WHO: signed-in dealer viewing their OWN item. WHEN: tapped one of their own items from Sell Inventory. Same URL as the buyer view but different render based on ownership.", badge: "dealer", badgeClass: "badge-dealer",
-    context: "⚠️ Must be signed in as the specific dealer who owns this item (user ID must match item's dealer_id). Shows the edit view: photo/title/price edit controls, hold and sold action buttons, and the inquiry log (list of buyers who've messaged about this item). If a different dealer views the same URL, they see the regular buyer 'Item Detail' view instead." },
+  { id: "item-dealer-own", title: "Item Detail (as Owner Dealer)", path: "/item/_qa_test_item", role: "dealer", desc: "WHO: signed-in dealer viewing their OWN item. WHEN: tapped one of their own items from Sell Inventory. Same URL pattern as the buyer view, but render is gated on ownership. Auto-signed in as Test Dealer, who owns /item/_qa_test_item (seeded on dev-login).", badge: "dealer", badgeClass: "badge-dealer",
+    context: "Shows the owner view: photo/title/price edit controls, hold and sold action buttons, and the inquiry log (list of buyers who've messaged about this item). The test item is re-created automatically on every dev-login call — feel free to mess with it. If a different dealer viewed this URL, they'd see the regular buyer 'Item Detail' view instead." },
 
-  { id: "account-dealer", title: "Account (as Dealer)", path: "/account", desc: "WHO: signed-in APPROVED dealer. WHEN: tapped the Account tab in the bottom nav.", badge: "dealer", badgeClass: "badge-dealer",
-    context: "⚠️ Must be signed in as an approved dealer. Same URL as Account (Buyer) but rendered differently: shows dealer-specific fields — business name, Instagram handle, payment methods accepted at the market, and dealer notification prefs. The buyer's 'Become A Seller' section is NOT shown here (they're already a dealer)." },
+  { id: "account-dealer", title: "Account (as Dealer)", path: "/account", role: "dealer", desc: "WHO: signed-in APPROVED dealer. WHEN: tapped the Account tab in the bottom nav. Auto-signed in as Test Dealer.", badge: "dealer", badgeClass: "badge-dealer",
+    context: "Same URL as Account (Buyer) but rendered differently: shows dealer-specific fields — business name, Instagram handle, payment methods accepted at the market, and dealer notification prefs. The buyer's 'Become A Seller' section is NOT shown here (they're already a dealer)." },
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // ADMIN — log in as admin first
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  { id: "admin", title: "Admin CMS", path: "/admin", desc: "WHO: signed-in admin user (is_admin flag in DB). WHEN: navigated to /admin directly — there's no link in the app nav. Everyone else redirects to landing.", badge: "admin", badgeClass: "badge-admin",
-    context: "⚠️ Must be signed in as admin. Internal tool for running the platform: manage markets, review and approve/reject dealer applications, view all items across all dealers, and check SMS delivery logs. Not linked from anywhere in the main app — admins navigate here directly." },
+  { id: "admin", title: "Admin CMS", path: "/admin", role: "admin", desc: "WHO: signed-in admin user (phone matches ADMIN_PHONES env var). WHEN: navigated to /admin directly — there's no link in the app nav. Everyone else redirects to landing. Auto-signed in as Test Admin (dev-only admin phone).", badge: "admin", badgeClass: "badge-admin",
+    context: "Internal tool for running the platform: manage markets, review and approve/reject dealer applications, view all items across all dealers, and check SMS delivery logs. Not linked from anywhere in the main app — admins navigate here directly." },
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // EDGE CASES — broken URLs, 404s, bad data
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  { id: "buy-bad-market", title: "Buy — Bad Market ID (Error State)", path: "/buy?market=nonexistent", desc: "WHO: anyone (edge case). WHEN: hit /buy with a market ID that doesn't exist — stale bookmark, typo, broken link, or a market that was deleted.", badge: "live", badgeClass: "badge-live",
+  { id: "buy-bad-market", title: "Buy — Bad Market ID (Error State)", path: "/buy?market=nonexistent", role: null, desc: "WHO: anyone (edge case). WHEN: hit /buy with a market ID that doesn't exist — stale bookmark, typo, broken link, or a market that was deleted.", badge: "live", badgeClass: "badge-live",
     context: "Error state test. Currently falls back silently to the default market hub (Downtown Modernism) instead of showing a 'market not found' error. QA decision: is the silent fallback acceptable, or should it show an explicit error and a way back?" },
 
-  { id: "item-404", title: "Item — 404 (Error State)", path: "/item/nonexistent-id-12345", desc: "WHO: anyone (edge case). WHEN: hit /item/{id} with an item ID that doesn't exist — stale link from SMS/share, typo, or a deleted item.", badge: "live", badgeClass: "badge-live",
+  { id: "item-404", title: "Item — 404 (Error State)", path: "/item/nonexistent-id-12345", role: null, desc: "WHO: anyone (edge case). WHEN: hit /item/{id} with an item ID that doesn't exist — stale link from SMS/share, typo, or a deleted item.", badge: "live", badgeClass: "badge-live",
     context: "Error state test. Currently shows a near-empty page with just a Sign Up button — no explicit 'item not found' message. QA decision: this should probably show a clear not-found state with a link back to the market grid." },
 
-  { id: "dealer-404", title: "Dealer Storefront — 404 (Error State)", path: "/d/nonexistent-dealer-id", desc: "WHO: anyone (edge case). WHEN: hit /d/{id} with a dealer ID that doesn't exist — stale IG link, typo, or a dealer that got removed.", badge: "live", badgeClass: "badge-live",
+  { id: "dealer-404", title: "Dealer Storefront — 404 (Error State)", path: "/d/nonexistent-dealer-id", role: null, desc: "WHO: anyone (edge case). WHEN: hit /d/{id} with a dealer ID that doesn't exist — stale IG link, typo, or a dealer that got removed.", badge: "live", badgeClass: "badge-live",
     context: "Error state test. Correctly shows a 'Dealer not found' error with the empty-state icon. This is the reference for how the other 404s should work (item-404, buy-bad-market)." },
 
-  { id: "invite-bad", title: "Invite — Bad Code (Error State)", path: "/invite/BADCODE999", desc: "WHO: anyone (edge case). WHEN: hit /invite/{code} with a fake or expired code — QA probing, leaked old codes, or someone sharing an invite that's been revoked.", badge: "auth", badgeClass: "badge-auth",
+  { id: "invite-bad", title: "Invite — Bad Code (Error State)", path: "/invite/BADCODE999", role: null, desc: "WHO: anyone (edge case). WHEN: hit /invite/{code} with a fake or expired code — QA probing, leaked old codes, or someone sharing an invite that's been revoked.", badge: "auth", badgeClass: "badge-auth",
     context: "Error state test. BUG: shows the same 'YOU'RE INVITED' welcome as a valid code. Invite codes aren't actually validated on this page — any string works. Needs validation + a not-found/expired state." },
 ];
 
 let currentIndex = 0;
 let _commentsCache = {};
+// Monotonic counter so overlapping renderPage() calls don't race.
+// Each call captures its sequence number; if another render has started
+// by the time ensureRole() resolves, the older one bails before touching
+// the iframe — otherwise the auth state could mismatch what's loading.
+let _renderSeq = 0;
 
 // ── Storage (file-backed via API, survives server restarts) ──
 function loadComments() {
@@ -853,26 +858,53 @@ async function loadCommentsFromServer() {
 // eb_token here makes the iframe render as that user.
 let _currentRole = null;
 
+// Low-level: hit the dev-login endpoint, set the token, update UI state.
+// Does NOT trigger a page re-render — caller decides.
+async function doDevLogin(role) {
+  const res = await fetch("/api/auth/dev-login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ role }),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || "HTTP " + res.status);
+  }
+  const data = await res.json();
+  localStorage.setItem("eb_token", data.token);
+  _currentRole = role;
+  updateAuthStatus();
+}
+
+function doDevSignOut() {
+  localStorage.removeItem("eb_token");
+  _currentRole = null;
+  updateAuthStatus();
+}
+
+// Make sure the current auth state matches targetRole (null = signed out).
+// Called automatically on every navigation from renderPage().
+async function ensureRole(targetRole) {
+  if (_currentRole === targetRole) return;
+  if (targetRole === null) {
+    doDevSignOut();
+    return;
+  }
+  try {
+    await doDevLogin(targetRole);
+  } catch (e) {
+    console.error("ensureRole failed:", e);
+    alert("Auto sign-in as " + targetRole + " failed: " + e.message);
+  }
+}
+
+// Manual button handlers — same thing but re-render the iframe after.
 async function devLogin(role) {
   const btns = ["authBtnBuyer", "authBtnDealer", "authBtnAdmin", "authBtnSignOut"];
   btns.forEach((id) => { document.getElementById(id).disabled = true; });
   try {
-    const res = await fetch("/api/auth/dev-login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ role }),
-    });
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      alert("Dev login failed: " + (data.error || res.status));
-      return;
-    }
-    const data = await res.json();
-    localStorage.setItem("eb_token", data.token);
-    _currentRole = role;
-    updateAuthStatus();
-    // Reload the iframe so the new auth state takes effect
-    renderPage();
+    await doDevLogin(role);
+    await renderPage();
   } catch (e) {
     alert("Dev login failed: " + e.message);
   } finally {
@@ -880,11 +912,9 @@ async function devLogin(role) {
   }
 }
 
-function devSignOut() {
-  localStorage.removeItem("eb_token");
-  _currentRole = null;
-  updateAuthStatus();
-  renderPage();
+async function devSignOut() {
+  doDevSignOut();
+  await renderPage();
 }
 
 async function detectCurrentRole() {
@@ -928,8 +958,36 @@ function updateAuthStatus() {
 }
 
 // ── Render ──
-function renderPage() {
+async function renderPage() {
+  const mySeq = ++_renderSeq;
   const page = PAGES[currentIndex];
+
+  // Update the right panel immediately so the user sees the new page info
+  // even while auto-sign-in is still pending.
+  document.getElementById("urlBar").textContent = "earlybird.la" + page.path;
+  const ctxEl = document.getElementById("pageContext");
+  ctxEl.textContent = page.context || "";
+  ctxEl.style.display = page.context ? "" : "none";
+  document.getElementById("pageCounter").textContent = `${currentIndex + 1} / ${PAGES.length}`;
+  document.getElementById("pageTitle").textContent = page.title;
+  document.getElementById("pageDesc").textContent = page.desc;
+  const badge = document.getElementById("pageBadge");
+  badge.textContent = page.badge;
+  badge.className = "badge " + page.badgeClass;
+  document.getElementById("pageSelect").value = currentIndex;
+  document.getElementById("prevBtn").disabled = currentIndex === 0;
+  document.getElementById("nextBtn").disabled = currentIndex === PAGES.length - 1;
+  renderComments();
+  updateStats();
+
+  // Ensure the iframe loads with the correct auth state for this page.
+  // This must finish BEFORE we swap the iframe src, so the app reads the
+  // right eb_token on mount.
+  await ensureRole(page.role ?? null);
+
+  // If another renderPage started while we were awaiting, bail out so the
+  // newer one wins the iframe.
+  if (mySeq !== _renderSeq) return;
 
   // Update iframe — blank first to kill Next.js client router, then load target
   const frame = document.getElementById("phoneFrame");
@@ -950,34 +1008,6 @@ function renderPage() {
     frame.src = url;
   };
   frame.src = 'about:blank';
-
-  // Update URL bar (clean, without cache-buster)
-  document.getElementById("urlBar").textContent = "earlybird.la" + page.path;
-
-  // Update context on right panel
-  const ctxEl = document.getElementById("pageContext");
-  ctxEl.textContent = page.context || "";
-  ctxEl.style.display = page.context ? "" : "none";
-
-  // Update info
-  document.getElementById("pageCounter").textContent = `${currentIndex + 1} / ${PAGES.length}`;
-  document.getElementById("pageTitle").textContent = page.title;
-  document.getElementById("pageDesc").textContent = page.desc;
-
-  const badge = document.getElementById("pageBadge");
-  badge.textContent = page.badge;
-  badge.className = "badge " + page.badgeClass;
-
-  // Update select
-  document.getElementById("pageSelect").value = currentIndex;
-
-  // Update nav buttons
-  document.getElementById("prevBtn").disabled = currentIndex === 0;
-  document.getElementById("nextBtn").disabled = currentIndex === PAGES.length - 1;
-
-  // Render comments
-  renderComments();
-  updateStats();
 }
 
 function renderComments() {
