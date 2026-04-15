@@ -368,9 +368,9 @@ export default function LandingPage() {
             </div>
             <div className="space-y-4">
               {[
-                { num: "1", title: "Browse", desc: "Dealers post the night before. See photos, prices, and booth locations from your couch." },
-                { num: "2", title: "Claim", desc: "Tap \u201cI\u2019m Interested\u201d and the dealer gets your number. They hold it for you." },
-                { num: "3", title: "Pick up", desc: "Show up at the booth. Pay the dealer directly \u2014 cash, Venmo, whatever they take." },
+                { num: "1", title: "Browse", desc: "Browse the best vintage dealers at the best flea markets before the crowd." },
+                { num: "2", title: "Deal", desc: "Communicate directly with the dealers and make whatever deal you want." },
+                { num: "3", title: "Pick up", desc: "Pick up at the flea market or make other arrangements." },
               ].map((step) => (
                 <div key={step.num} className="flex gap-4">
                   <span className="text-eb-display font-bold text-eb-light leading-none">
