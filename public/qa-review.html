@@ -688,7 +688,7 @@ const PAGES = [
   { id: "home", title: "Home Hub", path: "/home", desc: "Market hub — live market with Browse CTA, upcoming markets with countdown, How It Works section, Sign Up at bottom.", badge: "live", badgeClass: "badge-live",
     context: "The main hub. Shows Downtown Modernism as live with a Browse button, PCC Flea and Rose Bowl as upcoming with day countdowns, and a How It Works explainer. Sign Up button at the very bottom." },
 
-  { id: "buy-grid", title: "Buy — Downtown Modernism", path: "/buy?market_id=H8siHnv5aFjc-thg", desc: "Market header with date/dealer/item counts, then a scrollable grid of item cards with photos and prices.", badge: "live", badgeClass: "badge-live",
+  { id: "buy-grid", title: "Buy — Downtown Modernism", path: "/buy?market=H8siHnv5aFjc-thg", desc: "Market header with date/dealer/item counts, then a scrollable grid of item cards with photos and prices.", badge: "live", badgeClass: "badge-live",
     context: "The main browsing experience. Header shows market name, date, dealer count, item count. Below is the item grid — each card has a photo and price overlay." },
 
   { id: "item-credenza", title: "Item — Walnut Credenza (Live)", path: "/item/uAkbhcZoxWw7jMl4", desc: "Item photo, title, $450 FIRM, description, market info. Scroll down for dealer info and inquiry CTA.", badge: "live", badgeClass: "badge-live",
@@ -731,7 +731,7 @@ const PAGES = [
   { id: "home-buyer", title: "Home Hub (as Buyer)", path: "/home", desc: "Buyer hub with 'Your markets' subtitle, preview buttons for upcoming. If the buyer has a pending dealer application, shows an 'Application under review' banner below the masthead.", badge: "live", badgeClass: "badge-live",
     context: "⚠️ Log in as a buyer first. Shows 'Your markets', preview buttons on upcoming markets, no Sign Up CTA. If this buyer submitted a dealer application, an orange-bordered banner says 'Application under review — We're reviewing your dealer application. Browse as a buyer in the meantime.'" },
 
-  { id: "buy-grid-buyer", title: "Buy Grid (as Buyer)", path: "/buy?market_id=H8siHnv5aFjc-thg", desc: "Same grid but items should now show dealer names and avatars on the cards.", badge: "live", badgeClass: "badge-live",
+  { id: "buy-grid-buyer", title: "Buy Grid (as Buyer)", path: "/buy?market=H8siHnv5aFjc-thg", desc: "Same grid but items should now show dealer names and avatars on the cards.", badge: "live", badgeClass: "badge-live",
     context: "⚠️ Log in as a buyer first. Compare to the logged-out grid — dealer names/avatars should now appear on item cards." },
 
   { id: "item-buyer", title: "Item Detail (as Buyer)", path: "/item/uAkbhcZoxWw7jMl4", desc: "Walnut Credenza — now shows 'I'm Interested' button instead of signup CTA.", badge: "live", badgeClass: "badge-live",
@@ -773,7 +773,7 @@ const PAGES = [
   // EDGE CASES — broken URLs, 404s, bad data
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  { id: "buy-bad-market", title: "Buy — Bad Market ID", path: "/buy?market_id=nonexistent", desc: "Falls back to the market hub showing Downtown Modernism. No error shown for the invalid market ID.", badge: "live", badgeClass: "badge-live",
+  { id: "buy-bad-market", title: "Buy — Bad Market ID", path: "/buy?market=nonexistent", desc: "Falls back to the market hub showing Downtown Modernism. No error shown for the invalid market ID.", badge: "live", badgeClass: "badge-live",
     context: "Invalid market ID in the URL. Instead of showing an error, it just shows the default market hub. Decide if this is OK or if it should show a 'market not found' message." },
 
   { id: "item-404", title: "Item — 404", path: "/item/nonexistent-id-12345", desc: "Shows a minimal page with just a 'Sign Up' button. No 'item not found' message.", badge: "live", badgeClass: "badge-live",
@@ -804,11 +804,27 @@ function saveComments(data) {
 function renderPage() {
   const page = PAGES[currentIndex];
 
-  // Update iframe
+  // Update iframe — blank first to kill Next.js client router, then load target
   const frame = document.getElementById("phoneFrame");
-  frame.src = page.path;
+  const ts = Date.now();
+  let url = page.path;
+  const hashIdx = url.indexOf('#');
+  if (hashIdx >= 0) {
+    const base = url.substring(0, hashIdx);
+    const hash = url.substring(hashIdx);
+    const sep = base.includes('?') ? '&' : '?';
+    url = base + sep + '_qa=' + ts + hash;
+  } else {
+    const sep = url.includes('?') ? '&' : '?';
+    url = url + sep + '_qa=' + ts;
+  }
+  frame.onload = function onBlank() {
+    frame.onload = null;
+    frame.src = url;
+  };
+  frame.src = 'about:blank';
 
-  // Update URL bar
+  // Update URL bar (clean, without cache-buster)
   document.getElementById("urlBar").textContent = "earlybird.la" + page.path;
 
   // Update context on right panel
@@ -902,7 +918,9 @@ function iframeNav(dir) {
   frame.addEventListener("load", () => {
     try {
       const loc = frame.contentWindow.location;
-      const path = loc.pathname + loc.search;
+      let path = loc.pathname + loc.search + loc.hash;
+      // Strip QA cache-buster param
+      path = path.replace(/[?&]_qa=\d+/, '').replace(/\?$/, '');
       document.getElementById("urlBar").textContent = "earlybird.la" + path;
       // Hide Next.js dev overlay inside iframe
       const doc = frame.contentDocument;

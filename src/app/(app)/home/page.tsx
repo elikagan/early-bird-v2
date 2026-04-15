@@ -30,7 +30,7 @@ export default function HomePage() {
     async function load() {
       const [marketsRes, appRes] = await Promise.all([
         apiFetch("/api/markets"),
-        !isDealer ? apiFetch("/api/dealer-applications") : Promise.resolve(null),
+        user && !isDealer ? apiFetch("/api/dealer-applications") : Promise.resolve(null),
       ]);
       if (marketsRes.ok) setMarkets(await marketsRes.json());
       if (appRes?.ok) {
@@ -42,7 +42,7 @@ export default function HomePage() {
       setLoading(false);
     }
     load();
-  }, [isDealer]);
+  }, [user, isDealer]);
 
   if (loading) {
     return (
