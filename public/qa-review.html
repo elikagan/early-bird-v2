@@ -808,27 +808,6 @@ async function loadCommentsFromServer() {
     const res = await fetch("/api/qa-comments");
     if (res.ok) _commentsCache = await res.json();
   } catch {}
-  // One-time migration from old localStorage key
-  try {
-    const legacy = localStorage.getItem("eb-qa-comments");
-    if (legacy) {
-      const legacyData = JSON.parse(legacy);
-      const serverEmpty = !_commentsCache || Object.keys(_commentsCache).length === 0;
-      const legacyHasData = legacyData && Object.keys(legacyData).length > 0;
-      if (serverEmpty && legacyHasData) {
-        _commentsCache = legacyData;
-        await fetch("/api/qa-comments", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(legacyData),
-        });
-        console.log("Migrated QA comments from localStorage to file");
-      }
-      localStorage.removeItem("eb-qa-comments");
-    }
-  } catch (e) {
-    console.warn("localStorage migration failed", e);
-  }
 }
 
 // ── Render ──
