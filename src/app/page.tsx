@@ -412,7 +412,7 @@ export default function LandingPage() {
           ════════════════════════════════════ */}
           <section className="px-6 pt-12 pb-6">
             <h2 className="text-eb-hero tracking-tight text-eb-black">
-              Your best stuff sells before{" "}
+              Sell before{" "}
               <span className="text-eb-pop">sunrise.</span>
             </h2>
             <p className="mt-4 text-eb-body text-eb-muted leading-relaxed">
