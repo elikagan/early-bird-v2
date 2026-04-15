@@ -416,9 +416,9 @@ export default function LandingPage() {
               <span className="text-eb-pop">sunrise.</span>
             </h2>
             <p className="mt-4 text-eb-body text-eb-muted leading-relaxed">
-              Post your inventory the night before. By morning, serious
-              buyers have already reached out {"\u2014"} before you{"\u2019"}ve
-              unloaded the truck.
+              The most serious flea market shoppers don{"\u2019"}t wait for
+              the gates to open. They{"\u2019"}re already browsing. Post your
+              inventory and let them come to you.
             </p>
           </section>
 
