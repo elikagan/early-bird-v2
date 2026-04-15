@@ -3,7 +3,7 @@
 <!--
   QA Review Tool — NOT part of the Early Bird app.
   Standalone desktop page for reviewing every app screen
-  inside an iPhone frame. Comments persist in localStorage.
+  inside an iPhone frame. Comments persist via /api/qa-comments.
   Export to markdown. Delete when QA is done.
 -->
 <head>
@@ -786,18 +786,28 @@ const PAGES = [
     context: "Invalid invite code, but the page shows the same 'You're Invited' welcome as a valid code. Invite codes aren't being validated on this page." },
 ];
 
-const STORAGE_KEY = "eb-qa-comments";
 let currentIndex = 0;
+let _commentsCache = {};
 
-// ── Storage ──
+// ── Storage (file-backed via API, survives server restarts) ──
 function loadComments() {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-  } catch { return {}; }
+  return _commentsCache;
 }
 
 function saveComments(data) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  _commentsCache = data;
+  fetch("/api/qa-comments", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  }).catch(() => {});
+}
+
+async function loadCommentsFromServer() {
+  try {
+    const res = await fetch("/api/qa-comments");
+    if (res.ok) _commentsCache = await res.json();
+  } catch {}
 }
 
 // ── Render ──
@@ -963,7 +973,7 @@ function deleteComment(index) {
 
 function clearAllComments() {
   if (!confirm("Delete ALL comments across all pages? This cannot be undone.")) return;
-  localStorage.removeItem(STORAGE_KEY);
+  saveComments({});
   renderComments();
   updateStats();
   closeModal();
@@ -1105,7 +1115,7 @@ function init() {
     (optgroup || select).appendChild(opt);
   });
 
-  renderPage();
+  loadCommentsFromServer().then(() => renderPage());
 }
 
 init();
