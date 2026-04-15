@@ -146,7 +146,6 @@ function AdminPage() {
         <Link href="/home">
           <h1>EARLY BIRD</h1>
         </Link>
-        <div className="eb-sub">Admin</div>
       </header>
 
       {/* Tab bar */}

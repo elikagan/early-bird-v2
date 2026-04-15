@@ -222,7 +222,6 @@ function AddItemContent() {
             {"\u2715"}
           </button>
         </div>
-        {market && <div className="eb-sub">{market.name} {"\u00b7"} {formatDate(market.starts_at)}</div>}
       </header>
 
       {/* Photos */}

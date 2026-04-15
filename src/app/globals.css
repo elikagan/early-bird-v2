@@ -32,7 +32,7 @@
 @layer components {
   /* ---- Masthead ---- */
   .eb-masthead {
-    padding: 16px 20px 12px;
+    padding: 14px 20px;
     border-bottom: 2px solid var(--eb-black);
   }
   .eb-masthead h1 {
@@ -51,12 +51,6 @@
     height: 16px;
     background: url("/logo.svg") no-repeat center / contain;
     flex-shrink: 0;
-  }
-  .eb-masthead .eb-sub {
-    font-size: 10px;
-    color: var(--eb-muted);
-    letter-spacing: 0.04em;
-    margin-top: 2px;
   }
 
   /* ---- Section label ---- */

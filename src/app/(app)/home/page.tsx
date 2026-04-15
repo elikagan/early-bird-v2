@@ -66,7 +66,6 @@ export default function HomePage() {
     <>
       <header className="eb-masthead">
         <h1>EARLY BIRD</h1>
-        <div className="eb-sub">{user ? "Your markets" : "LA flea markets"}</div>
       </header>
 
       {/* Pending dealer application banner */}

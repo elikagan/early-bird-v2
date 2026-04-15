@@ -147,7 +147,6 @@ function SellContent() {
         <Link href="/home">
           <h1>EARLY BIRD</h1>
         </Link>
-        {market && <div className="eb-sub">{market.name} {"\u00b7"} {formatDate(market.starts_at)}</div>}
       </header>
 
       {/* Stats */}

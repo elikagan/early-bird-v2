@@ -167,7 +167,6 @@ export default function LandingPage() {
         <div className="flex justify-between items-start">
           <div>
             <h1>EARLY BIRD</h1>
-            <div className="eb-sub">Shop the market before it opens.</div>
           </div>
           <button
             onClick={toggleMode}

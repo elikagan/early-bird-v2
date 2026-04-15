@@ -65,7 +65,6 @@ export default function WatchingPage() {
           <Link href="/home">
             <h1>EARLY BIRD</h1>
           </Link>
-          <div className="eb-sub">Watchlist</div>
         </header>
         <div className="eb-empty">
           <div className="eb-icon">{"\u2661"}</div>
@@ -100,7 +99,6 @@ export default function WatchingPage() {
         <Link href="/home">
           <h1>EARLY BIRD</h1>
         </Link>
-        <div className="eb-sub">Your watchlist</div>
       </header>
 
       <main className="pb-24">
