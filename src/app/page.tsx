@@ -150,11 +150,10 @@ export default function LandingPage() {
           className="mt-0.5 shrink-0 accent-eb-black"
         />
         <span className="text-eb-micro text-eb-light leading-relaxed">
-          I agree to receive SMS messages from Early Bird, including sign-in
-          links, drop alerts, price drop notifications, and inquiry updates.
-          Message frequency may vary. Standard Message and Data Rates may apply.
-          Reply STOP to opt out. Reply HELP for help. We will not share mobile
-          information with third parties for promotional or marketing purposes.
+          I agree to receive texts from Early Bird (sign-in links, alerts,
+          price drops). Msg frequency varies. Msg &amp; data rates may apply.
+          STOP to cancel, HELP for help. No mobile info shared with third
+          parties.
         </span>
       </label>
       <button
