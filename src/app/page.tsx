@@ -417,9 +417,8 @@ export default function LandingPage() {
             </h2>
             <p className="mt-4 text-eb-body text-eb-muted leading-relaxed">
               Imagine showing up to the flea market knowing you{"\u2019"}ve
-              already made four sales. Post your inventory, let buyers
-              claim what they want, and start the day with money in
-              your pocket.
+              already made four sales. Post on Early Bird and get a
+              head start on market day.
             </p>
           </section>
 
