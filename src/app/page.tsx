@@ -194,8 +194,7 @@ export default function LandingPage() {
                   {liveMarket.name}
                 </h2>
                 <p className="mt-3 text-eb-body text-eb-muted">
-                  {liveMarket.item_count} items from {liveMarket.dealer_count} dealers.
-                  Browse now, show up first.
+                  Shop the market before it opens.
                 </p>
               </section>
 
