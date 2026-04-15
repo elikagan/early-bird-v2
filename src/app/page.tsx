@@ -167,7 +167,7 @@ export default function LandingPage() {
         <div className="flex justify-between items-start">
           <div>
             <h1>EARLY BIRD</h1>
-            <div className="eb-sub">Los Angeles flea market classifieds</div>
+            <div className="eb-sub">Shop the market before it opens.</div>
           </div>
           <button
             onClick={toggleMode}
@@ -201,7 +201,7 @@ export default function LandingPage() {
 
               {/* Preview grid — real items from the market */}
               {previewItems.length > 0 && (
-                <section className="px-4 pt-4 pb-2">
+                <section className="px-6 pt-4 pb-2">
                   <div className="grid grid-cols-3 gap-1">
                     {previewItems.map((item) => (
                       <Link
@@ -268,11 +268,10 @@ export default function LandingPage() {
               {/* Signup — positioned after they've seen the goods */}
               <section className="px-6 pt-6 pb-8 border-t border-eb-border bg-eb-cream">
                 <h3 className="text-eb-body font-bold text-eb-black mb-1">
-                  Sign up to contact dealers
+                  Sign up
                 </h3>
                 <p className="text-eb-caption text-eb-muted mb-4">
-                  Browse free. Sign up to message dealers, save items,
-                  and get drop notifications.
+                  Sign up to get an alert when the pre-market shopping drops.
                 </p>
                 {phoneForm}
               </section>
