@@ -70,8 +70,8 @@ export default function PrivacyPage() {
           <p className="pt-2">
             <strong>Help:</strong> Reply HELP to any message for assistance, or
             email{" "}
-            <a href="mailto:hello@earlybird.la" className="font-bold text-eb-pop">
-              hello@earlybird.la
+            <a href="mailto:hi@earlybird.la" className="font-bold text-eb-pop">
+              hi@earlybird.la
             </a>.
           </p>
           <p className="pt-2">
@@ -115,8 +115,8 @@ export default function PrivacyPage() {
           </h3>
           <p>
             Questions? Email{" "}
-            <a href="mailto:hello@earlybird.la" className="font-bold text-eb-pop">
-              hello@earlybird.la
+            <a href="mailto:hi@earlybird.la" className="font-bold text-eb-pop">
+              hi@earlybird.la
             </a>.
           </p>
         </div>
