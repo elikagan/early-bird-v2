@@ -412,46 +412,60 @@ export default function LandingPage() {
           ════════════════════════════════════ */}
           <section className="px-6 pt-12 pb-6">
             <h2 className="text-eb-hero tracking-tight text-eb-black">
-              Sell before <span className="text-eb-pop">sunrise.</span>
+              Your best stuff sells before{" "}
+              <span className="text-eb-pop">sunrise.</span>
             </h2>
-            <p className="mt-4 text-eb-body text-eb-muted">
-              Apply to sell at LA flea markets. We{"\u2019"}ll check out
-              your Instagram, and once approved you can start posting
-              items for free {"\u2014"} no fees, no cut.
+            <p className="mt-4 text-eb-body text-eb-muted leading-relaxed">
+              Post your inventory the night before. By morning, serious
+              buyers have already reached out {"\u2014"} before you{"\u2019"}ve
+              unloaded the truck.
             </p>
-          </section>
-
-          <section className="px-6 pb-2">
-            <div className="bg-eb-cream border-l-2 border-eb-pop px-4 py-3 mb-5">
-              <div className="text-eb-caption font-bold text-eb-black uppercase tracking-wider">
-                How it works
-              </div>
-              <p className="text-eb-meta text-eb-muted mt-0.5 leading-relaxed">
-                Sign up {"\u2192"} fill out a quick application {"\u2192"} we
-                review your Instagram {"\u2192"} you get a text when
-                you{"\u2019"}re approved.
-              </p>
-            </div>
           </section>
 
           <section className="px-6 pb-8">{phoneForm}</section>
 
+          {/* Social proof / key stat */}
           <section className="px-6 pb-8">
-            <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-3">
-              Why dealers use it
+            <div className="border-t-2 border-eb-black pt-6">
+              <div className="text-eb-display text-eb-pop font-bold">$0</div>
+              <div className="text-eb-body font-bold text-eb-black mt-1">
+                No fees. No commissions. Ever.
+              </div>
+              <p className="text-eb-caption text-eb-muted mt-1 leading-relaxed">
+                You keep every dollar. We make money when the markets grow,
+                not when you sell.
+              </p>
             </div>
+          </section>
+
+          <section className="px-6 pb-8">
             {[
-              { num: "01", title: "Free. No fees, no cut.", desc: "No listing fees, no commissions. You keep every dollar." },
-              { num: "02", title: "Direct buyer contact", desc: "We text you the buyer\u2019s name and number. No in-app chat." },
-              { num: "03", title: "Sell without haggling at 5am", desc: "Buyers commit before they arrive. No cold-booth bargaining." },
-              { num: "04", title: "Price drops = sales", desc: "Lower the price and every watcher gets a text." },
-              { num: "05", title: "Dealers shop too", desc: "Same login, both sides of the market." },
-            ].map((item) => (
-              <div key={item.num} className="py-3 border-t border-eb-border flex gap-3">
-                <span className="text-eb-body font-bold text-eb-light">{item.num}</span>
-                <div>
-                  <div className="text-eb-body font-bold text-eb-black">{item.title}</div>
-                  <div className="text-eb-caption text-eb-muted mt-1">{item.desc}</div>
+              {
+                title: "Buyers text you directly",
+                desc: "No in-app chat. You get their name and number. Call, text, close the deal however you want.",
+              },
+              {
+                title: "Drop a price, move a piece",
+                desc: "Every buyer watching that item gets a text the moment you lower the price.",
+              },
+              {
+                title: "Know what{'\u2019'}s hot before you set up",
+                desc: "See which items have the most watchers. Load the truck accordingly.",
+              },
+              {
+                title: "Skip the 5am haggle",
+                desc: "Buyers commit before they arrive. Less bargaining, more selling.",
+              },
+            ].map((item, i) => (
+              <div
+                key={i}
+                className="py-4 border-t border-eb-border"
+              >
+                <div className="text-eb-body font-bold text-eb-black">
+                  {item.title}
+                </div>
+                <div className="text-eb-caption text-eb-muted mt-1 leading-relaxed">
+                  {item.desc}
                 </div>
               </div>
             ))}
