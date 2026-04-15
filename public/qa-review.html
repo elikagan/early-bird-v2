@@ -679,111 +679,111 @@ const PAGES = [
   // NO LOGIN NEEDED — these work for anyone
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  { id: "landing", title: "Landing — Buyer Mode", path: "/", desc: "Hero with market preview grid, item thumbnails with prices, value prop icons, phone signup form with SMS opt-in consent text.", badge: "live", badgeClass: "badge-live",
-    context: "Default landing for buyers. Shows the current live market, preview of items with prices, three value prop icons, and a phone signup form. Below the 'TEXT ME A SIGN-IN LINK' button is the full SMS opt-in disclosure (STOP/HELP/frequency/no third-party sharing). 'Dealer →' toggle in the top right switches to dealer mode." },
+  { id: "landing", title: "Landing — Buyer Mode", path: "/", desc: "WHO: anonymous visitor (not signed in). WHEN: first visit to earlybird.la, or after signing out. Default toggle is Buyer mode.", badge: "live", badgeClass: "badge-live",
+    context: "This is the public homepage. Anyone who hasn't signed in lands here. Hero with market preview grid, item thumbnails with prices, three value prop icons, and a phone signup form. Below the 'TEXT ME A SIGN-IN LINK' button is the full SMS opt-in disclosure (STOP/HELP/frequency/no third-party sharing). 'Dealer →' toggle in the top right switches to dealer mode." },
 
-  { id: "landing-dealer", title: "Landing — Dealer Mode", path: "/#dealer", desc: "Dealer landing with 'Sell before sunrise' hero, approval process explainer, and phone signup form.", badge: "live", badgeClass: "badge-live",
-    context: "Dealer-specific landing. Copy explains the approval process ('We'll check out your Instagram, and once approved...'). 'How it works' box shows the 4-step flow. Persists on reload via URL hash. 'Buyer →' toggle to switch back." },
+  { id: "landing-dealer", title: "Landing — Dealer Mode", path: "/#dealer", desc: "WHO: anonymous visitor (not signed in). WHEN: tapped 'Dealer →' toggle on the landing page, OR followed a dealer-focused marketing link.", badge: "live", badgeClass: "badge-live",
+    context: "Same landing page as Buyer Mode, flipped to the dealer pitch via the #dealer hash. Persists on reload. Copy explains the approval process ('We'll check out your Instagram, and once approved...'). 'How it works' box shows the 4-step flow. 'Buyer →' toggle to switch back." },
 
-  { id: "home", title: "Home Hub", path: "/home", desc: "Market hub — live market with Browse CTA, upcoming markets with countdown, How It Works section, Sign Up at bottom.", badge: "live", badgeClass: "badge-live",
-    context: "The main hub. Shows Downtown Modernism as live with a Browse button, PCC Flea and Rose Bowl as upcoming with day countdowns, and a How It Works explainer. Sign Up button at the very bottom." },
+  { id: "home", title: "Home Hub (Signed Out)", path: "/home", desc: "WHO: anonymous visitor (not signed in). WHEN: navigating to /home directly (bookmark, shared link). Signed-in buyers see 'Home Hub (as Buyer)' instead.", badge: "live", badgeClass: "badge-live",
+    context: "The signed-out version of the home hub. Shows Downtown Modernism as live with a Browse button, PCC Flea and Rose Bowl as upcoming with day countdowns, How It Works explainer, and a Sign Up CTA at the very bottom (because the visitor has no account yet). Signed-in buyers do NOT see the Sign Up CTA." },
 
-  { id: "buy-grid", title: "Buy — Downtown Modernism", path: "/buy?market=H8siHnv5aFjc-thg", desc: "Market header with date/dealer/item counts, then a scrollable grid of item cards with photos and prices.", badge: "live", badgeClass: "badge-live",
-    context: "The main browsing experience. Header shows market name, date, dealer count, item count. Below is the item grid — each card has a photo and price overlay." },
+  { id: "buy-grid", title: "Buy Grid (Signed Out)", path: "/buy?market=H8siHnv5aFjc-thg", desc: "WHO: anonymous visitor (not signed in). WHEN: tapped 'Browse the market' from landing or home. Signed-in buyers see 'Buy Grid (as Buyer)'.", badge: "live", badgeClass: "badge-live",
+    context: "The public market browsing view. Header shows market name, date, dealer count, item count. Item grid below — each card has a photo and price overlay, but NO dealer name/avatar (that only shows when signed in). Tapping a card opens the signed-out item detail." },
 
-  { id: "item-credenza", title: "Item — Walnut Credenza (Live)", path: "/item/uAkbhcZoxWw7jMl4", desc: "Item photo, title, $450 FIRM, description, market info. Scroll down for dealer info and inquiry CTA.", badge: "live", badgeClass: "badge-live",
-    context: "A live item detail page. Photo at top, then title/price/description, the market it's listed at, and the dealer's info. At the bottom is where the inquiry action lives (sign up or I'm Interested depending on auth)." },
+  { id: "item-credenza", title: "Item — Walnut Credenza (Live, Signed Out)", path: "/item/uAkbhcZoxWw7jMl4", desc: "WHO: anonymous visitor (not signed in). WHEN: tapped a live item card from the grid. Item status = live (available). Signed-in buyers see 'Item Detail (as Buyer)'.", badge: "live", badgeClass: "badge-live",
+    context: "Signed-out view of a live (available) item. Photo, title, $450 FIRM price, description, market info, dealer card. At the bottom: a Sign Up CTA (because the visitor can't send an inquiry without an account). Signed-in buyers see an 'I'm Interested' button instead." },
 
-  { id: "item-nesting", title: "Item — Teak Nesting Tables (On Hold)", path: "/item/yPBEngIKVHeNiYAF", desc: "Same layout as live item but with hold status. $220, set of 3 Danish teak tables.", badge: "live", badgeClass: "badge-live",
-    context: "An item that's been put on hold for a buyer. Check that the hold status is clearly visible and the inquiry button reflects this state." },
+  { id: "item-nesting", title: "Item — Teak Nesting Tables (On Hold, Signed Out)", path: "/item/yPBEngIKVHeNiYAF", desc: "WHO: anonymous visitor (not signed in). WHEN: tapped an item that another buyer has on hold. Item status = on-hold (someone has first dibs).", badge: "live", badgeClass: "badge-live",
+    context: "Signed-out view of an item currently on hold for another buyer. $220, set of 3 Danish teak tables. Check that the on-hold status is clearly visible (badge/label) and the inquiry CTA reflects this state — the visitor shouldn't think it's freely available." },
 
-  { id: "item-enamel", title: "Item — Enamel Kitchen Table (Sold)", path: "/item/HDBvJerG2MUX-Npc", desc: "Same layout but with sold status. $140, 1940s enamel-top kitchen table.", badge: "live", badgeClass: "badge-live",
-    context: "A sold item. Check that the sold badge is obvious and the inquiry button is disabled or removed." },
+  { id: "item-enamel", title: "Item — Enamel Kitchen Table (Sold, Signed Out)", path: "/item/HDBvJerG2MUX-Npc", desc: "WHO: anonymous visitor (not signed in). WHEN: tapped (or was linked to) an item that already sold. Item status = sold.", badge: "live", badgeClass: "badge-live",
+    context: "Signed-out view of a sold item. $140, 1940s enamel-top kitchen table. Check that the SOLD badge is obvious and the inquiry CTA is disabled or removed (no point letting the visitor try to inquire on something that's gone)." },
 
-  { id: "watching", title: "Watching (Not Logged In)", path: "/watching", desc: "Signup prompt: 'Sign up to save items to your watchlist and get notified about price drops.'", badge: "live", badgeClass: "badge-live",
-    context: "When you're not logged in, the Watching tab shows a signup prompt instead of a watchlist. This is a conversion point." },
+  { id: "watching", title: "Watching (Signed Out)", path: "/watching", desc: "WHO: anonymous visitor (not signed in). WHEN: tapped the Watching tab in the bottom nav without being signed in. Conversion gate.", badge: "live", badgeClass: "badge-live",
+    context: "The signed-out state of the Watching tab. Instead of a watchlist, shows a conversion prompt: 'Sign up to save items to your watchlist and get notified about price drops.' This is a signup funnel — check the copy and CTA are compelling." },
 
-  { id: "dealer-page", title: "Dealer Page — Test Dealer", path: "/d/zcYMRz9HT2WoIYoi", desc: "Dealer profile header (name, shop name, booth), then grid of their items.", badge: "live", badgeClass: "badge-live",
-    context: "A dealer's public storefront. Shows their business name, shop name, booth number, and all their listed items. This is what gets shared on Instagram." },
+  { id: "dealer-page", title: "Dealer Storefront (Signed Out)", path: "/d/zcYMRz9HT2WoIYoi", desc: "WHO: anonymous visitor (not signed in). WHEN: tapped a dealer link from Instagram, from an item card, or from a shared URL.", badge: "live", badgeClass: "badge-live",
+    context: "Public dealer storefront — this is the page dealers share on Instagram. Header shows business name, shop name, booth number. Below is the grid of their listed items. For signed-out visitors, tapping an item should route to the signed-out item detail (which shows the Sign Up CTA)." },
 
-  { id: "invite-valid", title: "Invite Landing (Valid Code)", path: "/invite/TESTCODE", desc: "'YOU'RE INVITED' — dealer invite page with setup prompt.", badge: "auth", badgeClass: "badge-auth",
-    context: "A dealer clicked their invite link. Shows the invite welcome message and prompts them to set up their seller account." },
+  { id: "invite-valid", title: "Dealer Invite Landing (Valid Code)", path: "/invite/TESTCODE", desc: "WHO: prospective dealer (not yet signed in). WHEN: tapped a personalized invite link we sent them. This is the page BEFORE they start the application.", badge: "auth", badgeClass: "badge-auth",
+    context: "The landing a recruited dealer sees after clicking their invite link. Shows 'YOU'RE INVITED' welcome and a prompt to start setting up their seller account. They haven't entered their phone yet — tapping the CTA kicks off the dealer onboarding flow." },
 
-  { id: "onboarding-buyer", title: "Onboarding — Buyer", path: "/onboarding", desc: "4-step buyer setup: name, phone (verified), follow markets, notification prefs. 'START SHOPPING' button.", badge: "auth", badgeClass: "badge-auth",
-    context: "⚠️ Only renders mid-signup flow (redirects otherwise). Steps: 01 Your name, 02 Phone (verified/readonly), 03 Follow markets (checkboxes), 04 Notifications. Heading says 'Get set up.' 30-second promise." },
+  { id: "onboarding-buyer", title: "Onboarding — Buyer Setup", path: "/onboarding", desc: "WHO: new buyer mid-signup. WHEN: immediately after tapping their first sign-in SMS link as a buyer. Redirects elsewhere if not mid-signup.", badge: "auth", badgeClass: "badge-auth",
+    context: "⚠️ Only renders during the active signup flow. The 4-step buyer setup: 01 Your name, 02 Phone (already verified/readonly from the SMS link), 03 Follow markets (checkboxes), 04 Notification prefs. Heading says 'Get set up.' with a 30-second promise. Ends with 'START SHOPPING' which routes to /home." },
 
-  { id: "onboarding-dealer", title: "Onboarding — Dealer Application", path: "/onboarding?dealer=1", desc: "8-step dealer application: name, phone, photo upload, business name, Instagram, markets you sell at, notifications, terms checkbox. 'SUBMIT APPLICATION' button.", badge: "auth", badgeClass: "badge-auth",
-    context: "⚠️ Only renders mid-signup flow with dealer flag. Heading says 'Apply to sell.' Extra dealer steps: photo upload (avatar), business name (required), Instagram (required, used for verification), 'Markets you sell at' framing, and Terms of Service agreement. Button says 'SUBMIT APPLICATION'." },
+  { id: "onboarding-dealer", title: "Onboarding — Dealer Application", path: "/onboarding?dealer=1", desc: "WHO: new dealer mid-application. WHEN: immediately after tapping their first sign-in SMS link in the dealer flow (?dealer=1). Redirects elsewhere if not mid-signup.", badge: "auth", badgeClass: "badge-auth",
+    context: "⚠️ Only renders during the active dealer signup flow. Heading says 'Apply to sell.' The 8-step dealer application: name, phone (verified), avatar photo, business name (required), Instagram handle (required — used for approval review), 'Markets you sell at' checkboxes, notification prefs, Terms of Service checkbox. Button says 'SUBMIT APPLICATION'. At this point the dealer is NOT approved yet — just applying." },
 
-  { id: "onboarding-confirm", title: "Dealer — Application Submitted", path: "/onboarding?dealer=1", desc: "Confirmation screen after dealer submits: checkmark, 'Application submitted', text about IG review, 'START BROWSING' CTA.", badge: "auth", badgeClass: "badge-auth",
-    context: "⚠️ This screen appears AFTER the dealer submits the application form. Can't be previewed by URL — it's a state within the onboarding page. Shows a big checkmark, 'Application submitted', 'We're reviewing your Instagram and will text you...', and a 'START BROWSING' button to enter buyer mode." },
+  { id: "onboarding-confirm", title: "Dealer — Application Submitted", path: "/onboarding?dealer=1", desc: "WHO: new dealer who just submitted their application. WHEN: immediately after tapping SUBMIT APPLICATION on the dealer onboarding form. Not reachable by URL alone.", badge: "auth", badgeClass: "badge-auth",
+    context: "⚠️ Post-submit confirmation state of the dealer onboarding page. Can't be previewed by URL — must be reached by submitting the form. Shows a big checkmark, 'Application submitted', 'We're reviewing your Instagram and will text you...', and a 'START BROWSING' button that drops them into buyer mode while they wait for approval." },
 
-  { id: "privacy", title: "Privacy Policy", path: "/privacy", desc: "Full privacy policy with dedicated SMS section. Covers message types, frequency, STOP/HELP, no third-party sharing, carrier disclaimer.", badge: "static", badgeClass: "badge-static",
-    context: "10DLC compliant. Scroll to the 'SMS / Text Messaging' section — must list all message types (sign-in links, drop alerts, price drops, inquiry updates, account notifications), frequency disclosure, STOP to opt out, HELP for assistance, no sharing mobile info with third parties, carrier liability disclaimer. Contact: hi@earlybird.la." },
+  { id: "privacy", title: "Privacy Policy", path: "/privacy", desc: "WHO: anyone (signed in or out). WHEN: tapped the privacy link from the landing footer, SMS consent text, onboarding, or Account page.", badge: "static", badgeClass: "badge-static",
+    context: "Static legal page — same for everyone. 10DLC compliant. Scroll to the 'SMS / Text Messaging' section — must list all message types (sign-in links, drop alerts, price drops, inquiry updates, account notifications), frequency disclosure, STOP to opt out, HELP for assistance, no sharing mobile info with third parties, carrier liability disclaimer. Contact: hi@earlybird.la." },
 
-  { id: "terms", title: "Terms of Service", path: "/terms", desc: "Full terms of use with expanded SMS section. Covers STOP/HELP, message frequency, no third-party sharing of mobile info.", badge: "static", badgeClass: "badge-static",
-    context: "10DLC compliant. Scroll to 'SMS Notifications' — lists message types, frequency varies, Reply STOP to opt out, Reply HELP for assistance, manage prefs from Account page, no sharing mobile info with third parties for promotional purposes, carrier not liable for delayed messages." },
+  { id: "terms", title: "Terms of Service", path: "/terms", desc: "WHO: anyone (signed in or out). WHEN: tapped the terms link from the landing footer, SMS consent, or dealer onboarding (checkbox).", badge: "static", badgeClass: "badge-static",
+    context: "Static legal page — same for everyone. 10DLC compliant. Scroll to 'SMS Notifications' — lists message types, frequency varies, Reply STOP to opt out, Reply HELP for assistance, manage prefs from Account page, no sharing mobile info with third parties for promotional purposes, carrier not liable for delayed messages." },
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // LOG IN AS BUYER FIRST — then review these
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  { id: "home-buyer", title: "Home Hub (as Buyer)", path: "/home", desc: "Buyer hub with 'Your markets' subtitle, preview buttons for upcoming. If the buyer has a pending dealer application, shows an 'Application under review' banner below the masthead.", badge: "live", badgeClass: "badge-live",
-    context: "⚠️ Log in as a buyer first. Shows 'Your markets', preview buttons on upcoming markets, no Sign Up CTA. If this buyer submitted a dealer application, an orange-bordered banner says 'Application under review — We're reviewing your dealer application. Browse as a buyer in the meantime.'" },
+  { id: "home-buyer", title: "Home Hub (as Buyer)", path: "/home", desc: "WHO: signed-in buyer (completed onboarding, NOT a dealer). WHEN: tapped Home tab, or landed on /home after sign-in.", badge: "live", badgeClass: "badge-live",
+    context: "⚠️ Must be signed in as a buyer. Same URL as the signed-out hub, but personalized: subtitle says 'Your markets', upcoming markets show a Preview button, and the Sign Up CTA at the bottom is GONE (they already have an account). SPECIAL STATE: if this buyer also submitted a dealer application that's pending, an orange-bordered banner appears below the masthead — 'Application under review — We're reviewing your dealer application. Browse as a buyer in the meantime.'" },
 
-  { id: "buy-grid-buyer", title: "Buy Grid (as Buyer)", path: "/buy?market=H8siHnv5aFjc-thg", desc: "Same grid but items should now show dealer names and avatars on the cards.", badge: "live", badgeClass: "badge-live",
-    context: "⚠️ Log in as a buyer first. Compare to the logged-out grid — dealer names/avatars should now appear on item cards." },
+  { id: "buy-grid-buyer", title: "Buy Grid (as Buyer)", path: "/buy?market=H8siHnv5aFjc-thg", desc: "WHO: signed-in buyer. WHEN: tapped 'Browse the market' from Home, or Buy tab in the bottom nav.", badge: "live", badgeClass: "badge-live",
+    context: "⚠️ Must be signed in as a buyer. Same market grid as the signed-out version, BUT item cards should now include the dealer name and avatar. This is the key visual diff from the signed-out grid — check that the dealer info is actually showing." },
 
-  { id: "item-buyer", title: "Item Detail (as Buyer)", path: "/item/uAkbhcZoxWw7jMl4", desc: "Walnut Credenza — now shows 'I'm Interested' button instead of signup CTA.", badge: "live", badgeClass: "badge-live",
-    context: "⚠️ Log in as a buyer first. The key difference: the signup CTA is replaced by the 'I'm Interested' button that opens the compose drawer." },
+  { id: "item-buyer", title: "Item Detail (as Buyer)", path: "/item/uAkbhcZoxWw7jMl4", desc: "WHO: signed-in buyer viewing someone else's live item. WHEN: tapped an item card from the grid or dealer storefront. Item status = live.", badge: "live", badgeClass: "badge-live",
+    context: "⚠️ Must be signed in as a buyer (not the dealer who owns this item). The key visual diff from the signed-out view: the bottom Sign Up CTA is replaced by an 'I'm Interested' button that opens the inquiry compose drawer. Everything else (photo, price, description, dealer card) is the same." },
 
-  { id: "watching-buyer", title: "Watching (as Buyer)", path: "/watching", desc: "Your watchlist — items you've favorited or inquired about, with status badges.", badge: "live", badgeClass: "badge-live",
-    context: "⚠️ Log in as a buyer first. If you have favorites/inquiries, they show here with live/hold/sold badges. If empty, check the empty state messaging." },
+  { id: "watching-buyer", title: "Watching (as Buyer)", path: "/watching", desc: "WHO: signed-in buyer. WHEN: tapped the Watching tab in the bottom nav. Shows their actual watchlist (not the signup gate).", badge: "live", badgeClass: "badge-live",
+    context: "⚠️ Must be signed in as a buyer. Shows items the buyer has favorited or inquired about, each with a live/hold/sold status badge. If the buyer hasn't favorited anything yet, check the empty state copy — it should encourage them to explore without being a conversion gate (they're already signed up)." },
 
-  { id: "account-buyer", title: "Account (Buyer)", path: "/account", desc: "Profile with avatar, stats, notification prefs, 'Become A Seller' section with application status card, sign out.", badge: "live", badgeClass: "badge-live",
-    context: "⚠️ Log in as a buyer first. Shows stats, notifications, and the 'Become A Seller' section. If no application: shows 'Apply to Sell' button. If pending: orange-bordered 'Application under review' card. If approved: green-bordered 'Approved' card." },
+  { id: "account-buyer", title: "Account (as Buyer)", path: "/account", desc: "WHO: signed-in buyer who is NOT an approved dealer. WHEN: tapped the Account tab in the bottom nav.", badge: "live", badgeClass: "badge-live",
+    context: "⚠️ Must be signed in as a buyer. Shows profile (avatar, name), stats, notification prefs, and a 'Become A Seller' section. The Become A Seller card has three possible states: (1) no application yet → 'Apply to Sell' button, (2) pending application → orange-bordered 'Application under review' card, (3) approved → green-bordered 'Approved' card (at which point they'd typically see the dealer account view instead)." },
 
-  { id: "dealer-page-buyer", title: "Dealer Page (as Buyer)", path: "/d/zcYMRz9HT2WoIYoi", desc: "Same dealer page but items are now tappable links, not signup buttons.", badge: "live", badgeClass: "badge-live",
-    context: "⚠️ Log in as a buyer first. Compare to the logged-out dealer page — items should now link directly to item detail instead of triggering signup." },
+  { id: "dealer-page-buyer", title: "Dealer Storefront (as Buyer)", path: "/d/zcYMRz9HT2WoIYoi", desc: "WHO: signed-in buyer viewing a dealer's public storefront. WHEN: tapped a dealer link from Instagram, an item page, or a share.", badge: "live", badgeClass: "badge-live",
+    context: "⚠️ Must be signed in as a buyer. Same dealer page as the signed-out version, but item cards now link directly to item detail (buyer view with 'I'm Interested' button) instead of triggering the signup CTA." },
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // LOG IN AS DEALER FIRST — then review these
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  { id: "sell-inventory", title: "Sell — Inventory", path: "/sell", desc: "Dealer dashboard with stats, booth number, share link, and item grid with status badges.", badge: "dealer", badgeClass: "badge-dealer",
-    context: "⚠️ Log in as a dealer first. This is the dealer's main workspace. Redirects to landing if not logged in as a dealer." },
+  { id: "sell-inventory", title: "Sell — Inventory (as Dealer)", path: "/sell", desc: "WHO: signed-in APPROVED dealer. WHEN: tapped the Sell tab in the bottom nav. Unapproved/pending dealers and buyers redirect to landing.", badge: "dealer", badgeClass: "badge-dealer",
+    context: "⚠️ Must be signed in as an approved dealer (the Sell tab only shows for dealers). The dealer's main workspace: dashboard stats, booth number for the current market, share link for their storefront, and an inventory grid showing their items with live/hold/sold status badges." },
 
-  { id: "sell-add", title: "Sell — Add Item", path: "/sell/add", desc: "New item form: photo upload, title, price, description, market picker.", badge: "dealer", badgeClass: "badge-dealer",
-    context: "⚠️ Log in as a dealer first. The form for listing a new item. Redirects to landing if not logged in as a dealer." },
+  { id: "sell-add", title: "Sell — Add Item (as Dealer)", path: "/sell/add", desc: "WHO: signed-in APPROVED dealer. WHEN: tapped 'Add item' from Sell Inventory, or routed here after onboarding.", badge: "dealer", badgeClass: "badge-dealer",
+    context: "⚠️ Must be signed in as an approved dealer. The listing form: photo upload, title, price, description, market picker. Redirects to landing for anyone who isn't a dealer." },
 
-  { id: "item-dealer-own", title: "Item Detail (as Owner)", path: "/item/uAkbhcZoxWw7jMl4", desc: "Walnut Credenza from the dealer's perspective — edit controls, status buttons, inquiry log.", badge: "dealer", badgeClass: "badge-dealer",
-    context: "⚠️ Log in as the dealer who owns this item. Same URL as the buyer view, but shows edit mode, hold/sold controls, and a log of buyer inquiries." },
+  { id: "item-dealer-own", title: "Item Detail (as Owner Dealer)", path: "/item/uAkbhcZoxWw7jMl4", desc: "WHO: signed-in dealer viewing their OWN item. WHEN: tapped one of their own items from Sell Inventory. Same URL as the buyer view but different render based on ownership.", badge: "dealer", badgeClass: "badge-dealer",
+    context: "⚠️ Must be signed in as the specific dealer who owns this item (user ID must match item's dealer_id). Shows the edit view: photo/title/price edit controls, hold and sold action buttons, and the inquiry log (list of buyers who've messaged about this item). If a different dealer views the same URL, they see the regular buyer 'Item Detail' view instead." },
 
-  { id: "account-dealer", title: "Account (Dealer)", path: "/account", desc: "Business name, Instagram, payment methods, dealer notification prefs.", badge: "dealer", badgeClass: "badge-dealer",
-    context: "⚠️ Log in as a dealer first. The account page shows dealer-specific fields (business info, payment methods) instead of the buyer 'Become A Seller' section." },
+  { id: "account-dealer", title: "Account (as Dealer)", path: "/account", desc: "WHO: signed-in APPROVED dealer. WHEN: tapped the Account tab in the bottom nav.", badge: "dealer", badgeClass: "badge-dealer",
+    context: "⚠️ Must be signed in as an approved dealer. Same URL as Account (Buyer) but rendered differently: shows dealer-specific fields — business name, Instagram handle, payment methods accepted at the market, and dealer notification prefs. The buyer's 'Become A Seller' section is NOT shown here (they're already a dealer)." },
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // ADMIN — log in as admin first
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  { id: "admin", title: "Admin CMS", path: "/admin", desc: "Markets, dealers, items, SMS logs. Redirects to landing if not admin.", badge: "admin", badgeClass: "badge-admin",
-    context: "⚠️ Log in as admin first. The admin panel for managing markets, approving dealers, viewing all items, and checking SMS logs. Redirects if not authenticated." },
+  { id: "admin", title: "Admin CMS", path: "/admin", desc: "WHO: signed-in admin user (is_admin flag in DB). WHEN: navigated to /admin directly — there's no link in the app nav. Everyone else redirects to landing.", badge: "admin", badgeClass: "badge-admin",
+    context: "⚠️ Must be signed in as admin. Internal tool for running the platform: manage markets, review and approve/reject dealer applications, view all items across all dealers, and check SMS delivery logs. Not linked from anywhere in the main app — admins navigate here directly." },
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // EDGE CASES — broken URLs, 404s, bad data
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  { id: "buy-bad-market", title: "Buy — Bad Market ID", path: "/buy?market=nonexistent", desc: "Falls back to the market hub showing Downtown Modernism. No error shown for the invalid market ID.", badge: "live", badgeClass: "badge-live",
-    context: "Invalid market ID in the URL. Instead of showing an error, it just shows the default market hub. Decide if this is OK or if it should show a 'market not found' message." },
+  { id: "buy-bad-market", title: "Buy — Bad Market ID (Error State)", path: "/buy?market=nonexistent", desc: "WHO: anyone (edge case). WHEN: hit /buy with a market ID that doesn't exist — stale bookmark, typo, broken link, or a market that was deleted.", badge: "live", badgeClass: "badge-live",
+    context: "Error state test. Currently falls back silently to the default market hub (Downtown Modernism) instead of showing a 'market not found' error. QA decision: is the silent fallback acceptable, or should it show an explicit error and a way back?" },
 
-  { id: "item-404", title: "Item — 404", path: "/item/nonexistent-id-12345", desc: "Shows a minimal page with just a 'Sign Up' button. No 'item not found' message.", badge: "live", badgeClass: "badge-live",
-    context: "Invalid item ID. Shows a near-empty page with just a Sign Up button. Could use a clear 'item not found' message with a link back to browsing." },
+  { id: "item-404", title: "Item — 404 (Error State)", path: "/item/nonexistent-id-12345", desc: "WHO: anyone (edge case). WHEN: hit /item/{id} with an item ID that doesn't exist — stale link from SMS/share, typo, or a deleted item.", badge: "live", badgeClass: "badge-live",
+    context: "Error state test. Currently shows a near-empty page with just a Sign Up button — no explicit 'item not found' message. QA decision: this should probably show a clear not-found state with a link back to the market grid." },
 
-  { id: "dealer-404", title: "Dealer Page — 404", path: "/d/nonexistent-dealer-id", desc: "Shows 'Dealer not found' with an empty-state icon. This one handles the error correctly.", badge: "live", badgeClass: "badge-live",
-    context: "Invalid dealer ID. Correctly shows a 'Dealer not found' error with the empty-state icon. Good reference for how the other 404s should work." },
+  { id: "dealer-404", title: "Dealer Storefront — 404 (Error State)", path: "/d/nonexistent-dealer-id", desc: "WHO: anyone (edge case). WHEN: hit /d/{id} with a dealer ID that doesn't exist — stale IG link, typo, or a dealer that got removed.", badge: "live", badgeClass: "badge-live",
+    context: "Error state test. Correctly shows a 'Dealer not found' error with the empty-state icon. This is the reference for how the other 404s should work (item-404, buy-bad-market)." },
 
-  { id: "invite-bad", title: "Invite — Bad Code", path: "/invite/BADCODE999", desc: "Shows 'YOU'RE INVITED' for any code — doesn't validate. Same page as a valid invite.", badge: "auth", badgeClass: "badge-auth",
-    context: "Invalid invite code, but the page shows the same 'You're Invited' welcome as a valid code. Invite codes aren't being validated on this page." },
+  { id: "invite-bad", title: "Invite — Bad Code (Error State)", path: "/invite/BADCODE999", desc: "WHO: anyone (edge case). WHEN: hit /invite/{code} with a fake or expired code — QA probing, leaked old codes, or someone sharing an invite that's been revoked.", badge: "auth", badgeClass: "badge-auth",
+    context: "Error state test. BUG: shows the same 'YOU'RE INVITED' welcome as a valid code. Invite codes aren't actually validated on this page — any string works. Needs validation + a not-found/expired state." },
 ];
 
 let currentIndex = 0;
