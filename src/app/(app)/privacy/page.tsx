@@ -44,10 +44,51 @@ export default function PrivacyPage() {
           </ul>
 
           <h3 className="text-eb-caption font-bold text-eb-black uppercase tracking-wider pt-2">
+            SMS / Text Messaging
+          </h3>
+          <p>
+            By providing your phone number at sign-up, you consent to receive
+            SMS messages from Early Bird. These messages include:
+          </p>
+          <ul className="list-disc pl-5 space-y-1">
+            <li>Sign-in links (one-time, to log you in)</li>
+            <li>Drop alerts (when a market&apos;s items go live)</li>
+            <li>Price drop notifications (when watched items get cheaper)</li>
+            <li>Inquiry updates (when a buyer or dealer contacts you)</li>
+            <li>Account notifications (dealer approval, hold/sold receipts)</li>
+          </ul>
+          <p className="pt-2">
+            Message frequency varies based on your activity and notification
+            preferences. You can manage which notifications you receive from
+            your Account page.
+          </p>
+          <p className="pt-2">
+            <strong>Opt out:</strong> Reply STOP to any message to unsubscribe
+            from all SMS. You can also disable specific notifications in your
+            Account settings.
+          </p>
+          <p className="pt-2">
+            <strong>Help:</strong> Reply HELP to any message for assistance, or
+            email{" "}
+            <a href="mailto:hello@earlybird.la" className="font-bold text-eb-pop">
+              hello@earlybird.la
+            </a>.
+          </p>
+          <p className="pt-2">
+            Standard message and data rates may apply. Carriers are not liable
+            for delayed or undelivered messages.
+          </p>
+
+          <h3 className="text-eb-caption font-bold text-eb-black uppercase tracking-wider pt-2">
             What We Don&apos;t Do
           </h3>
           <ul className="list-disc pl-5 space-y-1">
             <li>We don&apos;t sell your data to anyone</li>
+            <li>
+              We don&apos;t share your mobile phone number or any mobile
+              information with third parties for promotional or marketing
+              purposes
+            </li>
             <li>We don&apos;t process payments or store financial info</li>
             <li>We don&apos;t track you across other sites</li>
           </ul>
@@ -73,7 +114,10 @@ export default function PrivacyPage() {
             Contact
           </h3>
           <p>
-            Questions? Reach out at earlybird.la.
+            Questions? Email{" "}
+            <a href="mailto:hello@earlybird.la" className="font-bold text-eb-pop">
+              hello@earlybird.la
+            </a>.
           </p>
         </div>
       </main>

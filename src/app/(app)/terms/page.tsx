@@ -63,10 +63,26 @@ export default function TermsPage() {
             SMS Notifications
           </h3>
           <p>
-            By creating an account, you consent to receive transactional SMS
-            messages (login links, hold/sold confirmations). You can control
-            optional notifications from your account settings. Standard message
-            and data rates apply.
+            By providing your phone number at sign-up, you consent to receive
+            SMS messages from Early Bird. These include sign-in links, drop
+            alerts, price drop notifications, inquiry updates, and account
+            notifications (dealer approval, hold/sold receipts). Message
+            frequency varies based on your activity and notification
+            preferences.
+          </p>
+          <ul className="list-disc pl-5 space-y-1">
+            <li>Reply STOP to any message to opt out of all SMS</li>
+            <li>Reply HELP for assistance</li>
+            <li>
+              Manage notification preferences from your Account page at any
+              time
+            </li>
+            <li>Standard message and data rates may apply</li>
+            <li>Carriers are not liable for delayed or undelivered messages</li>
+          </ul>
+          <p className="pt-2">
+            We will not share your mobile phone number or mobile information
+            with third parties for promotional or marketing purposes.
           </p>
 
           <h3 className="text-eb-caption font-bold text-eb-black uppercase tracking-wider pt-2">
