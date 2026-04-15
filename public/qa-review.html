@@ -679,8 +679,8 @@ const PAGES = [
   // NO LOGIN NEEDED — these work for anyone
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  { id: "landing", title: "Landing — Buyer Mode", path: "/", desc: "Hero with market preview grid, item thumbnails with prices, and value prop icons at the bottom.", badge: "live", badgeClass: "badge-live",
-    context: "Default landing for buyers. Shows the current live market, preview of items with prices, three value prop icons, and a phone signup form. 'Dealer →' toggle in the top right switches to dealer mode." },
+  { id: "landing", title: "Landing — Buyer Mode", path: "/", desc: "Hero with market preview grid, item thumbnails with prices, value prop icons, phone signup form with SMS opt-in consent text.", badge: "live", badgeClass: "badge-live",
+    context: "Default landing for buyers. Shows the current live market, preview of items with prices, three value prop icons, and a phone signup form. Below the 'TEXT ME A SIGN-IN LINK' button is the full SMS opt-in disclosure (STOP/HELP/frequency/no third-party sharing). 'Dealer →' toggle in the top right switches to dealer mode." },
 
   { id: "landing-dealer", title: "Landing — Dealer Mode", path: "/#dealer", desc: "Dealer landing with 'Sell before sunrise' hero, approval process explainer, and phone signup form.", badge: "live", badgeClass: "badge-live",
     context: "Dealer-specific landing. Copy explains the approval process ('We'll check out your Instagram, and once approved...'). 'How it works' box shows the 4-step flow. Persists on reload via URL hash. 'Buyer →' toggle to switch back." },
@@ -718,11 +718,11 @@ const PAGES = [
   { id: "onboarding-confirm", title: "Dealer — Application Submitted", path: "/onboarding?dealer=1", desc: "Confirmation screen after dealer submits: checkmark, 'Application submitted', text about IG review, 'START BROWSING' CTA.", badge: "auth", badgeClass: "badge-auth",
     context: "⚠️ This screen appears AFTER the dealer submits the application form. Can't be previewed by URL — it's a state within the onboarding page. Shows a big checkmark, 'Application submitted', 'We're reviewing your Instagram and will text you...', and a 'START BROWSING' button to enter buyer mode." },
 
-  { id: "privacy", title: "Privacy Policy", path: "/privacy", desc: "Full privacy policy. Effective April 2026. Covers data collection, usage, and what we don't do.", badge: "static", badgeClass: "badge-static",
-    context: "Linked from the footer. Scroll through and make sure the language is clear and covers phone numbers, photos, browsing activity, and SMS notifications." },
+  { id: "privacy", title: "Privacy Policy", path: "/privacy", desc: "Full privacy policy with dedicated SMS section. Covers message types, frequency, STOP/HELP, no third-party sharing, carrier disclaimer.", badge: "static", badgeClass: "badge-static",
+    context: "10DLC compliant. Scroll to the 'SMS / Text Messaging' section — must list all message types (sign-in links, drop alerts, price drops, inquiry updates, account notifications), frequency disclosure, STOP to opt out, HELP for assistance, no sharing mobile info with third parties, carrier liability disclaimer. Contact: hello@earlybird.la." },
 
-  { id: "terms", title: "Terms of Service", path: "/terms", desc: "Full terms of use. Covers accounts, listings, transactions, and liability.", badge: "static", badgeClass: "badge-static",
-    context: "Linked from the footer. Scroll through and make sure it covers the key points: in-person transactions, dealer responsibilities, and account rules." },
+  { id: "terms", title: "Terms of Service", path: "/terms", desc: "Full terms of use with expanded SMS section. Covers STOP/HELP, message frequency, no third-party sharing of mobile info.", badge: "static", badgeClass: "badge-static",
+    context: "10DLC compliant. Scroll to 'SMS Notifications' — lists message types, frequency varies, Reply STOP to opt out, Reply HELP for assistance, manage prefs from Account page, no sharing mobile info with third parties for promotional purposes, carrier not liable for delayed messages." },
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // LOG IN AS BUYER FIRST — then review these
