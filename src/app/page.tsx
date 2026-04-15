@@ -449,7 +449,7 @@ export default function LandingPage() {
                 desc: "Every buyer watching that item gets a text the moment you lower the price.",
               },
               {
-                title: "Know what{'\u2019'}s hot before you set up",
+                title: "Know what\u2019s hot before you set up",
                 desc: "See which items have the most watchers. Load the truck accordingly.",
               },
               {
