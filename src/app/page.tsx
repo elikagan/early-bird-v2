@@ -271,7 +271,8 @@ export default function LandingPage() {
                   Sign up
                 </h3>
                 <p className="text-eb-caption text-eb-muted mb-4">
-                  Sign up to get an alert when the pre-market shopping drops.
+                  Get an alert when the pre-market shopping drops and talk
+                  directly to dealers.
                 </p>
                 {phoneForm}
               </section>
