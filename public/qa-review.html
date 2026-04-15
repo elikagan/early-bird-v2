@@ -302,6 +302,36 @@
     border-radius: 0 6px 6px 0;
   }
 
+  /* Auth row (dev-only role switcher) */
+  .auth-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+    flex-shrink: 0;
+    padding: 8px 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    flex-wrap: wrap;
+  }
+  .auth-row .auth-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-right: 4px;
+    flex: 1 1 auto;
+  }
+  .auth-row .auth-label strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+  .auth-row .btn-sm { padding: 4px 8px; font-size: 10px; }
+  .auth-row .btn-role-active {
+    background: var(--accent-dim);
+    border-color: var(--accent-dim);
+    color: #fff;
+  }
+
   /* Navigation */
   .nav-row {
     display: flex;
@@ -626,6 +656,14 @@
     <div class="page-context" id="pageContext"></div>
   </div>
 
+  <div class="auth-row" title="Dev-only — sign in as a test user so '(as Buyer/Dealer/Admin)' pages render correctly">
+    <span class="auth-label">Sign in as: <strong id="authStatus">Signed out</strong></span>
+    <button class="btn btn-sm" id="authBtnBuyer" onclick="devLogin('buyer')">Buyer</button>
+    <button class="btn btn-sm" id="authBtnDealer" onclick="devLogin('dealer')">Dealer</button>
+    <button class="btn btn-sm" id="authBtnAdmin" onclick="devLogin('admin')">Admin</button>
+    <button class="btn btn-sm" id="authBtnSignOut" onclick="devSignOut()">Sign out</button>
+  </div>
+
   <div class="nav-row">
     <button class="btn" id="prevBtn" onclick="navigate(-1)">&larr; Prev</button>
     <div class="page-jump">
@@ -808,6 +846,85 @@ async function loadCommentsFromServer() {
     const res = await fetch("/api/qa-comments");
     if (res.ok) _commentsCache = await res.json();
   } catch {}
+}
+
+// ── Dev-only auth (for signed-in role previews) ──
+// The QA tool shares localStorage with the iframe (same origin), so setting
+// eb_token here makes the iframe render as that user.
+let _currentRole = null;
+
+async function devLogin(role) {
+  const btns = ["authBtnBuyer", "authBtnDealer", "authBtnAdmin", "authBtnSignOut"];
+  btns.forEach((id) => { document.getElementById(id).disabled = true; });
+  try {
+    const res = await fetch("/api/auth/dev-login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role }),
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      alert("Dev login failed: " + (data.error || res.status));
+      return;
+    }
+    const data = await res.json();
+    localStorage.setItem("eb_token", data.token);
+    _currentRole = role;
+    updateAuthStatus();
+    // Reload the iframe so the new auth state takes effect
+    renderPage();
+  } catch (e) {
+    alert("Dev login failed: " + e.message);
+  } finally {
+    btns.forEach((id) => { document.getElementById(id).disabled = false; });
+  }
+}
+
+function devSignOut() {
+  localStorage.removeItem("eb_token");
+  _currentRole = null;
+  updateAuthStatus();
+  renderPage();
+}
+
+async function detectCurrentRole() {
+  const token = localStorage.getItem("eb_token");
+  if (!token) { _currentRole = null; return; }
+  try {
+    const res = await fetch("/api/auth/me", {
+      headers: { Authorization: "Bearer " + token },
+    });
+    if (!res.ok) {
+      // Invalid/expired token — clear it
+      localStorage.removeItem("eb_token");
+      _currentRole = null;
+      return;
+    }
+    const user = await res.json();
+    // Map to a role for display
+    if (user.phone === "+15550000003") _currentRole = "admin";
+    else if (user.is_dealer === 1) _currentRole = "dealer";
+    else _currentRole = "buyer";
+  } catch {
+    _currentRole = null;
+  }
+}
+
+function updateAuthStatus() {
+  const statusEl = document.getElementById("authStatus");
+  const labels = {
+    buyer: "Test Buyer",
+    dealer: "Test Dealer",
+    admin: "Test Admin",
+  };
+  statusEl.textContent = _currentRole ? labels[_currentRole] : "Signed out";
+  ["buyer", "dealer", "admin"].forEach((r) => {
+    const btn = document.getElementById(
+      "authBtn" + r.charAt(0).toUpperCase() + r.slice(1)
+    );
+    if (_currentRole === r) btn.classList.add("btn-role-active");
+    else btn.classList.remove("btn-role-active");
+  });
 }
 
 // ── Render ──
@@ -1115,7 +1232,10 @@ function init() {
     (optgroup || select).appendChild(opt);
   });
 
-  loadCommentsFromServer().then(() => renderPage());
+  Promise.all([loadCommentsFromServer(), detectCurrentRole()]).then(() => {
+    updateAuthStatus();
+    renderPage();
+  });
 }
 
 init();
