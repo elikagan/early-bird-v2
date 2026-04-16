@@ -18,6 +18,13 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: "Early Bird",
   description: "Pre-market marketplace for LA flea markets",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "32x32" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+    apple: "/apple-icon.png",
+  },
 };
 
 export default function RootLayout({
