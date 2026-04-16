@@ -17,7 +17,11 @@ export default function TermsPage() {
           </p>
 
           <p>
-            By using Early Bird (earlybird.la), you agree to these terms.
+            By accessing or using Early Bird (&ldquo;the Service&rdquo; or
+            &ldquo;the Platform&rdquo;), located at earlybird.la and operated
+            by Eli Kagan (&ldquo;we,&rdquo; &ldquo;us,&rdquo; or
+            &ldquo;our&rdquo;), you agree to be bound by these Terms
+            of Use (&ldquo;Terms&rdquo;).
           </p>
 
           <h3 className="text-eb-caption font-bold text-eb-black uppercase tracking-wider pt-2">
@@ -60,12 +64,16 @@ export default function TermsPage() {
             SMS Notifications
           </h3>
           <p>
-            By providing your phone number at sign-up, you consent to receive
-            SMS messages from Early Bird. These include sign-in links, drop
-            alerts, price drop notifications, inquiry updates, and account
-            notifications (dealer approval, hold/sold receipts). Message
-            frequency varies based on your activity and notification
-            preferences.
+            By providing your phone number, you agree to receive SMS
+            notifications from Early Bird. Message frequency may vary.
+            Standard message and data rates may apply. Reply STOP to opt
+            out. Reply HELP for help.
+          </p>
+          <p className="pt-2">
+            These messages include sign-in links, drop alerts, price drop
+            notifications, inquiry updates, and account notifications
+            (dealer approval, hold/sold receipts). You can manage which
+            notifications you receive from your Account page at any time.
           </p>
           <ul className="list-disc pl-5 space-y-1">
             <li>Reply STOP to any message to opt out of all SMS</li>
@@ -74,12 +82,16 @@ export default function TermsPage() {
               Manage notification preferences from your Account page at any
               time
             </li>
-            <li>Standard message and data rates may apply</li>
             <li>Carriers are not liable for delayed or undelivered messages</li>
           </ul>
           <p className="pt-2">
-            We will not share your mobile phone number or mobile information
-            with third parties for promotional or marketing purposes.
+            We will not share or sell your opt-in to an SMS campaign with any
+            third party for purposes unrelated to providing you with the
+            services of that campaign. We may share your Personal Data,
+            including your SMS opt-in or consent status, with third parties
+            that help us provide our messaging services, including but not
+            limited to platform providers, phone companies, and any other
+            vendors who assist us in the delivery of text messages.
           </p>
 
           <h3 className="text-eb-caption font-bold text-eb-black uppercase tracking-wider pt-2">

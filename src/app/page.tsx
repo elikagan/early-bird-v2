@@ -169,8 +169,10 @@ export default function LandingPage() {
       >
         {sending ? "SENDING\u2026" : "SIGN IN"}
       </button>
-      <p className="text-eb-micro text-eb-light mt-1.5">
-        Msg &amp; data rates may apply. STOP to cancel.{" "}
+      <p className="text-eb-micro text-eb-light mt-1.5 leading-relaxed">
+        Msg &amp; data rates may apply. Frequency varies. Reply STOP to
+        opt out, HELP for help. We will not share mobile info with third
+        parties for marketing.{" "}
         <a href="/terms" className="underline">Terms</a>
         {" \u00b7 "}
         <a href="/privacy" className="underline">Privacy</a>
@@ -412,10 +414,6 @@ export default function LandingPage() {
                 Dealer sign up {"\u2192"}
               </button>
             </p>
-            <p className="text-eb-micro text-center text-eb-light leading-relaxed">
-              Early Bird is not affiliated with any market or organizer. We simply
-              allow dealers to post items they{"\u2019"}re bringing.
-            </p>
           </footer>
         </>
       ) : (
@@ -492,7 +490,7 @@ export default function LandingPage() {
             ))}
           </section>
 
-          <footer className="px-5 py-6 mt-auto border-t border-eb-border">
+          <footer className="px-5 py-6 border-t border-eb-border">
             <p className="text-eb-meta text-center text-eb-muted">
               Just here to shop?{" "}
               <button onClick={toggleMode} className="font-bold text-eb-pop">
@@ -502,6 +500,41 @@ export default function LandingPage() {
           </footer>
         </>
       )}
+
+      {/* ════════════════════════════════════
+          SITE FOOTER — A2P compliance
+      ════════════════════════════════════ */}
+      <footer className="px-5 py-8 border-t-2 border-eb-black mt-auto">
+        <div className="text-eb-meta font-bold text-eb-black uppercase tracking-wider">
+          Early Bird
+        </div>
+        <div className="text-eb-micro text-eb-muted mt-1">
+          Los Angeles, CA
+        </div>
+        <div className="mt-3">
+          <a
+            href="mailto:hi@earlybird.la"
+            className="text-eb-micro text-eb-muted"
+          >
+            hi@earlybird.la
+          </a>
+        </div>
+        <div className="flex gap-4 mt-4">
+          <a href="/terms" className="text-eb-micro text-eb-muted underline">
+            Terms
+          </a>
+          <a href="/privacy" className="text-eb-micro text-eb-muted underline">
+            Privacy
+          </a>
+        </div>
+        <p className="text-eb-micro text-eb-light mt-4 leading-relaxed">
+          Early Bird is not affiliated with any market or organizer. We
+          simply allow dealers to post items they{"\u2019"}re bringing.
+        </p>
+        <div className="text-eb-micro text-eb-light mt-3">
+          {"\u00a9"} {new Date().getFullYear()} Early Bird
+        </div>
+      </footer>
     </div>
   );
 }

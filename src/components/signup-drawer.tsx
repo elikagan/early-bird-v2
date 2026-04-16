@@ -104,8 +104,10 @@ export function SignupDrawer({
             >
               {sending ? "SENDING\u2026" : "SIGN IN"}
             </button>
-            <p className="text-eb-micro text-eb-light mt-1.5 text-center">
-              Msg &amp; data rates may apply. STOP to cancel.{" "}
+            <p className="text-eb-micro text-eb-light mt-1.5 text-center leading-relaxed">
+              Msg &amp; data rates may apply. Frequency varies. Reply STOP to
+              opt out, HELP for help. We will not share mobile info with third
+              parties for marketing.{" "}
               <a href="/terms" className="underline">Terms</a>
               {" \u00b7 "}
               <a href="/privacy" className="underline">Privacy</a>

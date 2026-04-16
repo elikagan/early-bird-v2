@@ -41,11 +41,16 @@ export default function PrivacyPage() {
           </ul>
 
           <h3 className="text-eb-caption font-bold text-eb-black uppercase tracking-wider pt-2">
-            SMS / Text Messaging
+            Communications &amp; SMS / Text Messaging
           </h3>
           <p>
-            By providing your phone number at sign-up, you consent to receive
-            SMS messages from Early Bird. These messages include:
+            By providing your phone number, you agree to receive SMS
+            notifications from Early Bird. Message frequency may vary.
+            Standard message and data rates may apply. Reply STOP to opt
+            out. Reply HELP for help.
+          </p>
+          <p className="pt-2">
+            These messages include:
           </p>
           <ul className="list-disc pl-5 space-y-1">
             <li>Sign-in links (one-time, to log you in)</li>
@@ -55,14 +60,10 @@ export default function PrivacyPage() {
             <li>Account notifications (dealer approval, hold/sold receipts)</li>
           </ul>
           <p className="pt-2">
-            Message frequency varies based on your activity and notification
-            preferences. You can manage which notifications you receive from
-            your Account page.
-          </p>
-          <p className="pt-2">
-            <strong>Opt out:</strong> Reply STOP to any message to unsubscribe
-            from all SMS. You can also disable specific notifications in your
-            Account settings.
+            You can manage which notifications you receive from your Account
+            page at any time. You may also reply STOP to any message to
+            unsubscribe from all SMS, or disable specific notifications in
+            your Account settings.
           </p>
           <p className="pt-2">
             <strong>Help:</strong> Reply HELP to any message for assistance, or
@@ -72,23 +73,27 @@ export default function PrivacyPage() {
             </a>.
           </p>
           <p className="pt-2">
-            Standard message and data rates may apply. Carriers are not liable
-            for delayed or undelivered messages.
+            Carriers are not liable for delayed or undelivered messages.
           </p>
 
           <h3 className="text-eb-caption font-bold text-eb-black uppercase tracking-wider pt-2">
-            What We Don&apos;t Do
+            Sharing &amp; Selling of Information
           </h3>
-          <ul className="list-disc pl-5 space-y-1">
-            <li>We don&apos;t sell your data to anyone</li>
-            <li>
-              We don&apos;t share your mobile phone number or any mobile
-              information with third parties for promotional or marketing
-              purposes
-            </li>
-            <li>We don&apos;t process payments or store financial info</li>
-            <li>We don&apos;t track you across other sites</li>
-          </ul>
+          <p>
+            We will not share or sell your opt-in to an SMS campaign with any
+            third party for purposes unrelated to providing you with the
+            services of that campaign. We may share your Personal Data,
+            including your SMS opt-in or consent status, with third parties
+            that help us provide our messaging services, including but not
+            limited to platform providers, phone companies, and any other
+            vendors who assist us in the delivery of text messages.
+          </p>
+          <p className="pt-2">
+            Beyond SMS service providers, we do not sell, rent, or share
+            your personal information with third parties for promotional or
+            marketing purposes. We do not process payments or store financial
+            information. We do not track you across other sites.
+          </p>
 
           <h3 className="text-eb-caption font-bold text-eb-black uppercase tracking-wider pt-2">
             Data Storage
