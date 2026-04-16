@@ -286,8 +286,8 @@ export default function LandingPage() {
                   See items before everyone else
                 </h3>
                 <p className="text-eb-caption text-eb-muted mt-1 mb-4">
-                  We text you the moment dealers post — hours before the
-                  4am crowd.
+                  Get a text when the drop goes live — browse and claim
+                  items before the 4am crowd.
                 </p>
                 {phoneForm}
               </section>
@@ -337,8 +337,8 @@ export default function LandingPage() {
                   See items before everyone else
                 </h3>
                 <p className="text-eb-caption text-eb-muted mt-1 mb-4">
-                  We text you the moment dealers post — hours before the
-                  4am crowd.
+                  Get a text when the drop goes live — browse and claim
+                  items before the 4am crowd.
                 </p>
                 {phoneForm}
               </section>
