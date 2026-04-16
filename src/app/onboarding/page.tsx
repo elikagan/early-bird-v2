@@ -224,6 +224,7 @@ function OnboardingContent() {
         ref={avatarInputRef}
         type="file"
         accept="image/*"
+        capture="user"
         className="hidden"
         onChange={(e) => {
           const file = e.target.files?.[0];
@@ -240,7 +241,7 @@ function OnboardingContent() {
         </h2>
         <p className="mt-2 text-eb-body text-eb-muted">
           {isDealerSignup
-            ? "Fill this out and we\u2019ll review your application. Takes about a minute."
+            ? "Fill this out and we\u2019ll review your application."
             : "Takes 30 seconds. Then you can start shopping."}
         </p>
       </section>

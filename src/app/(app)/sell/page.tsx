@@ -203,8 +203,8 @@ function SellContent() {
           <p className="text-eb-caption text-eb-muted mb-3 leading-relaxed">
             Post this link so buyers can see everything you{"\u2019"}re bringing.
           </p>
-          <div className="flex gap-2">
-            <div className="flex-1 py-3 px-4 bg-white border-2 border-eb-border text-eb-caption text-eb-text truncate">
+          <div className="flex gap-2 items-stretch">
+            <div className="flex-1 flex items-center py-3 px-4 bg-white border-2 border-eb-border text-eb-caption text-eb-text truncate">
               earlybird.la/d/{user.dealer_id}
             </div>
             <button
@@ -214,7 +214,7 @@ function SellContent() {
                 setLinkCopied(true);
                 setTimeout(() => setLinkCopied(false), 2000);
               }}
-              className="px-4 py-3 bg-eb-black text-white text-eb-caption font-bold uppercase tracking-wider shrink-0 border-2 border-eb-black"
+              className="flex items-center px-4 py-3 bg-eb-black text-white text-eb-caption font-bold uppercase tracking-wider shrink-0 border-2 border-eb-black"
             >
               {linkCopied ? "Copied!" : "Copy"}
             </button>

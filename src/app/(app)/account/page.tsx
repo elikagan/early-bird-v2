@@ -378,6 +378,7 @@ export default function AccountPage() {
         ref={avatarInputRef}
         type="file"
         accept="image/*"
+        capture="user"
         className="hidden"
         onChange={(e) => {
           const file = e.target.files?.[0];
@@ -413,7 +414,7 @@ export default function AccountPage() {
                   <span className="eb-spinner-sm" />
                 </span>
               ) : (
-                <span className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-eb-black text-white rounded-full flex items-center justify-center text-eb-micro font-bold leading-none border border-white/50">
+                <span className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-eb-black text-white rounded-full flex items-center justify-center text-eb-micro font-bold leading-none border-2 border-white/60">
                   +
                 </span>
               )}
