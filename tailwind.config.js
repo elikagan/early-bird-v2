@@ -35,7 +35,7 @@ module.exports = {
         'eb-body':    ['15px', { lineHeight: '1.7',  fontWeight: '400' }],
         'eb-caption':  ['13px', { lineHeight: '1.3',  fontWeight: '400' }],
         'eb-meta':    ['12px', { lineHeight: '1.4',  fontWeight: '400' }],
-        'eb-micro':   ['11px',  { lineHeight: '1.2',  fontWeight: '700' }],
+        'eb-micro':   ['11px',  { lineHeight: '1.4',  fontWeight: '400' }],
       },
     },
   },
