@@ -302,8 +302,8 @@ export default function LandingPage() {
                   Shop before <span className="text-eb-pop">sunrise.</span>
                 </h2>
                 <p className="mt-4 text-eb-body text-eb-muted leading-relaxed">
-                  Dealers post prices the night before. You browse from your couch,
-                  text the ones you want, and show up ready.
+                  Dealers post what they{"\u2019"}re bringing before each market. You
+                  browse from your couch, text the ones you want, and show up ready.
                 </p>
               </section>
 

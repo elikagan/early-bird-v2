@@ -265,7 +265,7 @@ export default function HomePage() {
             ) : (
               <>
                 <p>
-                  Dealers post photos and prices the night before each flea
+                  Dealers post what they&apos;re bringing before each flea
                   market. You browse from your couch, save what you like, and
                   reach out before the crowd shows up at 4am.
                 </p>
