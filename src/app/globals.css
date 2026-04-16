@@ -19,12 +19,17 @@
     --eb-red: #DC2626;
   }
 
+  html {
+    overflow-x: hidden;
+  }
+
   body {
     background: var(--eb-bg);
     color: var(--eb-text);
     max-width: 430px;
     margin: 0 auto;
     padding-bottom: 56px;
+    overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
   }
 }
