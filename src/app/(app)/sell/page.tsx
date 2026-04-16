@@ -8,6 +8,7 @@ import { useRequireAuth } from "@/lib/require-auth";
 import { apiFetch } from "@/lib/api-client";
 import { formatPrice, formatDate } from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
+import { Masthead } from "@/components/masthead";
 
 interface Item {
   id: string;
@@ -142,12 +143,7 @@ function SellContent() {
 
   return (
     <>
-      {/* Masthead */}
-      <header className="eb-masthead">
-        <Link href="/home">
-          <h1>EARLY BIRD</h1>
-        </Link>
-      </header>
+      <Masthead right={null} />
 
       {/* Stats */}
       <div className="eb-stats border-b border-eb-border">

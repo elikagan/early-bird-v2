@@ -9,6 +9,7 @@ import { apiFetch } from "@/lib/api-client";
 import { processImage } from "@/lib/image-processing";
 import { formatPhone, getInitials } from "@/lib/format";
 import { InstagramInput } from "@/components/instagram-input";
+import { Masthead } from "@/components/masthead";
 
 interface Market {
   id: string;
@@ -180,9 +181,7 @@ function OnboardingContent() {
   if (submitted) {
     return (
       <div className="min-h-screen flex flex-col">
-        <div className="eb-masthead">
-          <h1>EARLY BIRD</h1>
-        </div>
+        <Masthead href={null} right={null} />
 
         <section className="px-5 pt-12 pb-6 flex-1 flex flex-col items-center justify-center text-center">
           <div className="text-eb-hero text-eb-pop mb-4">{"\u2713"}</div>
@@ -232,10 +231,7 @@ function OnboardingContent() {
         }}
       />
 
-      {/* Masthead */}
-      <div className="eb-masthead">
-        <h1>EARLY BIRD</h1>
-      </div>
+      <Masthead href={null} right={null} />
 
       {/* Intro */}
       <section className="px-5 pt-8 pb-4">

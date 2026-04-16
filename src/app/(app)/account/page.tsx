@@ -11,6 +11,7 @@ import { getInitials, formatPhone } from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
 import { DealerApplyDrawer } from "@/components/dealer-apply-drawer";
 import { InstagramInput } from "@/components/instagram-input";
+import { Masthead } from "@/components/masthead";
 
 interface UserProfile {
   id: string;
@@ -370,12 +371,7 @@ export default function AccountPage() {
 
   return (
     <>
-      {/* Header */}
-      <header className="eb-masthead">
-        <Link href="/home">
-          <h1>EARLY BIRD</h1>
-        </Link>
-      </header>
+      <Masthead right={null} />
 
       {/* Hidden avatar file input */}
       <input

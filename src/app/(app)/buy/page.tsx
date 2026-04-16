@@ -8,7 +8,7 @@ import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
 import { getInitials, formatPrice, formatDate } from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
-import { SignInLink } from "@/components/sign-in-link";
+import { Masthead } from "@/components/masthead";
 import { NotFoundScreen } from "@/components/not-found-screen";
 
 const PROMO_IMAGES = ["/promo/hero.webp", "/promo/2.webp", "/promo/3.webp"];
@@ -109,14 +109,7 @@ function BuyFeedContent() {
   if (!market) {
     return (
       <>
-        <header className="eb-masthead">
-          <div className="flex justify-between items-center">
-            <Link href="/home">
-              <h1>EARLY BIRD</h1>
-            </Link>
-            <SignInLink />
-          </div>
-        </header>
+        <Masthead />
         <NotFoundScreen
           message="We couldn\u2019t find this market. It may have been removed or the link might be wrong."
           action={{ label: "Browse markets", href: "/home" }}
@@ -138,14 +131,7 @@ function BuyFeedContent() {
 
     return (
       <>
-        <header className="eb-masthead">
-          <div className="flex justify-between items-center">
-            <Link href="/home">
-              <h1>EARLY BIRD</h1>
-            </Link>
-            <SignInLink />
-          </div>
-        </header>
+        <Masthead />
 
         <main className="pb-24">
           {/* Countdown */}
@@ -223,15 +209,7 @@ function BuyFeedContent() {
 
   return (
     <>
-      {/* Masthead */}
-      <header className="eb-masthead">
-        <div className="flex justify-between items-center">
-          <Link href="/home">
-            <h1>EARLY BIRD</h1>
-          </Link>
-          <SignInLink />
-        </div>
-      </header>
+      <Masthead />
 
       {/* Drop bar */}
       <div className="eb-drop-bar">

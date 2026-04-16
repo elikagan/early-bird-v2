@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
-import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { useRequireAuth } from "@/lib/require-auth";
 import { apiFetch } from "@/lib/api-client";
 import { formatPhone, formatDate, formatPrice, heroCountdown, timeAgo } from "@/lib/format";
+import { Masthead } from "@/components/masthead";
 
 /* ─── Types ─── */
 
@@ -142,11 +142,7 @@ function AdminPage() {
 
   return (
     <>
-      <header className="eb-masthead">
-        <Link href="/home">
-          <h1>EARLY BIRD</h1>
-        </Link>
-      </header>
+      <Masthead right={null} />
 
       {/* Tab bar */}
       <div className="flex border-b-2 border-eb-black overflow-x-auto">

@@ -1,17 +1,10 @@
 import Link from "next/link";
-import { SignInLink } from "@/components/sign-in-link";
+import { Masthead } from "@/components/masthead";
 
 export default function TermsPage() {
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="eb-masthead">
-        <div className="flex justify-between items-center">
-          <Link href="/home">
-            <h1>EARLY BIRD</h1>
-          </Link>
-          <SignInLink />
-        </div>
-      </header>
+      <Masthead />
 
       <main className="px-5 py-6 max-w-lg">
         <h2 className="text-eb-body font-bold text-eb-black uppercase tracking-wider mb-4">

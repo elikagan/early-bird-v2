@@ -7,6 +7,7 @@ import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
 import { getInitials, formatPrice } from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
+import { Masthead } from "@/components/masthead";
 import { SignupDrawer } from "@/components/signup-drawer";
 
 interface FavItem {
@@ -61,11 +62,7 @@ export default function WatchingPage() {
   if (!user) {
     return (
       <>
-        <header className="eb-masthead">
-          <Link href="/home">
-            <h1>EARLY BIRD</h1>
-          </Link>
-        </header>
+        <Masthead right={null} />
         <div className="eb-empty">
           <div className="eb-icon">{"\u2661"}</div>
           <p>
@@ -95,11 +92,7 @@ export default function WatchingPage() {
 
   return (
     <>
-      <header className="eb-masthead">
-        <Link href="/home">
-          <h1>EARLY BIRD</h1>
-        </Link>
-      </header>
+      <Masthead right={null} />
 
       <main className="pb-24">
         {items.length > 0 ? (

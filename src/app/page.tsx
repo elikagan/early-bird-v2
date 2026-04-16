@@ -7,6 +7,7 @@ import Image from "next/image";
 import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
 import { formatDate, heroCountdown, formatPrice } from "@/lib/format";
+import { Masthead } from "@/components/masthead";
 
 interface Market {
   id: string;
@@ -175,18 +176,17 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* ─── Masthead ─── */}
-      <div className="eb-masthead">
-        <div className="flex justify-between items-center">
-          <h1>EARLY BIRD</h1>
+      <Masthead
+        href={null}
+        right={
           <button
             onClick={toggleMode}
             className="text-eb-meta uppercase tracking-widest text-eb-muted"
           >
             {mode === "buyer" ? "Dealer \u2192" : "Buyer \u2192"}
           </button>
-        </div>
-      </div>
+        }
+      />
 
       {mode === "buyer" ? (
         <>

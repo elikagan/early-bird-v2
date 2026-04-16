@@ -7,6 +7,7 @@ import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
 import { formatDate, daysUntil, heroCountdown } from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
+import { Masthead } from "@/components/masthead";
 
 interface Market {
   id: string;
@@ -73,9 +74,7 @@ export default function HomePage() {
 
   return (
     <>
-      <header className="eb-masthead">
-        <h1>EARLY BIRD</h1>
-      </header>
+      <Masthead href={null} right={null} />
 
       {/* Pending dealer application banner */}
       {pendingApp && (

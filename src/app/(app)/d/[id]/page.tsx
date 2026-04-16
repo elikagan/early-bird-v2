@@ -9,7 +9,7 @@ import { apiFetch } from "@/lib/api-client";
 import { getInitials, formatPrice, formatDate } from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
 import { SignupDrawer } from "@/components/signup-drawer";
-import { SignInLink } from "@/components/sign-in-link";
+import { Masthead } from "@/components/masthead";
 
 interface DealerProfile {
   id: string;
@@ -103,14 +103,7 @@ function DealerPageContent() {
   if (!dealer) {
     return (
       <>
-        <header className="eb-masthead">
-          <div className="flex justify-between items-center">
-            <Link href="/home">
-              <h1>EARLY BIRD</h1>
-            </Link>
-            <SignInLink />
-          </div>
-        </header>
+        <Masthead />
         <div className="eb-empty">
           <div className="eb-icon">{"\u2205"}</div>
           <p>Dealer not found.</p>
@@ -125,14 +118,7 @@ function DealerPageContent() {
 
   return (
     <>
-      <header className="eb-masthead">
-        <div className="flex justify-between items-center">
-          <Link href="/home">
-            <h1>EARLY BIRD</h1>
-          </Link>
-          <SignInLink />
-        </div>
-      </header>
+      <Masthead />
 
       {/* Market context bar */}
       {market && (
