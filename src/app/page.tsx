@@ -140,6 +140,7 @@ export default function LandingPage() {
     </div>
   ) : (
     <>
+      {/* Input group — tight */}
       <input
         type="tel"
         inputMode="tel"
@@ -148,7 +149,7 @@ export default function LandingPage() {
         value={phone}
         onChange={(e) => setPhone(e.target.value)}
       />
-      <label className="flex items-start gap-2.5 mt-3 cursor-pointer">
+      <label className="flex items-start gap-2.5 mt-2 cursor-pointer">
         <input
           type="checkbox"
           checked={smsConsent}
@@ -159,14 +160,16 @@ export default function LandingPage() {
           Text me when new items drop
         </span>
       </label>
+
+      {/* Action group — breathe above, tight below */}
       <button
-        className="eb-btn mt-3"
+        className="eb-btn mt-5"
         onClick={handleSend}
         disabled={sending}
       >
         {sending ? "SENDING\u2026" : "SIGN IN"}
       </button>
-      <p className="text-eb-micro text-eb-light mt-2">
+      <p className="text-eb-micro text-eb-light mt-1.5">
         Msg &amp; data rates may apply. STOP to cancel.{" "}
         <a href="/terms" className="underline">Terms</a>
         {" \u00b7 "}
