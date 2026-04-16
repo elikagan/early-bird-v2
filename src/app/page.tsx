@@ -198,7 +198,7 @@ export default function LandingPage() {
           {liveMarket ? (
             <>
               {/* Hero */}
-              <section className="px-6 pt-10 pb-2">
+              <section className="px-5 pt-10 pb-2">
                 <span className="inline-block text-eb-micro uppercase tracking-wider text-eb-pop bg-eb-pop-light px-1.5 py-0.5 mb-4 font-bold">
                   LIVE NOW
                 </span>
@@ -212,7 +212,7 @@ export default function LandingPage() {
 
               {/* Preview grid — real items from the market */}
               {previewItems.length > 0 && (
-                <section className="px-6 pt-4 pb-2">
+                <section className="px-5 pt-4 pb-2">
                   <div className="grid grid-cols-3 gap-1">
                     {previewItems.map((item) => (
                       <Link
@@ -243,17 +243,17 @@ export default function LandingPage() {
               )}
 
               {/* Browse CTA */}
-              <section className="px-6 pt-4 pb-6">
+              <section className="px-5 pt-4 pb-6">
                 <Link
                   href={`/buy?market=${liveMarket.id}`}
                   className="eb-btn text-center block"
                 >
-                  BROWSE {liveMarket.item_count > 0 ? `ALL ${liveMarket.item_count} ITEMS` : "THE MARKET"} {"\u2192"}
+                  SHOP THE MARKET {"\u2192"}
                 </Link>
               </section>
 
               {/* Value props — tight, scannable */}
-              <section className="px-6 py-6 border-t border-eb-border">
+              <section className="px-5 py-6 border-t border-eb-border">
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
                     <div className="text-eb-display text-eb-black">{"\u2709"}</div>
@@ -277,7 +277,7 @@ export default function LandingPage() {
               </section>
 
               {/* Signup — positioned after they've seen the goods */}
-              <section className="px-6 pt-6 pb-8 border-t border-eb-border bg-eb-cream">
+              <section className="px-5 pt-6 pb-8 border-t border-eb-border bg-eb-cream">
                 <h3 className="text-eb-body font-bold text-eb-black mb-1">
                   Sign up
                 </h3>
@@ -293,7 +293,7 @@ export default function LandingPage() {
               {/* ════════════════════════════════════
                   NO LIVE MARKET — build anticipation
               ════════════════════════════════════ */}
-              <section className="px-6 pt-12 pb-6">
+              <section className="px-5 pt-12 pb-6">
                 <h2 className="text-eb-hero tracking-tight text-eb-black">
                   Shop before <span className="text-eb-pop">sunrise.</span>
                 </h2>
@@ -304,7 +304,7 @@ export default function LandingPage() {
               </section>
 
               {/* Value props — same as live, always relevant */}
-              <section className="px-6 py-6 border-t border-eb-border">
+              <section className="px-5 py-6 border-t border-eb-border">
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
                     <div className="text-eb-display text-eb-black">{"\u2709"}</div>
@@ -328,7 +328,7 @@ export default function LandingPage() {
               </section>
 
               {/* Signup — prominent when no market to browse */}
-              <section className="px-6 pt-6 pb-8 border-t border-eb-border bg-eb-cream">
+              <section className="px-5 pt-6 pb-8 border-t border-eb-border bg-eb-cream">
                 <h3 className="text-eb-body font-bold text-eb-black mb-1">
                   {upcomingMarkets.length > 0
                     ? "Sign up to get notified when items drop"
@@ -345,7 +345,7 @@ export default function LandingPage() {
 
           {/* Upcoming markets */}
           {upcomingMarkets.length > 0 && (
-            <section className="px-6 pb-6">
+            <section className="px-5 pb-6">
               <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-3">
                 Coming up
               </div>
@@ -374,7 +374,7 @@ export default function LandingPage() {
           )}
 
           {/* How it works */}
-          <section className="px-6 py-6 border-t border-eb-border">
+          <section className="px-5 py-6 border-t border-eb-border">
             <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-4">
               How it works
             </div>
@@ -405,7 +405,7 @@ export default function LandingPage() {
           <div className="py-6 text-center text-eb-meta text-eb-light italic">
             The early bird gets the credenza.
           </div>
-          <footer className="px-6 py-6 border-t border-eb-border space-y-3">
+          <footer className="px-5 py-6 border-t border-eb-border space-y-3">
             <p className="text-eb-meta text-center text-eb-muted">
               Selling at a market?{" "}
               <button onClick={toggleMode} className="font-bold text-eb-pop">
@@ -423,7 +423,7 @@ export default function LandingPage() {
           {/* ════════════════════════════════════
               DEALER MODE
           ════════════════════════════════════ */}
-          <section className="px-6 pt-12 pb-6">
+          <section className="px-5 pt-12 pb-6">
             <h2 className="text-eb-hero tracking-tight text-eb-black">
               Sell before{" "}
               <span className="text-eb-pop">sunrise.</span>
@@ -435,23 +435,23 @@ export default function LandingPage() {
             </p>
           </section>
 
-          <section className="px-6 pb-8">{phoneForm}</section>
+          <section className="px-5 pb-8">{phoneForm}</section>
 
           {/* Social proof / key stat */}
-          <section className="px-6 pb-8">
+          <section className="px-5 pb-8">
             <div className="border-t-2 border-eb-black pt-6">
-              <div className="text-eb-display text-eb-pop font-bold">$0</div>
+              <div className="text-eb-display text-eb-pop font-bold">100%</div>
               <div className="text-eb-body font-bold text-eb-black mt-1">
-                No fees. No commissions. Ever.
+                You keep every dollar.
               </div>
               <p className="text-eb-caption text-eb-muted mt-1 leading-relaxed">
-                You keep every dollar. We make money when the markets grow,
-                not when you sell.
+                No fees. No commissions. No cut. We make money when the
+                markets grow, not when you sell.
               </p>
             </div>
           </section>
 
-          <section className="px-6 pb-8">
+          <section className="px-5 pb-8">
             {[
               {
                 title: "Buyers text you directly",
@@ -484,7 +484,7 @@ export default function LandingPage() {
             ))}
           </section>
 
-          <footer className="px-6 py-6 mt-auto border-t border-eb-border">
+          <footer className="px-5 py-6 mt-auto border-t border-eb-border">
             <p className="text-eb-meta text-center text-eb-muted">
               Just here to shop?{" "}
               <button onClick={toggleMode} className="font-bold text-eb-pop">

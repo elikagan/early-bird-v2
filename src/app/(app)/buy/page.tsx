@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
 import { getInitials, formatPrice, formatDate } from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
+import { SignInLink } from "@/components/sign-in-link";
 
 const PROMO_IMAGES = ["/promo/hero.webp", "/promo/2.webp", "/promo/3.webp"];
 const CYCLE_INTERVAL = 5000; // 5s per image
@@ -117,9 +118,12 @@ function BuyFeedContent() {
     return (
       <>
         <header className="eb-masthead">
-          <Link href="/home">
-            <h1>EARLY BIRD</h1>
-          </Link>
+          <div className="flex justify-between items-center">
+            <Link href="/home">
+              <h1>EARLY BIRD</h1>
+            </Link>
+            <SignInLink />
+          </div>
         </header>
 
         <main className="pb-24">
@@ -200,9 +204,12 @@ function BuyFeedContent() {
     <>
       {/* Masthead */}
       <header className="eb-masthead">
-        <Link href="/home">
-          <h1>EARLY BIRD</h1>
-        </Link>
+        <div className="flex justify-between items-center">
+          <Link href="/home">
+            <h1>EARLY BIRD</h1>
+          </Link>
+          <SignInLink />
+        </div>
       </header>
 
       {/* Drop bar */}

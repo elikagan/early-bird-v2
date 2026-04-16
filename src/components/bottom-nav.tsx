@@ -1,9 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
-import { SignupDrawer } from "./signup-drawer";
 
 type Tab = "buy" | "watching" | "sell" | "account" | null;
 
@@ -19,7 +17,6 @@ export function BottomNav({
   const { user } = useAuth();
   const isDealer = user?.is_dealer === 1;
   const isLoggedIn = !!user;
-  const [showSignup, setShowSignup] = useState(false);
   const watchLabel =
     watchingCount != null && watchingCount > 0
       ? `Watching (${watchingCount})`
@@ -27,21 +24,11 @@ export function BottomNav({
   const sellLabel =
     sellCount != null && sellCount > 0 ? `Sell (${sellCount})` : "Sell";
 
-  if (!isLoggedIn) {
-    return (
-      <>
-        <nav className="eb-bnav">
-          <button onClick={() => setShowSignup(true)}>
-            <span className="eb-active">Sign Up</span>
-          </button>
-        </nav>
-        <SignupDrawer
-          open={showSignup}
-          onClose={() => setShowSignup(false)}
-        />
-      </>
-    );
-  }
+  // Signed-out users never see the bottom nav. They reach sign-in via
+  // the top-right SignInLink in the masthead, matching web conventions
+  // (Airbnb, Etsy, StockX, Depop). The previous lone-button signed-out
+  // branch rendered as a 5px-tall vestigial bar — dead code removed.
+  if (!isLoggedIn) return null;
 
   return (
     <nav className="eb-bnav">

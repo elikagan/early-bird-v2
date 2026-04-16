@@ -1,12 +1,16 @@
 import Link from "next/link";
+import { SignInLink } from "@/components/sign-in-link";
 
 export default function PrivacyPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <header className="eb-masthead">
-        <Link href="/home">
-          <h1>EARLY BIRD</h1>
-        </Link>
+        <div className="flex justify-between items-center">
+          <Link href="/home">
+            <h1>EARLY BIRD</h1>
+          </Link>
+          <SignInLink />
+        </div>
       </header>
 
       <main className="px-5 py-6 max-w-lg">

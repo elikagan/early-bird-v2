@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
 import { formatDate, daysUntil, heroCountdown } from "@/lib/format";
@@ -19,12 +20,20 @@ interface Market {
 }
 
 export default function HomePage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
   const [markets, setMarkets] = useState<Market[]>([]);
   const [loading, setLoading] = useState(true);
   const [pendingApp, setPendingApp] = useState(false);
 
   const isDealer = user?.is_dealer === 1;
+
+  // /home is the signed-in landing. Signed-out users belong on /.
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace("/");
+    }
+  }, [authLoading, user, router]);
 
   useEffect(() => {
     async function load() {
@@ -44,7 +53,7 @@ export default function HomePage() {
     load();
   }, [user, isDealer]);
 
-  if (loading) {
+  if (authLoading || loading || !user) {
     return (
       <>
         <div className="flex-1 flex items-center justify-center">

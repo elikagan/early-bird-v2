@@ -9,6 +9,7 @@ import { apiFetch } from "@/lib/api-client";
 import { getInitials, formatPrice, formatDate } from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
 import { SignupDrawer } from "@/components/signup-drawer";
+import { SignInLink } from "@/components/sign-in-link";
 
 interface DealerProfile {
   id: string;
@@ -103,9 +104,12 @@ function DealerPageContent() {
     return (
       <>
         <header className="eb-masthead">
-          <Link href="/home">
-            <h1>EARLY BIRD</h1>
-          </Link>
+          <div className="flex justify-between items-center">
+            <Link href="/home">
+              <h1>EARLY BIRD</h1>
+            </Link>
+            <SignInLink />
+          </div>
         </header>
         <div className="eb-empty">
           <div className="eb-icon">{"\u2205"}</div>
@@ -122,9 +126,12 @@ function DealerPageContent() {
   return (
     <>
       <header className="eb-masthead">
-        <Link href="/home">
-          <h1>EARLY BIRD</h1>
-        </Link>
+        <div className="flex justify-between items-center">
+          <Link href="/home">
+            <h1>EARLY BIRD</h1>
+          </Link>
+          <SignInLink />
+        </div>
       </header>
 
       {/* Dealer profile card */}
