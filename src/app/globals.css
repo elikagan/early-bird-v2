@@ -24,11 +24,10 @@
     overflow-x: hidden;
   }
 
-  /* Fine print (eb-micro only) uses Inter for legibility.
-     Everything else stays JetBrains Mono — it's the brand. */
-  .text-eb-micro {
-    font-family: var(--eb-font-readable);
-  }
+  /* Fine print uses Inter for legibility. Apply font-readable
+     directly to legal/disclaimer elements — NOT to text-eb-micro
+     globally, since that class is used for badges, labels, and
+     brand-identity UI throughout the site. */
 
   body {
     background: var(--eb-bg);

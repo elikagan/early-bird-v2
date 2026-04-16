@@ -178,7 +178,7 @@ export default function InvitePage() {
                 {submitting ? "Setting up\u2026" : "Get Started"}
               </button>
 
-              <p className="text-eb-micro text-eb-muted text-center leading-relaxed">
+              <p className="text-eb-micro font-readable text-eb-muted text-center leading-relaxed">
                 We&apos;ll text you a login link to verify your number.
               </p>
             </div>

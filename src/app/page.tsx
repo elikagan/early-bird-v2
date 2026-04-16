@@ -169,7 +169,7 @@ export default function LandingPage() {
       >
         {sending ? "SENDING\u2026" : "SIGN IN"}
       </button>
-      <p className="text-eb-micro text-eb-muted mt-1.5 leading-relaxed">
+      <p className="text-eb-micro font-readable text-eb-muted mt-1.5 leading-relaxed">
         Msg &amp; data rates may apply. Frequency varies. Reply STOP to
         opt out, HELP for help. We will not share mobile info with third
         parties for marketing.{" "}
@@ -535,11 +535,11 @@ export default function LandingPage() {
             Privacy
           </a>
         </div>
-        <p className="text-eb-micro text-eb-muted mt-4 leading-relaxed">
+        <p className="text-eb-micro font-readable text-eb-muted mt-4 leading-relaxed">
           Early Bird is not affiliated with any market or organizer. We
           simply allow dealers to post items they{"\u2019"}re bringing.
         </p>
-        <div className="text-eb-micro text-eb-muted mt-3">
+        <div className="text-eb-micro font-readable text-eb-muted mt-3">
           {"\u00a9"} {new Date().getFullYear()} Early Bird
         </div>
       </footer>
