@@ -44,18 +44,22 @@ Mockup source: `/tmp/eb-designs/` (5 HTML files)
 
 ## Typography
 
-**Font:** JetBrains Mono — everything. No exceptions. It's the brand.
+**Brand font:** JetBrains Mono — headings, body, buttons, navigation. The monospace is the brand.
+
+**Readable font:** Inter — small text only (meta + micro, 12px and below). Sans-serif for legibility at small sizes. Fine print, timestamps, tags, section labels, dealer names in grids.
+
+Tailwind: `font-sans` = JetBrains Mono, `font-readable` = Inter. The split is automatic — `text-eb-micro` and `text-eb-meta` trigger Inter via CSS. Component classes in globals.css also set it explicitly.
 
 ### Scale (7 sizes)
-| Name | Size | Weight | Use |
-|------|------|--------|-----|
-| `hero` | 32px | 700 | Landing headline only |
-| `display` | 24px | 700 | Market name, item price (detail) |
-| `title` | 17px | 700 | Masthead, card titles (detail view) |
-| `body` | 15px | 400–500 | Descriptions, form inputs, buttons |
-| `caption` | 13px | 400–700 | Grid titles, nav items, drop bar |
-| `meta` | 12px | 400–500 | Section labels, dealer info, dates |
-| `micro` | 11px | 700 | Tags, badges, fine print, timestamps |
+| Name | Size | Weight | Font | Use |
+|------|------|--------|------|-----|
+| `hero` | 32px | 700 | Mono | Landing headline only |
+| `display` | 24px | 700 | Mono | Market name, item price (detail) |
+| `title` | 17px | 700 | Mono | Masthead, card titles (detail view) |
+| `body` | 15px | 400–500 | Mono | Descriptions, form inputs, buttons |
+| `caption` | 13px | 400–700 | Mono | Grid titles, nav items, drop bar |
+| `meta` | 12px | 400–500 | **Inter** | Section labels, dealer info, dates |
+| `micro` | 11px | 700 | **Inter** | Tags, badges, fine print, timestamps |
 
 ### Letter Spacing
 - Uppercase labels: `0.08–0.1em`
@@ -205,3 +209,5 @@ colors: {
 ```
 
 Use as: `text-eb-pop`, `bg-eb-bg`, `border-eb-border`, etc.
+
+Font families: `font-sans` (JetBrains Mono), `font-readable` (Inter). Small text gets Inter automatically via CSS — no need to add `font-readable` manually when using `text-eb-micro` or `text-eb-meta`.

@@ -9,6 +9,7 @@ module.exports = {
       fontFamily: {
         sans: ['var(--font-jetbrains-mono)', '"JetBrains Mono"', '"IBM Plex Mono"', 'monospace'],
         mono: ['var(--font-jetbrains-mono)', '"JetBrains Mono"', '"IBM Plex Mono"', 'monospace'],
+        readable: ['var(--font-inter)', 'Inter', 'system-ui', 'sans-serif'],
       },
       colors: {
         eb: {
