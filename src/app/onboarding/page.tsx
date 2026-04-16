@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
 import { processImage } from "@/lib/image-processing";
 import { formatPhone, getInitials } from "@/lib/format";
+import { InstagramInput } from "@/components/instagram-input";
 
 interface Market {
   id: string;
@@ -183,7 +184,7 @@ function OnboardingContent() {
           <h1>EARLY BIRD</h1>
         </div>
 
-        <section className="px-6 pt-12 pb-6 flex-1 flex flex-col items-center justify-center text-center">
+        <section className="px-5 pt-12 pb-6 flex-1 flex flex-col items-center justify-center text-center">
           <div className="text-eb-hero text-eb-pop mb-4">{"\u2713"}</div>
           <h2 className="text-eb-display text-eb-black mb-2">
             Application submitted.
@@ -198,7 +199,7 @@ function OnboardingContent() {
           </p>
         </section>
 
-        <footer className="px-6 py-6 border-t-2 border-eb-black">
+        <footer className="px-5 py-6 border-t-2 border-eb-black">
           <button
             className="eb-cta"
             onClick={() => router.replace("/home")}
@@ -237,7 +238,7 @@ function OnboardingContent() {
       </div>
 
       {/* Intro */}
-      <section className="px-6 pt-8 pb-4">
+      <section className="px-5 pt-8 pb-4">
         <h2 className="text-eb-display text-eb-black">
           {isDealerSignup ? "Apply to sell." : "Get set up."}
         </h2>
@@ -249,7 +250,7 @@ function OnboardingContent() {
       </section>
 
       {/* Your name */}
-      <section className="px-6 py-5 border-t-2 border-eb-black">
+      <section className="px-5 py-5 border-t-2 border-eb-black">
         <div className="flex items-baseline gap-3 mb-3">
           <span className="text-eb-body font-bold text-eb-pop">
             {nextStep()}
@@ -273,7 +274,7 @@ function OnboardingContent() {
       </section>
 
       {/* Phone (readonly) */}
-      <section className="px-6 py-5 border-t border-eb-border">
+      <section className="px-5 py-5 border-t border-eb-border">
         <div className="flex items-baseline gap-3 mb-3">
           <span className="text-eb-body font-bold text-eb-pop">
             {nextStep()}
@@ -297,7 +298,7 @@ function OnboardingContent() {
 
       {/* Dealer: Photo */}
       {isDealerSignup && (
-        <section className="px-6 py-5 border-t border-eb-border">
+        <section className="px-5 py-5 border-t border-eb-border">
           <div className="flex items-baseline gap-3 mb-3">
             <span className="text-eb-body font-bold text-eb-pop">
               {nextStep()}
@@ -354,7 +355,7 @@ function OnboardingContent() {
 
       {/* Dealer: Business name */}
       {isDealerSignup && (
-        <section className="px-6 py-5 border-t border-eb-border">
+        <section className="px-5 py-5 border-t border-eb-border">
           <div className="flex items-baseline gap-3 mb-3">
             <span className="text-eb-body font-bold text-eb-pop">
               {nextStep()}
@@ -375,7 +376,7 @@ function OnboardingContent() {
 
       {/* Dealer: Instagram */}
       {isDealerSignup && (
-        <section className="px-6 py-5 border-t border-eb-border">
+        <section className="px-5 py-5 border-t border-eb-border">
           <div className="flex items-baseline gap-3 mb-3">
             <span className="text-eb-body font-bold text-eb-pop">
               {nextStep()}
@@ -384,12 +385,9 @@ function OnboardingContent() {
               Instagram
             </span>
           </div>
-          <input
-            type="text"
-            placeholder="@yourhandle"
-            className="eb-input"
+          <InstagramInput
             value={instagram}
-            onChange={(e) => setInstagram(e.target.value.slice(0, 31))}
+            onChange={setInstagram}
           />
           <p className="text-eb-meta text-eb-muted mt-1.5">
             We review your Instagram to verify your business.
@@ -399,7 +397,7 @@ function OnboardingContent() {
 
       {/* Markets */}
       {markets.length > 0 && (
-        <section className="px-6 py-5 border-t border-eb-border">
+        <section className="px-5 py-5 border-t border-eb-border">
           <div className="flex items-baseline gap-3 mb-3">
             <span className="text-eb-body font-bold text-eb-pop">
               {nextStep()}
@@ -432,7 +430,7 @@ function OnboardingContent() {
       )}
 
       {/* Notifications */}
-      <section className="px-6 py-5 border-t border-eb-border">
+      <section className="px-5 py-5 border-t border-eb-border">
         <div className="flex items-baseline gap-3 mb-3">
           <span className="text-eb-body font-bold text-eb-pop">
             {nextStep()}
@@ -486,7 +484,7 @@ function OnboardingContent() {
 
       {/* Dealer: Terms */}
       {isDealerSignup && (
-        <section className="px-6 py-5 border-t border-eb-border">
+        <section className="px-5 py-5 border-t border-eb-border">
           <label className="flex items-start gap-3 cursor-pointer">
             <input
               type="checkbox"
@@ -509,7 +507,7 @@ function OnboardingContent() {
       )}
 
       {/* Continue */}
-      <footer className="px-6 py-6 mt-auto border-t-2 border-eb-black">
+      <footer className="px-5 py-6 mt-auto border-t-2 border-eb-black">
         {dealerError && (
           <p className="text-eb-meta text-eb-red mb-3">{dealerError}</p>
         )}

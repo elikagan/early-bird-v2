@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
 import { formatPhone } from "@/lib/format";
+import { InstagramInput } from "@/components/instagram-input";
 
 interface Props {
   open: boolean;
@@ -95,13 +96,7 @@ export function DealerApplyDrawer({ open, onClose, onSubmitted }: Props) {
             <label className="text-eb-micro text-eb-muted uppercase tracking-widest block mb-1">
               Instagram
             </label>
-            <input
-              type="text"
-              className="eb-input"
-              value={ig}
-              onChange={(e) => setIg(e.target.value.slice(0, 31))}
-              placeholder="@yourhandle"
-            />
+            <InstagramInput value={ig} onChange={setIg} />
           </div>
 
           <p className="text-eb-micro text-eb-muted">

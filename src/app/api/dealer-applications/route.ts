@@ -23,7 +23,7 @@ export async function POST(request: Request) {
   if (!instagram_handle || typeof instagram_handle !== "string" || !instagram_handle.trim()) {
     return error("Instagram handle is required for dealer applications");
   }
-  let igClean: string | null = String(instagram_handle).trim().replace(/^@/, "");
+  const igClean: string = String(instagram_handle).trim().replace(/^@/, "");
   if (!/^[a-zA-Z0-9._]{1,30}$/.test(igClean)) {
     return error("Invalid Instagram handle");
   }

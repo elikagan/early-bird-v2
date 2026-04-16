@@ -38,9 +38,12 @@ export default function LandingPage() {
   const [markets, setMarkets] = useState<Market[]>([]);
   const [previewItems, setPreviewItems] = useState<PreviewItem[]>([]);
 
-  // Persist dealer mode via URL hash
+  // Persist dealer mode via URL hash. Reading window.location has to
+  // happen post-mount (SSR has no window), so setState-in-effect is the
+  // correct pattern here despite what the cascading-render lint rule says.
   useEffect(() => {
     if (window.location.hash === "#dealer") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setMode("dealer");
     }
   }, []);

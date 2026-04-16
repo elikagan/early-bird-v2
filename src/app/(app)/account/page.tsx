@@ -10,6 +10,7 @@ import { processImage } from "@/lib/image-processing";
 import { getInitials, formatPhone } from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
 import { DealerApplyDrawer } from "@/components/dealer-apply-drawer";
+import { InstagramInput } from "@/components/instagram-input";
 
 interface UserProfile {
   id: string;
@@ -416,7 +417,7 @@ export default function AccountPage() {
                   <span className="eb-spinner-sm" />
                 </span>
               ) : (
-                <span className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-eb-black text-white rounded-full flex items-center justify-center text-eb-micro font-bold leading-none">
+                <span className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-eb-black text-white rounded-full flex items-center justify-center text-eb-micro font-bold leading-none border border-white/50">
                   +
                 </span>
               )}
@@ -609,20 +610,14 @@ export default function AccountPage() {
                 <span className="text-eb-meta text-eb-light">Optional</span>
               </div>
             </div>
-            <input
-              type="text"
-              className="eb-input"
+            <InstagramInput
               value={igValue}
-              onChange={(e) => setIgValue(e.target.value.slice(0, 31))}
+              onChange={setIgValue}
               onBlur={() => {
-                const cleaned = igValue.startsWith("@")
-                  ? igValue.slice(1)
-                  : igValue;
-                if (cleaned !== (profile.instagram_handle || "")) {
-                  saveField("instagram_handle", cleaned);
+                if (igValue !== (profile.instagram_handle || "")) {
+                  saveField("instagram_handle", igValue);
                 }
               }}
-              placeholder="@yourhandle"
             />
           </section>
         </>

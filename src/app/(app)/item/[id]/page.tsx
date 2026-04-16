@@ -761,8 +761,8 @@ export default function ItemDetailPage() {
             <h1 className="text-eb-display text-eb-black leading-tight">
               {item.title}
             </h1>
-            <div className="flex items-baseline gap-2.5 mt-2">
-              <span className="text-eb-display text-eb-black">
+            <div className="flex items-center gap-2.5 mt-2">
+              <span className="text-eb-title text-eb-muted">
                 {formatPrice(item.price)}
               </span>
               {item.original_price && (
@@ -1058,9 +1058,11 @@ export default function ItemDetailPage() {
           )}
           {(item.status === "live" || item.status === "hold") && user && (
             <>
-              <button className="eb-cta" onClick={() => setShowInquiry(true)}>
-                I&apos;M INTERESTED {"\u2192"}
-              </button>
+              <section className="px-5 pb-4">
+                <button className="eb-cta" onClick={() => setShowInquiry(true)}>
+                  I&apos;M INTERESTED {"\u2192"}
+                </button>
+              </section>
               <p className="text-eb-meta text-eb-muted text-center px-5 pb-8 leading-relaxed">
                 Sends {item.dealer_name} a text with your name and number. You deal
                 directly.
@@ -1068,15 +1070,17 @@ export default function ItemDetailPage() {
             </>
           )}
           {(item.status === "live" || item.status === "hold") && !user && (
-            <button
-              className="eb-cta"
-              onClick={() => {
-                localStorage.setItem("eb_return_to", `/item/${id}`);
-                setShowSignup(true);
-              }}
-            >
-              I{"\u2019"}M INTERESTED {"\u2192"}
-            </button>
+            <section className="px-5 pb-8">
+              <button
+                className="eb-cta"
+                onClick={() => {
+                  localStorage.setItem("eb_return_to", `/item/${id}`);
+                  setShowSignup(true);
+                }}
+              >
+                I{"\u2019"}M INTERESTED {"\u2192"}
+              </button>
+            </section>
           )}
         </>
       )}
