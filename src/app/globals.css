@@ -125,14 +125,23 @@
   }
   .eb-grid-card .eb-fav {
     position: absolute;
-    top: 6px;
-    right: 6px;
+    top: 8px;
+    right: 8px;
     z-index: 1;
-    font-size: 14px;
-    line-height: 1;
-    color: var(--eb-pop);
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    width: 30px;
+    height: 30px;
+    background: rgba(255, 255, 255, 0.92);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
     pointer-events: none;
+  }
+  .eb-grid-card .eb-fav svg {
+    width: 16px;
+    height: 16px;
+    fill: var(--eb-pop);
   }
   .eb-grid-card .eb-photo {
     width: 100%;
