@@ -303,7 +303,7 @@ export default function LandingPage() {
                 </h2>
                 <p className="mt-4 text-eb-body text-eb-muted leading-relaxed">
                   Dealers post what they{"\u2019"}re bringing before each market. You
-                  browse from your couch, text the ones you want, and show up ready.
+                  browse from your couch and reach out to the ones you want.
                 </p>
               </section>
 
