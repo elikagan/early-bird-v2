@@ -94,7 +94,7 @@ export function SignupDrawer({
                 className="shrink-0 accent-eb-black"
               />
               <span className="text-eb-meta text-eb-muted">
-                {consentLabel || "Text me when new items drop"}
+                {consentLabel || "Text me when the drop goes live"}
               </span>
             </label>
             <button

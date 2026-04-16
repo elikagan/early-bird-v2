@@ -157,7 +157,7 @@ export default function LandingPage() {
           className="shrink-0 accent-eb-black"
         />
         <span className="text-eb-meta text-eb-muted">
-          {mode === "dealer" ? "Text me about upcoming markets" : "Text me when new items drop"}
+          {mode === "dealer" ? "Text me about upcoming markets" : "Text me when the drop goes live"}
         </span>
       </label>
 
