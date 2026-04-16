@@ -654,34 +654,26 @@
 
   .fix-dot:hover .fix-tooltip { opacity: 1; pointer-events: auto; }
 
-  /* Right-side dots: tooltip extends right */
-  .fix-dot.dot-right .fix-tooltip {
+  /* All tooltips extend right into controls column */
+  .fix-dot .fix-tooltip {
     left: calc(100% + 10px);
     top: 50%;
     transform: translateY(-50%);
   }
 
-  /* Left-side dots: tooltip extends left */
-  .fix-dot.dot-left .fix-tooltip {
-    right: calc(100% + 10px);
-    top: 50%;
-    transform: translateY(-50%);
-  }
-
   /* Connector line from dot to tooltip */
-  .fix-dot.dot-right::after,
-  .fix-dot.dot-left::after {
+  .fix-dot::after {
     content: "";
     position: absolute;
     top: 50%;
+    left: 100%;
     width: 10px;
     height: 1px;
     background: #ff4fa0;
     opacity: 0;
     transition: opacity 0.15s;
+    transform: translateY(-50%);
   }
-  .fix-dot.dot-right::after { left: 100%; transform: translateY(-50%); }
-  .fix-dot.dot-left::after { right: 100%; transform: translateY(-50%); }
   .fix-dot:hover::after { opacity: 0.5; }
 
   .fix-legend {
@@ -1479,25 +1471,19 @@ function renderFixDots() {
   // phone-column is 440px wide, 20px padding, frame is 393px centered
   const colW = 440;
   const frameW = 393;
-  const frameLeft = (colW - frameW) / 2; // ~23.5
-  const frameRight = frameLeft + frameW; // ~416.5
+  const frameRight = (colW - frameW) / 2 + frameW; // ~416.5
 
-  // Vertical range: 15% to 85% of phone-column height
-  const topPct = 15;
-  const bottomPct = 85;
+  // Vertical range: 12% to 88% of phone-column height
+  const topPct = 12;
+  const bottomPct = 88;
   const rangePct = bottomPct - topPct;
 
   fixes.forEach((text, i) => {
     const dot = document.createElement("div");
     dot.className = "fix-dot";
 
-    // Alternate left/right
-    const isRight = i % 2 === 0;
-    dot.classList.add(isRight ? "dot-right" : "dot-left");
-
-    // Horizontal position: just outside the frame edge
-    const x = isRight ? frameRight + 2 : frameLeft - 12;
-    dot.style.left = x + "px";
+    // All dots on the right edge of the frame
+    dot.style.left = (frameRight + 3) + "px";
 
     // Vertical position: evenly distributed
     const pct = fixes.length === 1
