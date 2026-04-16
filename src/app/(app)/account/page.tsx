@@ -435,7 +435,7 @@ export default function AccountPage() {
                       setPhoneSent(false);
                       setEditingPhone(true);
                     }}
-                    className="text-eb-micro text-eb-light underline"
+                    className="text-eb-micro text-eb-muted underline"
                   >
                     change
                   </button>
@@ -448,7 +448,7 @@ export default function AccountPage() {
                 setEditingName(true);
                 setNameError(null);
               }}
-              className="text-eb-micro text-eb-light underline"
+              className="text-eb-micro text-eb-muted underline"
             >
               edit
             </button>
@@ -604,7 +604,7 @@ export default function AccountPage() {
               </span>
               <div className="flex items-center gap-2">
                 {igSaving && <span className="eb-spinner-sm" />}
-                <span className="text-eb-meta text-eb-light">Optional</span>
+                <span className="text-eb-meta text-eb-muted">Optional</span>
               </div>
             </div>
             <InstagramInput

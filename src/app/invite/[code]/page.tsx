@@ -163,7 +163,7 @@ export default function InvitePage() {
               <div>
                 <label className="text-eb-micro text-eb-muted uppercase tracking-widest block mb-1">
                   Instagram
-                  <span className="text-eb-light ml-1">optional</span>
+                  <span className="text-eb-muted ml-1">optional</span>
                 </label>
                 <InstagramInput value={ig} onChange={setIg} />
               </div>
@@ -178,7 +178,7 @@ export default function InvitePage() {
                 {submitting ? "Setting up\u2026" : "Get Started"}
               </button>
 
-              <p className="text-eb-micro text-eb-light text-center leading-relaxed">
+              <p className="text-eb-micro text-eb-muted text-center leading-relaxed">
                 We&apos;ll text you a login link to verify your number.
               </p>
             </div>

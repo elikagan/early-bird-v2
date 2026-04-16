@@ -20,8 +20,8 @@ Mockup source: `/tmp/eb-designs/` (5 HTML files)
 |-------|-------|-----|
 | `--black` | `#1a1a1a` | Headings, borders, primary text |
 | `--text` | `#2a2a2a` | Body text |
-| `--muted` | `#888888` | Secondary text, labels, meta |
-| `--light` | `#bbbbbb` | Placeholders, disabled |
+| `--muted` | `#666666` | Secondary text, labels, meta (5.74:1 AA ✓) |
+| `--light` | `#999999` | Placeholders, decorative only (not readable text) |
 | `--border` | `#e0e0e0` | Dividers, card borders |
 | `--bg` | `#FAFAF6` | Page background (warm off-white) |
 | `--white` | `#ffffff` | Inputs, overlays |
@@ -51,11 +51,11 @@ Mockup source: `/tmp/eb-designs/` (5 HTML files)
 |------|------|--------|-----|
 | `hero` | 32px | 700 | Landing headline only |
 | `display` | 24px | 700 | Market name, item price (detail) |
-| `title` | 15–16px | 700 | Masthead, card titles (detail view) |
-| `body` | 13px | 400–500 | Descriptions, form inputs, buttons |
-| `caption` | 12px | 400–700 | Grid titles, nav items, drop bar |
-| `meta` | 10–11px | 400–500 | Section labels, dealer info, dates |
-| `micro` | 8–9px | 700 | Tags, badges, dealer names in grids |
+| `title` | 17px | 700 | Masthead, card titles (detail view) |
+| `body` | 15px | 400–500 | Descriptions, form inputs, buttons |
+| `caption` | 13px | 400–700 | Grid titles, nav items, drop bar |
+| `meta` | 12px | 400–500 | Section labels, dealer info, dates |
+| `micro` | 11px | 700 | Tags, badges, fine print, timestamps |
 
 ### Letter Spacing
 - Uppercase labels: `0.08–0.1em`
@@ -92,7 +92,7 @@ Mockup source: `/tmp/eb-designs/` (5 HTML files)
 
 ### Masthead
 - "EARLY BIRD" — 15px, 700, letter-spacing 0.08em
-- Subtitle below — 10px, muted
+- Subtitle below — 12px, muted
 - 2px solid black border-bottom
 
 ### Drop Bar
@@ -101,22 +101,22 @@ Mockup source: `/tmp/eb-designs/` (5 HTML files)
 - Countdown right-aligned, bold
 
 ### Section Label
-- 10px, uppercase, letter-spacing 0.1em, muted
+- 12px, uppercase, letter-spacing 0.1em, muted
 - Optional right-side count
 
 ### 2-Column Grid Card
 - Square photo (1:1 aspect ratio)
-- Below photo: title (12px bold) → price (13px bold) → dealer face (18px circle) + name (9px muted)
+- Below photo: title (13px bold) → price (13px bold) → dealer face (18px circle) + name (11px muted)
 - 12px gap between cards, 12px side padding
 - 1px border separator between cells (optional — currently using gap only)
 
 ### Tags
-- **FIRM**: 8px, bold, uppercase, 1.5px solid black border
-- **% Drop**: 8px, bold, pop color + border, -1.5deg rotation
-- **NEW**: 8px, bold, pop color, pop-light background pill
+- **FIRM**: 10px, bold, uppercase, 1.5px solid black border
+- **% Drop**: 10px, bold, pop color + border, -1.5deg rotation
+- **NEW**: 10px, bold, pop color, pop-light background pill
 
 ### Status Dot + Text
-- 6px circle (green/amber/red) + 10px muted text
+- 6px circle (green/amber/red) + 12px muted text
 - Placed below dealer row in grid cards
 - Only show when status is notable (not "available" — that's the default)
 
@@ -155,10 +155,10 @@ Mockup source: `/tmp/eb-designs/` (5 HTML files)
 
 ### Stats Bar (Market Detail)
 - 3 columns, flex
-- Number: 26px bold, label: 9px muted uppercase
+- Number: 26px bold, label: 11px muted uppercase
 
 ### Empty State
-- Centered, icon (28px muted), paragraph (12px muted), link (12px pop bold)
+- Centered, icon (28px muted), paragraph (13px muted), link (13px pop bold)
 
 ---
 
@@ -189,8 +189,8 @@ colors: {
   eb: {
     black: '#1a1a1a',
     text: '#2a2a2a',
-    muted: '#888888',
-    light: '#bbbbbb',
+    muted: '#666666',
+    light: '#999999',
     border: '#e0e0e0',
     bg: '#FAFAF6',
     white: '#ffffff',

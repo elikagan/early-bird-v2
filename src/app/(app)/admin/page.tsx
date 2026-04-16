@@ -263,7 +263,7 @@ function DashboardTab({ setTab }: { setTab: (t: Tab) => void }) {
                 <div className="text-eb-caption text-eb-text">
                   {actionLabel(a)}
                 </div>
-                <div className="text-eb-micro text-eb-light shrink-0 ml-3">
+                <div className="text-eb-micro text-eb-muted shrink-0 ml-3">
                   {timeAgo(a.created_at)}
                 </div>
               </div>
@@ -595,7 +595,7 @@ function MarketsTab() {
                   <div className="text-eb-body font-bold text-eb-muted">
                     {m.name}
                   </div>
-                  <div className="text-eb-meta text-eb-light mt-0.5">
+                  <div className="text-eb-meta text-eb-muted mt-0.5">
                     {formatDate(m.starts_at)} · {m.item_count} items
                   </div>
                   <div className="flex gap-2 mt-3">
@@ -978,7 +978,7 @@ function DealersTab() {
                                 {detailData.actions.map((a: AdminAction) => (
                                   <div key={a.id} className="flex justify-between py-1 text-eb-micro text-eb-muted">
                                     <span>{actionLabel(a)}</span>
-                                    <span className="text-eb-light">{timeAgo(a.created_at)}</span>
+                                    <span className="text-eb-muted">{timeAgo(a.created_at)}</span>
                                   </div>
                                 ))}
                               </div>
@@ -1025,7 +1025,7 @@ function DealersTab() {
                       <div className="text-eb-meta text-eb-muted mt-0.5">@{app.instagram_handle}</div>
                     )}
                     <div className="text-eb-meta text-eb-muted mt-0.5">{formatPhone(app.phone)}</div>
-                    <div className="text-eb-micro text-eb-light mt-1">
+                    <div className="text-eb-micro text-eb-muted mt-1">
                       Applied {new Date(app.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                     </div>
                     {appFilter === "pending" && (
@@ -1331,7 +1331,7 @@ function ItemsTab() {
                                     {"\u201C"}{inq.message}{"\u201D"}
                                   </div>
                                 )}
-                                <div className="text-eb-micro text-eb-light mt-0.5">
+                                <div className="text-eb-micro text-eb-muted mt-0.5">
                                   {timeAgo(inq.created_at)}
                                 </div>
                               </div>
@@ -1583,7 +1583,7 @@ function SmsTab() {
                       <span className="text-eb-micro text-eb-muted">{b.market_name}</span>
                     )}
                   </div>
-                  <span className="text-eb-micro text-eb-light">{timeAgo(b.created_at)}</span>
+                  <span className="text-eb-micro text-eb-muted">{timeAgo(b.created_at)}</span>
                 </div>
                 <div className="text-eb-caption text-eb-text mt-2 break-words">
                   {b.message.length > 120 ? b.message.slice(0, 120) + "\u2026" : b.message}

@@ -104,7 +104,7 @@ export function SignupDrawer({
             >
               {sending ? "SENDING\u2026" : "SIGN IN"}
             </button>
-            <p className="text-eb-micro text-eb-light mt-1.5 text-center leading-relaxed">
+            <p className="text-eb-micro text-eb-muted mt-1.5 text-center leading-relaxed">
               Msg &amp; data rates may apply. Frequency varies. Reply STOP to
               opt out, HELP for help. We will not share mobile info with third
               parties for marketing.{" "}
