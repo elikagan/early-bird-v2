@@ -280,9 +280,13 @@ export default function LandingPage() {
 
               {/* Signup */}
               <section className="px-5 pt-6 pb-8 border-t border-eb-border bg-eb-cream">
-                <h3 className="text-eb-body font-bold text-eb-black mb-3">
-                  Sign up
+                <h3 className="text-eb-body font-bold text-eb-black">
+                  See items before everyone else
                 </h3>
+                <p className="text-eb-caption text-eb-muted mt-1 mb-4">
+                  We text you the moment dealers post — hours before the
+                  4am crowd.
+                </p>
                 {phoneForm}
               </section>
             </>
@@ -327,9 +331,13 @@ export default function LandingPage() {
 
               {/* Signup */}
               <section className="px-5 pt-6 pb-8 border-t border-eb-border bg-eb-cream">
-                <h3 className="text-eb-body font-bold text-eb-black mb-3">
-                  Sign up
+                <h3 className="text-eb-body font-bold text-eb-black">
+                  See items before everyone else
                 </h3>
+                <p className="text-eb-caption text-eb-muted mt-1 mb-4">
+                  We text you the moment dealers post — hours before the
+                  4am crowd.
+                </p>
                 {phoneForm}
               </section>
             </>
