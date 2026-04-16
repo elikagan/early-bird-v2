@@ -8,7 +8,7 @@ import { nanoid } from "nanoid";
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const { phone, dealer } = body;
+  const { phone, dealer, sms_consent } = body;
 
   if (!phone) return error("phone is required");
 
@@ -18,10 +18,24 @@ export async function POST(request: Request) {
     args: [phone],
   });
 
+  let userId: string;
   if (existing.rows.length === 0) {
+    userId = newId();
     await db.execute({
       sql: `INSERT INTO users (id, phone) VALUES (?, ?)`,
-      args: [newId(), phone],
+      args: [userId, phone],
+    });
+  } else {
+    userId = (existing.rows[0] as Record<string, unknown>).id as string;
+  }
+
+  // Record SMS marketing consent as notification preference
+  if (typeof sms_consent === "boolean") {
+    await db.execute({
+      sql: `INSERT INTO notification_preferences (id, user_id, key, enabled)
+            VALUES (?, ?, 'drop_alerts', ?)
+            ON CONFLICT(user_id, key) DO UPDATE SET enabled = excluded.enabled`,
+      args: [newId(), userId, sms_consent ? 1 : 0],
     });
   }
 

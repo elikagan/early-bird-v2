@@ -83,8 +83,8 @@ export default function WatchingPage() {
         <SignupDrawer
           open={showSignup}
           onClose={() => setShowSignup(false)}
-          headline="Sign up to watch items"
-          subtext="Save your favorites and get texted when prices drop."
+          headline="Never miss a price drop"
+          subtext="Save items and get texted the instant a price changes."
         />
       </>
     );

@@ -265,8 +265,8 @@ function DealerPageContent() {
       <SignupDrawer
         open={showSignup}
         onClose={() => setShowSignup(false)}
-        headline="Sign up to see details"
-        subtext="Get item details, contact dealers, save favorites, and get notified about drops."
+        headline="See the full collection"
+        subtext="Get early access to prices, photos, and direct dealer contact."
       />
     </>
   );

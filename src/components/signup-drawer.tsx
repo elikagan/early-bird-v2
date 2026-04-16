@@ -8,13 +8,16 @@ export function SignupDrawer({
   onClose,
   headline,
   subtext,
+  consentLabel,
 }: {
   open: boolean;
   onClose: () => void;
   headline?: string;
   subtext?: string;
+  consentLabel?: string;
 }) {
   const [phone, setPhone] = useState("");
+  const [smsConsent, setSmsConsent] = useState(false);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
 
@@ -32,7 +35,7 @@ export function SignupDrawer({
           : `+${digits}`;
     const res = await apiFetch("/api/auth/start", {
       method: "POST",
-      body: JSON.stringify({ phone: formatted }),
+      body: JSON.stringify({ phone: formatted, sms_consent: smsConsent }),
     });
     setSending(false);
     if (res.ok) setSent(true);
@@ -53,16 +56,17 @@ export function SignupDrawer({
               Check your texts
             </h3>
             <p className="text-eb-caption text-eb-muted leading-relaxed">
-              We texted a sign-in link to {phone}. Tap it to get in.
+              Sign-in link sent to {phone}.
             </p>
             <button
               onClick={() => {
                 setSent(false);
                 setPhone("");
+                setSmsConsent(false);
               }}
-              className="text-eb-meta text-eb-light mt-4 block"
+              className="text-eb-meta text-eb-muted mt-3"
             >
-              Didn&apos;t get it? Try again
+              Try again
             </button>
           </>
         ) : (
@@ -75,22 +79,36 @@ export function SignupDrawer({
             </p>
             <input
               type="tel"
+              inputMode="tel"
               placeholder="(213) 555-0134"
               className="eb-input"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               autoFocus
             />
+            <label className="flex items-start gap-2.5 mt-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={smsConsent}
+                onChange={(e) => setSmsConsent(e.target.checked)}
+                className="mt-0.5 shrink-0 accent-eb-black"
+              />
+              <span className="text-eb-meta text-eb-muted">
+                {consentLabel || "Text me when new items drop"}
+              </span>
+            </label>
             <button
-              className="eb-btn mt-3"
+              className="eb-btn mt-5"
               onClick={handleSend}
               disabled={sending}
             >
-              {sending ? "SENDING\u2026" : "TEXT ME A SIGN-IN LINK"}
+              {sending ? "SENDING\u2026" : "SIGN IN"}
             </button>
-            <p className="text-eb-micro text-eb-light mt-3 text-center leading-relaxed">
-              Early Bird is not affiliated with any market or organizer.
-              We simply allow dealers to post items they{"\u2019"}re bringing.
+            <p className="text-eb-micro text-eb-light mt-1.5 text-center">
+              Msg &amp; data rates may apply. STOP to cancel.{" "}
+              <a href="/terms" className="underline">Terms</a>
+              {" \u00b7 "}
+              <a href="/privacy" className="underline">Privacy</a>
             </p>
           </>
         )}

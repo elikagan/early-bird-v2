@@ -1307,8 +1307,8 @@ export default function ItemDetailPage() {
       <SignupDrawer
         open={showSignup}
         onClose={() => setShowSignup(false)}
-        headline="Sign up to continue"
-        subtext="Create a free account to save items, contact dealers, and get notified about drops."
+        headline="Don't lose this one"
+        subtext="Sign up to save it, message the dealer, or watch for a price drop."
       />
     </>
   );

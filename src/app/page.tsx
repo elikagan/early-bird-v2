@@ -157,7 +157,7 @@ export default function LandingPage() {
           className="mt-0.5 shrink-0 accent-eb-black"
         />
         <span className="text-eb-meta text-eb-muted">
-          Text me when new items drop
+          {mode === "dealer" ? "Text me about upcoming markets" : "Text me when new items drop"}
         </span>
       </label>
 
@@ -435,7 +435,15 @@ export default function LandingPage() {
             </p>
           </section>
 
-          <section className="px-5 pb-6">{phoneForm}</section>
+          <section className="px-5 pt-6 pb-8 border-t border-eb-border bg-eb-cream">
+            <h3 className="text-eb-body font-bold text-eb-black">
+              Get buyers before you load the truck
+            </h3>
+            <p className="text-eb-caption text-eb-muted mt-1 mb-4">
+              We text you when new markets open for listing.
+            </p>
+            {phoneForm}
+          </section>
 
           {/* Social proof / key stat */}
           <section className="px-5 pb-6">
