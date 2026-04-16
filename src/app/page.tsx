@@ -125,15 +125,17 @@ export default function LandingPage() {
   // Shared phone form
   const phoneForm = sent ? (
     <div>
-      <p className="text-eb-display font-bold text-eb-black">Check your texts</p>
-      <p className="text-eb-body text-eb-muted mt-2">
-        We texted a sign-in link to {phone}. Tap it to get in.
+      <p className="text-eb-body font-bold text-eb-black">
+        Check your texts.
+      </p>
+      <p className="text-eb-caption text-eb-muted mt-1">
+        Sign-in link sent to {phone}.
       </p>
       <button
         onClick={() => { setSent(false); setPhone(""); setSmsConsent(false); }}
-        className="text-eb-meta text-eb-light mt-4"
+        className="text-eb-meta text-eb-muted mt-3"
       >
-        Didn&apos;t get it? Try again
+        Try again
       </button>
     </div>
   ) : (
@@ -153,12 +155,8 @@ export default function LandingPage() {
           onChange={(e) => setSmsConsent(e.target.checked)}
           className="mt-0.5 shrink-0 accent-eb-black"
         />
-        <span className="text-eb-meta text-eb-muted leading-relaxed">
-          Text me when new items drop. Msg &amp; data rates may apply.
-          STOP to cancel.{" "}
-          <a href="/terms" className="underline">Terms</a>
-          {" \u00b7 "}
-          <a href="/privacy" className="underline">Privacy</a>
+        <span className="text-eb-meta text-eb-muted">
+          Text me when new items drop
         </span>
       </label>
       <button
@@ -166,8 +164,14 @@ export default function LandingPage() {
         onClick={handleSend}
         disabled={sending}
       >
-        {sending ? "SENDING\u2026" : "TEXT ME A SIGN-IN LINK"}
+        {sending ? "SENDING\u2026" : "SIGN IN"}
       </button>
+      <p className="text-eb-micro text-eb-light mt-2">
+        Msg &amp; data rates may apply. STOP to cancel.{" "}
+        <a href="/terms" className="underline">Terms</a>
+        {" \u00b7 "}
+        <a href="/privacy" className="underline">Privacy</a>
+      </p>
     </>
   );
 
@@ -271,15 +275,11 @@ export default function LandingPage() {
                 </div>
               </section>
 
-              {/* Signup — positioned after they've seen the goods */}
+              {/* Signup */}
               <section className="px-5 pt-6 pb-8 border-t border-eb-border bg-eb-cream">
-                <h3 className="text-eb-body font-bold text-eb-black mb-1">
+                <h3 className="text-eb-body font-bold text-eb-black mb-3">
                   Sign up
                 </h3>
-                <p className="text-eb-caption text-eb-muted mb-4">
-                  Get an alert when the pre-market shopping drops and talk
-                  directly to dealers.
-                </p>
                 {phoneForm}
               </section>
             </>
@@ -322,17 +322,11 @@ export default function LandingPage() {
                 </div>
               </section>
 
-              {/* Signup — prominent when no market to browse */}
+              {/* Signup */}
               <section className="px-5 pt-6 pb-8 border-t border-eb-border bg-eb-cream">
-                <h3 className="text-eb-body font-bold text-eb-black mb-1">
-                  {upcomingMarkets.length > 0
-                    ? "Sign up to get notified when items drop"
-                    : "Sign up for drop notifications"
-                  }
+                <h3 className="text-eb-body font-bold text-eb-black mb-3">
+                  Sign up
                 </h3>
-                <p className="text-eb-caption text-eb-muted mb-4">
-                  We{"\u2019"}ll text you when dealers start posting for the next market.
-                </p>
                 {phoneForm}
               </section>
             </>
