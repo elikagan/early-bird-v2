@@ -107,6 +107,7 @@ function DealerPageContent() {
       setFavMap((prev) => { const next = new Map(prev); next.delete(itemId); return next; });
       await apiFetch(`/api/favorites/${existingFavId}`, { method: "DELETE" });
     } else {
+      setFavMap((prev) => new Map([...prev, [itemId, "_pending"]]));
       const res = await apiFetch("/api/favorites", {
         method: "POST",
         body: JSON.stringify({ item_id: itemId }),
@@ -114,6 +115,8 @@ function DealerPageContent() {
       if (res.ok) {
         const fav = await res.json();
         setFavMap((prev) => new Map([...prev, [itemId, fav.id]]));
+      } else {
+        setFavMap((prev) => { const next = new Map(prev); next.delete(itemId); return next; });
       }
     }
   }, [favMap]);
