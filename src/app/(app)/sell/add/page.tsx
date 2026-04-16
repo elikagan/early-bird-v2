@@ -212,17 +212,14 @@ function AddItemContent() {
   return (
     <>
       {/* Header */}
-      <header className="eb-masthead">
-        <div className="flex items-center justify-between">
-          <h1>ADD ITEM</h1>
-          <button
-            onClick={() => router.back()}
-            className="text-eb-body text-eb-muted"
-          >
-            {"\u2715"}
-          </button>
-        </div>
-      </header>
+      <div className="flex items-center justify-between px-5 py-3 border-b border-eb-border">
+        <button
+          onClick={() => router.back()}
+          className="text-eb-caption text-eb-muted"
+        >
+          {"\u2190"} Back to my booth
+        </button>
+      </div>
 
       {/* Photos */}
       <section className="px-5 py-5">
@@ -401,6 +398,16 @@ function AddItemContent() {
 
       {/* Submit */}
       <section className="px-5 pb-36">
+        {photos.length === 0 && !saving && !uploading && (
+          <p className="text-eb-meta text-eb-muted text-center mb-2">
+            Add at least one photo to post this item.
+          </p>
+        )}
+        {hasError && !saving && !uploading && (
+          <p className="text-eb-meta text-eb-red text-center mb-2">
+            Fix photo errors above before posting.
+          </p>
+        )}
         <button
           className="eb-cta"
           onClick={submit}
@@ -410,11 +417,7 @@ function AddItemContent() {
             ? "Posting\u2026"
             : uploading
               ? "Uploading photos\u2026"
-              : hasError
-                ? "Fix photo errors to continue"
-                : photos.length === 0
-                  ? "Add at least 1 photo"
-                  : "Post Item"}
+              : "POST ITEM"}
         </button>
         {canSubmit && (
           <p className="text-eb-meta text-eb-muted text-center mt-2">

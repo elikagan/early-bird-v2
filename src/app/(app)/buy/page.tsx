@@ -9,6 +9,7 @@ import { apiFetch } from "@/lib/api-client";
 import { getInitials, formatPrice, formatDate } from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
 import { SignInLink } from "@/components/sign-in-link";
+import { NotFoundScreen } from "@/components/not-found-screen";
 
 const PROMO_IMAGES = ["/promo/hero.webp", "/promo/2.webp", "/promo/3.webp"];
 const CYCLE_INTERVAL = 5000; // 5s per image
@@ -94,12 +95,32 @@ function BuyFeedContent() {
     return () => clearInterval(interval);
   }, [market]);
 
-  if (loading || !market) {
+  if (loading) {
     return (
       <>
         <div className="flex-1 flex items-center justify-center">
           <span className="eb-spinner" />
         </div>
+        <BottomNav active="buy" />
+      </>
+    );
+  }
+
+  if (!market) {
+    return (
+      <>
+        <header className="eb-masthead">
+          <div className="flex justify-between items-center">
+            <Link href="/home">
+              <h1>EARLY BIRD</h1>
+            </Link>
+            <SignInLink />
+          </div>
+        </header>
+        <NotFoundScreen
+          message="We couldn\u2019t find this market. It may have been removed or the link might be wrong."
+          action={{ label: "Browse markets", href: "/home" }}
+        />
         <BottomNav active="buy" />
       </>
     );
@@ -218,12 +239,6 @@ function BuyFeedContent() {
           Drop is <span className="eb-live">LIVE</span>
         </div>
         <span className="eb-cd">{items.length} items</span>
-      </div>
-
-      {/* Section label */}
-      <div className="eb-section">
-        <span>All listings</span>
-        <span>{items.length} items</span>
       </div>
 
       {/* Grid */}

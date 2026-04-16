@@ -174,7 +174,7 @@ function SellContent() {
         <div className="px-5 py-4 border-b border-eb-border">
           <div className="flex justify-between items-center mb-1.5">
             <span className="text-eb-meta uppercase tracking-widest text-eb-muted">
-              Your Booth
+              Your booth{market ? ` at ${market.name}` : ""}
             </span>
             <span className="text-eb-meta text-eb-muted">
               {boothSaving ? "Saving\u2026" : boothSaved ? "Saved" : ""}
@@ -218,7 +218,7 @@ function SellContent() {
                 setLinkCopied(true);
                 setTimeout(() => setLinkCopied(false), 2000);
               }}
-              className="px-4 py-3 bg-eb-black text-white text-eb-caption font-bold uppercase tracking-wider shrink-0"
+              className="px-4 py-3 bg-eb-black text-white text-eb-caption font-bold uppercase tracking-wider shrink-0 border-2 border-eb-black"
             >
               {linkCopied ? "Copied!" : "Copy"}
             </button>

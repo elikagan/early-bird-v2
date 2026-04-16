@@ -134,6 +134,15 @@ function DealerPageContent() {
         </div>
       </header>
 
+      {/* Market context bar */}
+      {market && (
+        <div className="px-5 py-2.5 border-b border-eb-border bg-eb-cream">
+          <span className="text-eb-meta uppercase tracking-widest text-eb-muted">
+            {market.name} {"\u00b7"} {marketDate}
+          </span>
+        </div>
+      )}
+
       {/* Dealer profile card */}
       <section className="px-5 pt-6 pb-5 border-b border-eb-border">
         <div className="flex items-center gap-4">
@@ -149,11 +158,11 @@ function DealerPageContent() {
                 {dealer.business_name}
               </div>
             )}
-            <div className="text-eb-meta text-eb-muted mt-1">
-              {dealer.booth_number && `Booth ${dealer.booth_number}`}
-              {dealer.booth_number && market && ` ${"\u00b7"} `}
-              {market && marketDate}
-            </div>
+            {dealer.booth_number && (
+              <div className="text-eb-meta text-eb-muted mt-1">
+                Booth {dealer.booth_number}
+              </div>
+            )}
           </div>
         </div>
 

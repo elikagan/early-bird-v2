@@ -1,21 +1,36 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useParams } from "next/navigation";
+import { NotFoundScreen } from "@/components/not-found-screen";
+import { InstagramInput } from "@/components/instagram-input";
 
-type Step = "form" | "sent" | "error";
+type Step = "loading" | "form" | "sent" | "invalid";
 
 export default function InvitePage() {
   const params = useParams();
   const code = params.code as string;
 
-  const [step, setStep] = useState<Step>("form");
+  const [step, setStep] = useState<Step>("loading");
   const [phone, setPhone] = useState("");
   const [name, setName] = useState("");
   const [biz, setBiz] = useState("");
   const [ig, setIg] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Validate invite code on load
+  useEffect(() => {
+    async function check() {
+      try {
+        const res = await fetch(`/api/invite/check?code=${encodeURIComponent(code)}`);
+        setStep(res.ok ? "form" : "invalid");
+      } catch {
+        setStep("invalid");
+      }
+    }
+    check();
+  }, [code]);
 
   const submit = useCallback(async () => {
     const digits = phone.replace(/\D/g, "");
@@ -52,8 +67,8 @@ export default function InvitePage() {
       }
       setStep("sent");
     } catch (err) {
-      if (err instanceof Error && err.message.includes("expired")) {
-        setStep("error");
+      if (err instanceof Error && (err.message.includes("expired") || err.message.includes("used"))) {
+        setStep("invalid");
       } else {
         setError(err instanceof Error ? err.message : "Something went wrong");
       }
@@ -71,15 +86,16 @@ export default function InvitePage() {
       </header>
 
       <main className="px-5 flex-1 max-w-md mx-auto w-full">
-        {step === "error" ? (
-          <div className="text-center py-12">
-            <div className="text-eb-body font-bold text-eb-black mb-2">
-              This invite link has expired or already been used.
-            </div>
-            <p className="text-eb-meta text-eb-muted">
-              Contact the person who sent you this link to get a new one.
-            </p>
+        {step === "loading" ? (
+          <div className="flex-1 flex items-center justify-center py-12">
+            <span className="eb-spinner" />
           </div>
+        ) : step === "invalid" ? (
+          <NotFoundScreen
+            title="Invite not found"
+            message="This invite link has expired, already been used, or doesn\u2019t exist. Contact the person who sent it to get a new one."
+            action={{ label: "Go to Early Bird", href: "/" }}
+          />
         ) : step === "sent" ? (
           <div className="text-center py-12">
             <div className="text-eb-body font-bold text-eb-black mb-2">
@@ -149,13 +165,7 @@ export default function InvitePage() {
                   Instagram
                   <span className="text-eb-light ml-1">optional</span>
                 </label>
-                <input
-                  type="text"
-                  className="eb-input"
-                  value={ig}
-                  onChange={(e) => setIg(e.target.value.slice(0, 31))}
-                  placeholder="@yourhandle"
-                />
+                <InstagramInput value={ig} onChange={setIg} />
               </div>
 
               {error && <p className="text-eb-meta text-eb-red">{error}</p>}

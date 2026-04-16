@@ -16,6 +16,7 @@ import {
 } from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
 import { SignupDrawer } from "@/components/signup-drawer";
+import { NotFoundScreen } from "@/components/not-found-screen";
 
 interface Photo {
   id: string;
@@ -398,11 +399,20 @@ export default function ItemDetailPage() {
     }
   }, [id, router]);
 
-  if (loading || !item) {
+  if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center">
         <span className="eb-spinner" />
       </div>
+    );
+  }
+
+  if (!item) {
+    return (
+      <NotFoundScreen
+        message="This item may have been removed or the link might be wrong."
+        action={{ label: "Browse listings", href: "/home" }}
+      />
     );
   }
 
@@ -426,7 +436,7 @@ export default function ItemDetailPage() {
           }}
           className="text-eb-caption text-eb-muted"
         >
-          {editing ? "\u2715 Cancel edit" : "\u2190 Back to listings"}
+          {editing ? "\u2715 Cancel edit" : isOwner ? "\u2190 Back to my booth" : "\u2190 Back to listings"}
         </button>
         {isOwner && !editing ? (
           <button

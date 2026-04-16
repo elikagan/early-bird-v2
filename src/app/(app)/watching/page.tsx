@@ -191,7 +191,7 @@ export default function WatchingPage() {
               <br />
               Tap the heart on any item to save it here.
             </p>
-            <Link href="/buy">Browse the drop →</Link>
+            <Link href="/home">Browse listings {"\u2192"}</Link>
           </div>
         )}
       </main>
