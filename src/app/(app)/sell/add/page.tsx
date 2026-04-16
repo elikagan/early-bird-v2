@@ -398,11 +398,6 @@ function AddItemContent() {
 
       {/* Submit */}
       <section className="px-5 pb-36">
-        {photos.length === 0 && !saving && !uploading && (
-          <p className="text-eb-meta text-eb-muted text-center mb-2">
-            Add at least one photo to post this item.
-          </p>
-        )}
         {hasError && !saving && !uploading && (
           <p className="text-eb-meta text-eb-red text-center mb-2">
             Fix photo errors above before posting.
