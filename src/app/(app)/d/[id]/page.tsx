@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/lib/auth-context";
@@ -42,7 +42,9 @@ interface Market {
 function DealerPageContent() {
   const { id } = useParams<{ id: string }>();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const { user } = useAuth();
+  const fromItem = searchParams.get("from") === "item";
 
   const [dealer, setDealer] = useState<DealerProfile | null>(null);
   const [items, setItems] = useState<Item[]>([]);
@@ -120,12 +122,15 @@ function DealerPageContent() {
     <>
       <Masthead />
 
-      {/* Market context bar */}
-      {market && (
-        <div className="px-5 py-2.5 border-b border-eb-border bg-eb-cream">
-          <span className="text-eb-meta uppercase tracking-widest text-eb-muted">
-            {market.name} {"\u00b7"} {marketDate}
-          </span>
+      {/* Back to listing (when navigated from item detail) */}
+      {fromItem && (
+        <div className="px-5 py-2.5 border-b border-eb-border">
+          <button
+            onClick={() => router.back()}
+            className="text-eb-caption text-eb-muted"
+          >
+            {"\u2190"} Back to listing
+          </button>
         </div>
       )}
 
@@ -144,11 +149,13 @@ function DealerPageContent() {
                 {dealer.business_name}
               </div>
             )}
-            {dealer.booth_number && (
-              <div className="text-eb-meta text-eb-muted mt-1">
-                Booth {dealer.booth_number}
-              </div>
-            )}
+            <div className="text-eb-meta text-eb-muted mt-1">
+              {[
+                dealer.booth_number ? `Booth ${dealer.booth_number}` : null,
+                market?.name,
+                marketDate,
+              ].filter(Boolean).join(" \u00b7 ")}
+            </div>
           </div>
         </div>
 
@@ -248,8 +255,8 @@ function DealerPageContent() {
         )}
       </main>
 
-      {/* Browse full market CTA */}
-      {market && (
+      {/* Browse full market CTA (only on direct link, not from item detail) */}
+      {market && !fromItem && (
         <section className="px-5 pb-6">
           <Link
             href={`/buy?market=${market.id}`}
