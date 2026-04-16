@@ -1323,132 +1323,137 @@ document.addEventListener("keydown", (e) => {
 });
 
 // ── Fix annotation dots ──
-// Maps page IDs to arrays of { text } describing what was fixed.
+// Each fix has text + y (% down the phone screen where the change lives).
+// y values are tuned to the actual element position on each page:
+//   ~5% = masthead/header, ~10% = drop bar / sub-header,
+//   ~25-35% = below photo carousel / first content, ~38-42% = price/title row,
+//   ~50-60% = mid-page content, ~70-80% = status banners / lower sections,
+//   ~85-90% = CTA / submit buttons
 const FIXES = {
   "landing": [
-    "Changed CTA from \"browse all 13 items\" to \"Shop the market\"",
-    "Fixed vertical rhythm — tightened spacing between sections",
-    "Shared Masthead component replaces inline header",
-    "Dealer fee copy rewritten: transparent \"free for the foreseeable future\" language",
-    "Dealer/Buyer toggle button vertical alignment fixed",
+    { y: 5,  text: "Shared Masthead component replaces inline header" },
+    { y: 6,  text: "Dealer/Buyer toggle button vertical alignment fixed" },
+    { y: 30, text: "Fixed vertical rhythm — tightened spacing between sections" },
+    { y: 55, text: "Changed CTA from \"browse all 13 items\" to \"Shop the market\"" },
+    { y: 75, text: "Dealer fee copy rewritten: transparent \"free for the foreseeable future\" language" },
   ],
   "landing-dealer": [
-    "Fixed vertical rhythm and spacing throughout dealer pitch",
-    "Buyer toggle button vertical alignment fixed",
-    "Fee section rewritten: \"We're dealers too. It's free now and for the foreseeable future while we grow.\"",
+    { y: 5,  text: "Buyer toggle button vertical alignment fixed" },
+    { y: 30, text: "Fixed vertical rhythm and spacing throughout dealer pitch" },
+    { y: 65, text: "Fee section rewritten: \"We're dealers too. It's free now and for the foreseeable future while we grow.\"" },
   ],
   "home": [
-    "Signed-out users now redirect to / (landing page) — this page only renders for signed-in users",
+    { y: 45, text: "Signed-out users now redirect to / (landing page) — this page only renders for signed-in users" },
   ],
   "buy-grid": [
-    "Price rendered in gray (text-eb-muted), differentiated from bold title",
-    "\"Drop is live\" bar replaces old \"ALL LISTINGS\" header",
-    "Shared Masthead with sign-in link for signed-out visitors",
+    { y: 5,  text: "Shared Masthead with sign-in link for signed-out visitors" },
+    { y: 10, text: "\"Drop is live\" bar replaces old \"ALL LISTINGS\" header" },
+    { y: 45, text: "Price rendered in gray (text-eb-muted), differentiated from bold title" },
   ],
   "item-credenza": [
-    "FIRM tag vertical alignment fixed (vertical-align: middle)",
-    "Price styled differently from title (text-eb-muted vs text-eb-black)",
-    "Shared Masthead with sign-in link",
+    { y: 5,  text: "Shared Masthead with sign-in link" },
+    { y: 38, text: "Price styled differently from title (text-eb-muted vs text-eb-black)" },
+    { y: 40, text: "FIRM tag vertical alignment fixed (vertical-align: middle)" },
   ],
   "item-nesting": [
-    "Prominent HOLD badge added inline with price row",
-    "Price styled differently from title",
-    "Holder identity card added on dealer-own view (name + avatar)",
-    "Shared Masthead with sign-in link",
+    { y: 5,  text: "Shared Masthead with sign-in link" },
+    { y: 38, text: "Price styled differently from title" },
+    { y: 40, text: "Prominent HOLD badge added inline with price row" },
+    { y: 70, text: "Holder identity card added on dealer-own view (name + avatar)" },
   ],
   "item-enamel": [
-    "Prominent SOLD badge added inline with price row",
-    "Price styled differently from title",
-    "Buyer identity card added on dealer-own view (name + avatar)",
-    "Shared Masthead with sign-in link",
+    { y: 5,  text: "Shared Masthead with sign-in link" },
+    { y: 38, text: "Price styled differently from title" },
+    { y: 40, text: "Prominent SOLD badge added inline with price row" },
+    { y: 70, text: "Buyer identity card added on dealer-own view (name + avatar)" },
   ],
   "dealer-page": [
-    "Market name context bar added (\"Downtown Modernism · Apr 19\")",
-    "Shared Masthead with sign-in link",
+    { y: 5,  text: "Shared Masthead with sign-in link" },
+    { y: 14, text: "Market name context bar added (\"Downtown Modernism \u00b7 Apr 19\")" },
   ],
   "onboarding-buyer": [
-    "Phone number displayed from verified session (read-only)",
-    "Button uses full-width eb-cta class",
-    "Shared Masthead component",
+    { y: 5,  text: "Shared Masthead component" },
+    { y: 35, text: "Phone number displayed from verified session (read-only)" },
+    { y: 88, text: "Button uses full-width eb-cta class" },
   ],
   "onboarding-dealer": [
-    "Removed \"Takes about a minute\" — misleading for review timeline",
-    "Camera selfie enabled (capture=\"user\" on file input)",
-    "Button width fixed — full-width eb-cta",
-    "Shared Masthead component",
+    { y: 5,  text: "Shared Masthead component" },
+    { y: 12, text: "Removed \"Takes about a minute\" — misleading for review timeline" },
+    { y: 45, text: "Camera selfie enabled (capture=\"user\" on file input)" },
+    { y: 88, text: "Button width fixed — full-width eb-cta" },
   ],
   "onboarding-confirm": [
-    "\"START BROWSING\" routes to /home as a signed-in buyer",
-    "Pending application banner shows on home hub while awaiting review",
+    { y: 15, text: "Pending application banner shows on home hub while awaiting review" },
+    { y: 78, text: "\"START BROWSING\" routes to /home as a signed-in buyer" },
   ],
   "home-buyer": [
-    "Promo image grid: 3-column thumbnail grid on hero market card",
-    "Pending dealer application banner for buyers who applied",
+    { y: 12, text: "Pending dealer application banner for buyers who applied" },
+    { y: 48, text: "Promo image grid: 3-column thumbnail grid on hero market card" },
   ],
   "buy-grid-buyer": [
-    "Price/title typography differentiated (price in gray)",
-    "\"Drop is live\" header with item count",
+    { y: 10, text: "\"Drop is live\" header with item count" },
+    { y: 45, text: "Price/title typography differentiated (price in gray)" },
   ],
   "item-buyer": [
-    "FIRM tag vertical alignment fixed",
-    "Price styled differently from title",
-    "HOLD/SOLD badges visible inline with price",
+    { y: 38, text: "Price styled differently from title" },
+    { y: 40, text: "FIRM tag vertical alignment fixed" },
+    { y: 42, text: "HOLD/SOLD badges visible inline with price" },
   ],
   "watching-buyer": [
-    "Empty state CTA changed from \"Browse the drop\" to \"Browse listings\"",
+    { y: 60, text: "Empty state CTA changed from \"Browse the drop\" to \"Browse listings\"" },
   ],
   "account-buyer": [
-    "Avatar overlay: 2px white/60% stroke so + icon doesn't blend on dark photos",
-    "Camera selfie on avatar upload (capture=\"user\")",
-    "Shared Masthead component",
+    { y: 5,  text: "Shared Masthead component" },
+    { y: 18, text: "Avatar overlay: 2px white/60% stroke so + icon doesn't blend on dark photos" },
+    { y: 20, text: "Camera selfie on avatar upload (capture=\"user\")" },
   ],
   "dealer-page-buyer": [
-    "Market name context bar visible (booth at specific market)",
+    { y: 14, text: "Market name context bar visible (booth at specific market)" },
   ],
   "sell-inventory": [
-    "Copy button height matched to input field (items-stretch + flex alignment)",
-    "\"Your booth at [Market Name]\" — market context already in place",
-    "Shared Masthead component",
+    { y: 5,  text: "Shared Masthead component" },
+    { y: 28, text: "\"Your booth at [Market Name]\" — market context already in place" },
+    { y: 38, text: "Copy button height matched to input field (items-stretch + flex alignment)" },
   ],
   "sell-add": [
-    "Removed \"Add at least one photo\" message — disabled button is sufficient",
-    "\"Back to my booth\" header replaces logo",
-    "Button uses full-width eb-cta",
+    { y: 5,  text: "\"Back to my booth\" header replaces logo" },
+    { y: 82, text: "Removed \"Add at least one photo\" message — disabled button is sufficient" },
+    { y: 88, text: "Button uses full-width eb-cta" },
   ],
   "item-dealer-own": [
-    "\"Back to my booth\" text (was \"Back to listings\")",
-    "HOLD badge inline with price — visible at a glance",
-    "SOLD badge inline with price — visible at a glance",
-    "Held-for identity card: buyer name + avatar shown to dealer",
-    "Sold-to identity card: buyer name + avatar shown to dealer",
-    "API returns holder/buyer data via LEFT JOIN on users table",
+    { y: 5,  text: "\"Back to my booth\" text (was \"Back to listings\")" },
+    { y: 38, text: "HOLD badge inline with price — visible at a glance" },
+    { y: 40, text: "SOLD badge inline with price — visible at a glance" },
+    { y: 42, text: "API returns holder/buyer data via LEFT JOIN on users table" },
+    { y: 55, text: "Held-for identity card: buyer name + avatar shown to dealer" },
+    { y: 58, text: "Sold-to identity card: buyer name + avatar shown to dealer" },
   ],
   "account-dealer": [
-    "Avatar overlay: 2px white/60% stroke on + icon",
-    "Instagram input: fixed @ prefix — user never types it",
-    "Camera selfie on avatar upload",
-    "Shared Masthead component",
+    { y: 5,  text: "Shared Masthead component" },
+    { y: 18, text: "Avatar overlay: 2px white/60% stroke on + icon" },
+    { y: 20, text: "Camera selfie on avatar upload" },
+    { y: 58, text: "Instagram input: fixed @ prefix — user never types it" },
   ],
   "buy-bad-market": [
-    "NotFoundScreen: \"We couldn't find this market. It may have been removed or the link might be wrong.\"",
-    "Action button: \"Browse markets\" links to /home",
+    { y: 42, text: "NotFoundScreen: \"We couldn't find this market...\"" },
+    { y: 55, text: "Action button: \"Browse markets\" links to /home" },
   ],
   "item-404": [
-    "NotFoundScreen: \"This item may have been removed or the link might be wrong.\"",
-    "Action button: \"Browse listings\" links to /home",
+    { y: 42, text: "NotFoundScreen: \"This item may have been removed...\"" },
+    { y: 55, text: "Action button: \"Browse listings\" links to /home" },
   ],
   "invite-bad": [
-    "NotFoundScreen: \"This invite link has expired, already been used, or doesn't exist. Contact the person who sent it to get a new one.\"",
-    "Action button: \"Go to Early Bird\" links to /",
+    { y: 42, text: "NotFoundScreen: \"This invite link has expired, already been used, or doesn't exist...\"" },
+    { y: 55, text: "Action button: \"Go to Early Bird\" links to /" },
   ],
   "admin": [
-    "Shared Masthead component",
+    { y: 5,  text: "Shared Masthead component" },
   ],
   "privacy": [
-    "Shared Masthead with sign-in link",
+    { y: 5,  text: "Shared Masthead with sign-in link" },
   ],
   "terms": [
-    "Shared Masthead with sign-in link",
+    { y: 5,  text: "Shared Masthead with sign-in link" },
   ],
 };
 
@@ -1467,34 +1472,31 @@ function renderFixDots() {
 
   legend.textContent = fixes.length + " fix" + (fixes.length === 1 ? "" : "es") + " on this page";
 
-  // Phone frame geometry (relative to phone-column)
-  // phone-column is 440px wide, 20px padding, frame is 393px centered
+  // Phone frame geometry relative to phone-column
   const colW = 440;
   const frameW = 393;
   const frameRight = (colW - frameW) / 2 + frameW; // ~416.5
 
-  // Vertical range: 12% to 88% of phone-column height
-  const topPct = 12;
-  const bottomPct = 88;
-  const rangePct = bottomPct - topPct;
+  // The phone screen area runs from ~7% to ~87% of the frame height.
+  // Map fix y (0-100 = top to bottom of screen content) into that range.
+  const screenTop = 7;   // % of phone-column where screen starts
+  const screenBot = 87;  // % where screen ends (above safari bar)
+  const screenRange = screenBot - screenTop;
 
-  fixes.forEach((text, i) => {
+  fixes.forEach((fix) => {
     const dot = document.createElement("div");
     dot.className = "fix-dot";
 
-    // All dots on the right edge of the frame
+    // Right edge of frame
     dot.style.left = (frameRight + 3) + "px";
 
-    // Vertical position: evenly distributed
-    const pct = fixes.length === 1
-      ? topPct + rangePct / 2
-      : topPct + (rangePct * i) / (fixes.length - 1);
+    // Map fix.y (0-100% of screen content) to phone-column %
+    const pct = screenTop + (screenRange * fix.y) / 100;
     dot.style.top = pct + "%";
 
-    // Tooltip
     const tip = document.createElement("div");
     tip.className = "fix-tooltip";
-    tip.textContent = text;
+    tip.textContent = fix.text;
     dot.appendChild(tip);
 
     container.appendChild(dot);
