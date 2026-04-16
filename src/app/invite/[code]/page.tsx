@@ -97,14 +97,17 @@ export default function InvitePage() {
             action={{ label: "Go to Early Bird", href: "/" }}
           />
         ) : step === "sent" ? (
-          <div className="text-center py-12">
-            <div className="text-eb-body font-bold text-eb-black mb-2">
-              Check your phone
+          <div className="py-12">
+            <div className="border-l-2 border-eb-pop pl-4 py-2">
+              <div className="text-eb-display font-bold uppercase tracking-wider text-eb-black mb-2">
+                Check your phone
+              </div>
+              <p className="text-eb-caption text-eb-muted leading-relaxed">
+                We sent a login link to{" "}
+                <span className="font-bold text-eb-black">{phone}</span>. Tap it
+                to finish setting up your dealer account.
+              </p>
             </div>
-            <p className="text-eb-meta text-eb-muted leading-relaxed">
-              We sent a login link to {phone}. Tap it to finish setting up your
-              dealer account.
-            </p>
           </div>
         ) : (
           <>

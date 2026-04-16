@@ -51,12 +51,13 @@ export function SignupDrawer({
         <div className="w-12 h-1 bg-eb-border rounded-full mx-auto mb-5" />
 
         {sent ? (
-          <>
-            <h3 className="text-eb-body font-bold text-eb-black mb-2">
+          <div className="border-l-2 border-eb-pop pl-4 py-2">
+            <h3 className="text-eb-display font-bold uppercase tracking-wider text-eb-black mb-2">
               Check your texts
             </h3>
             <p className="text-eb-caption text-eb-muted leading-relaxed">
-              Sign-in link sent to {phone}.
+              Sign-in link sent to{" "}
+              <span className="font-bold text-eb-black">{phone}</span>
             </p>
             <button
               onClick={() => {
@@ -64,11 +65,11 @@ export function SignupDrawer({
                 setPhone("");
                 setSmsConsent(false);
               }}
-              className="text-eb-meta text-eb-muted mt-3"
+              className="text-eb-meta text-eb-muted mt-3 underline"
             >
               Try again
             </button>
-          </>
+          </div>
         ) : (
           <>
             <h3 className="text-eb-body font-bold uppercase tracking-widest text-eb-black mb-2">

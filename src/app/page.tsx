@@ -94,6 +94,11 @@ export default function LandingPage() {
   const handleSend = async () => {
     if (!phone || sending) return;
     setSending(true);
+    // Landing-page sign-in is an INTENTIONAL fresh login. Any stale
+    // eb_return_to from a previous "favorite this item while logged out"
+    // flow should be discarded — otherwise users get routed to a random
+    // item page after signing in instead of landing on /home.
+    try { localStorage.removeItem("eb_return_to"); } catch {}
     const digits = phone.replace(/\D/g, "");
     const formatted =
       digits.length === 10
@@ -124,16 +129,17 @@ export default function LandingPage() {
 
   // Shared phone form
   const phoneForm = sent ? (
-    <div>
-      <p className="text-eb-body font-bold text-eb-black">
-        Check your texts.
+    <div className="border-l-2 border-eb-pop pl-4 py-2">
+      <p className="text-eb-display font-bold uppercase tracking-wider text-eb-black mb-2">
+        Check your texts
       </p>
-      <p className="text-eb-caption text-eb-muted mt-1">
-        Sign-in link sent to {phone}.
+      <p className="text-eb-caption text-eb-muted leading-relaxed">
+        Sign-in link sent to{" "}
+        <span className="font-bold text-eb-black">{phone}</span>
       </p>
       <button
         onClick={() => { setSent(false); setPhone(""); setSmsConsent(false); }}
-        className="text-eb-meta text-eb-muted mt-3"
+        className="text-eb-meta text-eb-muted mt-3 underline"
       >
         Try again
       </button>
