@@ -153,11 +153,11 @@ export default function LandingPage() {
           onChange={(e) => setSmsConsent(e.target.checked)}
           className="mt-0.5 shrink-0 accent-eb-black"
         />
-        <span className="text-eb-micro text-eb-light leading-relaxed">
+        <span className="text-eb-meta text-eb-muted leading-loose">
           I agree to receive texts from Early Bird (sign-in links, alerts,
-          price drops). Msg frequency varies. Msg &amp; data rates may apply.
-          STOP to cancel, HELP for help. No mobile info shared with third
-          parties.
+          price drops). Msg frequency varies. Msg &amp; data rates may
+          apply. STOP to cancel, HELP for help. No mobile info shared with
+          third parties.
         </span>
       </label>
       <button
