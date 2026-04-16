@@ -177,10 +177,8 @@ export default function LandingPage() {
     <div className="min-h-screen flex flex-col">
       {/* ─── Masthead ─── */}
       <div className="eb-masthead">
-        <div className="flex justify-between items-start">
-          <div>
-            <h1>EARLY BIRD</h1>
-          </div>
+        <div className="flex justify-between items-center">
+          <h1>EARLY BIRD</h1>
           <button
             onClick={toggleMode}
             className="text-eb-meta uppercase tracking-widest text-eb-muted"
@@ -198,7 +196,7 @@ export default function LandingPage() {
           {liveMarket ? (
             <>
               {/* Hero */}
-              <section className="px-5 pt-10 pb-2">
+              <section className="px-5 pt-8 pb-4">
                 <span className="inline-block text-eb-micro uppercase tracking-wider text-eb-pop bg-eb-pop-light px-1.5 py-0.5 mb-4 font-bold">
                   LIVE NOW
                 </span>
@@ -409,7 +407,7 @@ export default function LandingPage() {
             <p className="text-eb-meta text-center text-eb-muted">
               Selling at a market?{" "}
               <button onClick={toggleMode} className="font-bold text-eb-pop">
-                Dealer sign up
+                Dealer sign up {"\u2192"}
               </button>
             </p>
             <p className="text-eb-micro text-center text-eb-light leading-relaxed">
@@ -435,23 +433,23 @@ export default function LandingPage() {
             </p>
           </section>
 
-          <section className="px-5 pb-8">{phoneForm}</section>
+          <section className="px-5 pb-6">{phoneForm}</section>
 
           {/* Social proof / key stat */}
-          <section className="px-5 pb-8">
+          <section className="px-5 pb-6">
             <div className="border-t-2 border-eb-black pt-6">
-              <div className="text-eb-display text-eb-pop font-bold">100%</div>
-              <div className="text-eb-body font-bold text-eb-black mt-1">
-                You keep every dollar.
+              <div className="text-eb-body font-bold text-eb-black">
+                Free. No fees, no commissions.
               </div>
               <p className="text-eb-caption text-eb-muted mt-1 leading-relaxed">
-                No fees. No commissions. No cut. We make money when the
-                markets grow, not when you sell.
+                We{"\u2019"}re dealers too. We built Early Bird to help dealers
+                make more money at flea markets. It{"\u2019"}s free now and for
+                the foreseeable future while we grow.
               </p>
             </div>
           </section>
 
-          <section className="px-5 pb-8">
+          <section className="px-5 pb-6">
             {[
               {
                 title: "Buyers text you directly",
