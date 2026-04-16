@@ -452,6 +452,18 @@
     text-decoration: none;
   }
 
+  /* ---- Tap feedback (global catch-all) ----
+   * Every button and link gets a dim on tap.
+   * Specific eb-* rules below override with custom treatments. */
+  button,
+  a {
+    -webkit-tap-highlight-color: transparent;
+  }
+  button:active:not(:disabled),
+  a:active {
+    opacity: 0.7;
+  }
+
   /* ---- Interaction states ---- */
   .eb-btn:hover {
     background: var(--eb-text);
@@ -475,16 +487,44 @@
     outline-offset: 2px;
   }
 
+  /* Grid cards — scale down instead of dim */
+  .eb-grid-card {
+    transition: transform 0.15s ease;
+  }
+  .eb-grid-card:active {
+    opacity: 1;
+    transform: scale(0.97);
+  }
   .eb-grid-card:hover .eb-photo {
     opacity: 0.85;
   }
 
+  /* Heart buttons — squish on tap */
+  .eb-fav,
+  .eb-fav-btn {
+    transition: transform 0.15s ease;
+  }
+  .eb-fav:active,
+  .eb-fav-btn:active {
+    opacity: 1;
+    transform: scale(0.75);
+  }
+
+  /* Bottom nav — deeper dim */
+  .eb-bnav a:active {
+    opacity: 0.5;
+  }
   .eb-bnav a:hover span {
     color: var(--eb-black);
   }
 
   .eb-empty a:hover {
     text-decoration: underline;
+  }
+
+  /* Admin stats — tap feedback */
+  .eb-stat {
+    cursor: pointer;
   }
 
   .eb-toggle:focus-visible {
