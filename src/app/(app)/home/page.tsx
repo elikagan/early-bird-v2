@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
@@ -20,10 +21,17 @@ interface Market {
   item_count: number;
 }
 
+interface PreviewItem {
+  id: string;
+  thumb_url: string | null;
+  photo_url: string | null;
+}
+
 export default function HomePage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [markets, setMarkets] = useState<Market[]>([]);
+  const [previewItems, setPreviewItems] = useState<PreviewItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [pendingApp, setPendingApp] = useState(false);
 
@@ -42,13 +50,34 @@ export default function HomePage() {
         apiFetch("/api/markets"),
         user && !isDealer ? apiFetch("/api/dealer-applications") : Promise.resolve(null),
       ]);
-      if (marketsRes.ok) setMarkets(await marketsRes.json());
+      let loadedMarkets: Market[] = [];
+      if (marketsRes.ok) {
+        loadedMarkets = await marketsRes.json();
+        setMarkets(loadedMarkets);
+      }
       if (appRes?.ok) {
         const data = await appRes.json();
         if (data.application?.status === "pending") {
           setPendingApp(true);
         }
       }
+
+      // Fetch preview items for hero market
+      const live = loadedMarkets.find((m) => m.status === "live");
+      const upcoming = loadedMarkets.filter((m) => m.status === "upcoming");
+      const hero = live || upcoming[0];
+      if (hero) {
+        const previewRes = await apiFetch(`/api/items?market_id=${hero.id}&limit=6`);
+        if (previewRes.ok) {
+          const items = await previewRes.json();
+          setPreviewItems(
+            items
+              .filter((i: PreviewItem) => i.thumb_url || i.photo_url)
+              .slice(0, 6)
+          );
+        }
+      }
+
       setLoading(false);
     }
     load();
@@ -120,6 +149,23 @@ export default function HomePage() {
                 ? `${heroMarket.dealer_count} dealers · ${heroMarket.item_count} items`
                 : `~${heroMarket.dealer_count} dealers`}
             </div>
+
+            {/* Preview image grid */}
+            {previewItems.length > 0 && (
+              <div className="grid grid-cols-3 gap-1.5 mt-4">
+                {previewItems.map((pi) => (
+                  <Image
+                    key={pi.id}
+                    src={pi.thumb_url || pi.photo_url || ""}
+                    alt=""
+                    width={200}
+                    height={200}
+                    sizes="(max-width: 430px) 33vw, 130px"
+                    className="w-full aspect-square object-cover"
+                  />
+                ))}
+              </div>
+            )}
 
             {/* Drop box (upcoming only) */}
             {heroMarket.status === "upcoming" && (
