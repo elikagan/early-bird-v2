@@ -13,17 +13,34 @@ export interface SessionUser {
   instagram_handle: string | null;
 }
 
+/** Session cookie config — single source of truth */
+export const SESSION_COOKIE_NAME = "eb_session";
+export const SESSION_MAX_AGE = 10 * 365 * 24 * 60 * 60; // 10 years in seconds
+
 /**
- * Read the session token from the Authorization header and return the user.
+ * Read the session token from cookie first, then Authorization header.
  * Returns null if no valid session found.
  */
 export async function getSession(
   request: Request
 ): Promise<SessionUser | null> {
-  const header = request.headers.get("Authorization");
-  if (!header?.startsWith("Bearer ")) return null;
+  let token: string | null = null;
 
-  const token = header.slice(7);
+  // 1. Try cookie (primary — survives localStorage clears)
+  const cookieHeader = request.headers.get("cookie");
+  if (cookieHeader) {
+    const match = cookieHeader.match(/eb_session=([^;]+)/);
+    if (match) token = match[1];
+  }
+
+  // 2. Fall back to Authorization header (legacy / localStorage backup)
+  if (!token) {
+    const header = request.headers.get("Authorization");
+    if (header?.startsWith("Bearer ")) {
+      token = header.slice(7);
+    }
+  }
+
   if (!token) return null;
 
   const result = await db.execute({

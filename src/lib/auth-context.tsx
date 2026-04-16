@@ -27,7 +27,7 @@ interface AuthContextType {
   token: string | null;
   loading: boolean;
   login: (token: string, user: User) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
 
@@ -36,7 +36,7 @@ const AuthContext = createContext<AuthContextType>({
   token: null,
   loading: true,
   login: () => {},
-  logout: () => {},
+  logout: async () => {},
   refreshUser: async () => {},
 });
 
@@ -51,34 +51,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
   const [loading, setLoading] = useState(true);
 
-  const logout = useCallback(() => {
-    localStorage.removeItem("eb_token");
+  const logout = useCallback(async () => {
+    // Clear cookie via API (httpOnly cookie can't be cleared client-side)
+    try { await fetch("/api/auth/logout", { method: "POST", credentials: "include" }); } catch {}
+    try { localStorage.removeItem("eb_token"); } catch {}
     setToken(null);
     setUser(null);
   }, []);
 
   const refreshUser = useCallback(async () => {
-    const stored = localStorage.getItem("eb_token");
-    if (!stored) {
-      setLoading(false);
-      return;
-    }
+    const stored = typeof window !== "undefined"
+      ? localStorage.getItem("eb_token")
+      : null;
+
+    // Even without a localStorage token, the HTTP-only cookie may carry
+    // the session — so we always attempt the /me call.
     try {
       const res = await fetch("/api/auth/me", {
-        headers: { Authorization: `Bearer ${stored}` },
+        headers: stored ? { Authorization: `Bearer ${stored}` } : {},
+        credentials: "include", // send HTTP-only cookie
       });
-      if (!res.ok) {
-        logout();
+      if (res.status === 401) {
+        // Server explicitly says "no valid session" — clear local state
+        try { localStorage.removeItem("eb_token"); } catch {}
+        setToken(null);
+        setUser(null);
         return;
       }
-      setUser(await res.json());
-      setToken(stored);
+      if (!res.ok) {
+        // Non-401 server error — do NOT log out. Might be a transient 500.
+        return;
+      }
+      const userData = await res.json();
+      setUser(userData);
+      if (stored) setToken(stored);
     } catch {
-      logout();
+      // Network error (offline, DNS fail, etc.) — do NOT log out.
+      // The cookie is still there; we'll pick them up on the next load.
     } finally {
       setLoading(false);
     }
-  }, [logout]);
+  }, []);
 
   const login = useCallback((newToken: string, newUser: User) => {
     localStorage.setItem("eb_token", newToken);

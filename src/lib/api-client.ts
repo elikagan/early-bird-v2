@@ -15,13 +15,11 @@ export async function apiFetch(
     headers.set("Content-Type", "application/json");
   }
 
-  const res = await fetch(path, { ...options, headers });
+  // Always include credentials so the HTTP-only session cookie is sent
+  const res = await fetch(path, { ...options, headers, credentials: "include" });
 
-  if (res.status === 401 && typeof window !== "undefined") {
-    localStorage.removeItem("eb_token");
-    window.location.href = "/";
-    throw new Error("Unauthorized");
-  }
-
+  // Do NOT nuke localStorage or redirect on 401.
+  // The auth context handles session state — aggressive redirects here
+  // were causing users to get logged out on transient errors.
   return res;
 }

@@ -33,7 +33,8 @@ function VerifyContent() {
         }
 
         const data = await res.json();
-        localStorage.setItem("eb_token", data.session_token);
+        // Store token in localStorage as backup (cookie is primary)
+        try { localStorage.setItem("eb_token", data.session_token); } catch {}
 
         let dest = "/home";
         if (data.phone_changed) {

@@ -1,7 +1,22 @@
+import { NextResponse } from "next/server";
 import db from "@/lib/db";
-import { json, error } from "@/lib/api";
+import { error } from "@/lib/api";
 import { newId } from "@/lib/id";
 import { nanoid } from "nanoid";
+import { SESSION_COOKIE_NAME, SESSION_MAX_AGE } from "@/lib/auth";
+
+/** Create a JSON response with the session cookie set */
+function jsonWithCookie(data: Record<string, unknown>, sessionToken: string) {
+  const res = NextResponse.json(data);
+  res.cookies.set(SESSION_COOKIE_NAME, sessionToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: SESSION_MAX_AGE,
+  });
+  return res;
+}
 
 export async function POST(request: Request) {
   const body = await request.json();
@@ -55,16 +70,15 @@ export async function POST(request: Request) {
     if (user.rows.length === 0) return error("User not found", 404);
     const userRow = user.rows[0] as Record<string, unknown>;
 
-    // Create new session (old sessions still work, but this ensures the
-    // redirect lands authenticated)
+    // Create new session (10-year expiry — users stay logged in forever)
     const sessionToken = nanoid(32);
-    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+    const expiresAt = new Date(Date.now() + SESSION_MAX_AGE * 1000).toISOString();
     await db.execute({
       sql: `INSERT INTO sessions (id, user_id, token, expires_at) VALUES (?, ?, ?, ?)`,
       args: [newId(), userId, sessionToken, expiresAt],
     });
 
-    return json({
+    return jsonWithCookie({
       session_token: sessionToken,
       phone_changed: true,
       user: {
@@ -76,7 +90,7 @@ export async function POST(request: Request) {
         is_dealer: userRow.is_dealer,
         needs_onboarding: false,
       },
-    });
+    }, sessionToken);
   }
 
   // ── Dealer invite flow ──
@@ -98,13 +112,13 @@ export async function POST(request: Request) {
     const userRow = user.rows[0] as Record<string, unknown>;
 
     const sessionToken = nanoid(32);
-    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+    const expiresAt = new Date(Date.now() + SESSION_MAX_AGE * 1000).toISOString();
     await db.execute({
       sql: `INSERT INTO sessions (id, user_id, token, expires_at) VALUES (?, ?, ?, ?)`,
       args: [newId(), userRow.id as string, sessionToken, expiresAt],
     });
 
-    return json({
+    return jsonWithCookie({
       session_token: sessionToken,
       dealer_invite: true,
       user: {
@@ -116,7 +130,7 @@ export async function POST(request: Request) {
         is_dealer: userRow.is_dealer,
         needs_onboarding: false,
       },
-    });
+    }, sessionToken);
   }
 
   // ── Normal login flow ──
@@ -136,16 +150,16 @@ export async function POST(request: Request) {
 
   const userRow = user.rows[0] as Record<string, unknown>;
 
-  // Create session (30-day expiry)
+  // Create session (10-year expiry — users stay logged in forever)
   const sessionToken = nanoid(32);
-  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+  const expiresAt = new Date(Date.now() + SESSION_MAX_AGE * 1000).toISOString();
 
   await db.execute({
     sql: `INSERT INTO sessions (id, user_id, token, expires_at) VALUES (?, ?, ?, ?)`,
     args: [newId(), userRow.id as string, sessionToken, expiresAt],
   });
 
-  return json({
+  return jsonWithCookie({
     session_token: sessionToken,
     user: {
       id: userRow.id,
@@ -156,5 +170,5 @@ export async function POST(request: Request) {
       is_dealer: userRow.is_dealer,
       needs_onboarding: !userRow.display_name,
     },
-  });
+  }, sessionToken);
 }
