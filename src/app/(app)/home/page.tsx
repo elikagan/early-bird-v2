@@ -247,10 +247,9 @@ export default function HomePage() {
             {user && isDealer ? (
               <>
                 <p>
-                  Your items go live the moment you publish, and they sit in
-                  front of buyers right up to the drop. Set up days early
-                  instead of hours and you&apos;ll hear from buyers before
-                  sunrise.
+                  Post your items anytime before the market. When we drop
+                  the market — typically the day before — everything goes
+                  live at once and buyers start browsing.
                 </p>
                 <p>
                   When a buyer is interested, you get a single text with their
