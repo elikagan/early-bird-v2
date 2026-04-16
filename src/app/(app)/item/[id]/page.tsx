@@ -965,8 +965,8 @@ export default function ItemDetailPage() {
             Inquiries ({inquiries.length})
           </div>
           <p className="text-eb-meta text-eb-muted mb-4 leading-relaxed">
-            These buyers texted you directly. Contact them to make the deal.
-            Early Bird is not involved after this point.
+            These buyers reached out through Early Bird. Contact them
+            directly to make the deal.
           </p>
           <div className="flex flex-col gap-3">
             {inquiries.map((inq) => {
