@@ -143,6 +143,30 @@
     height: 16px;
     fill: var(--eb-pop);
   }
+
+  /* ---- Favorite button (item detail header) ---- */
+  .eb-fav-btn {
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.92);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  }
+  .eb-fav-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+  .eb-fav-btn .eb-fav-filled {
+    fill: var(--eb-pop);
+  }
+  .eb-fav-btn .eb-fav-outline {
+    fill: none;
+    stroke: var(--eb-muted);
+    stroke-width: 2;
+  }
   .eb-grid-card .eb-photo {
     width: 100%;
     aspect-ratio: 1 / 1;
