@@ -19,7 +19,7 @@ export default function TermsPage() {
           <p>
             By accessing or using Early Bird (&ldquo;the Service&rdquo; or
             &ldquo;the Platform&rdquo;), located at earlybird.la and operated
-            by Eli Kagan (&ldquo;we,&rdquo; &ldquo;us,&rdquo; or
+            by Listen to the River MGMT LLC (&ldquo;we,&rdquo; &ldquo;us,&rdquo; or
             &ldquo;our&rdquo;), you agree to be bound by these Terms
             of Use (&ldquo;Terms&rdquo;).
           </p>
