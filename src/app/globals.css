@@ -69,6 +69,7 @@
     background: var(--eb-black);
     color: #fff;
     padding: 10px 20px;
+    margin-bottom: 4px;
     font-size: 12px;
     display: flex;
     justify-content: space-between;
