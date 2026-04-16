@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, useCallback, Suspense } from "react";
 import Image from "next/image";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
@@ -1385,11 +1385,27 @@ function SmsTab() {
   const [market, setMarket] = useState("");
   const [audience, setAudience] = useState<"all" | "buyers" | "dealers">("all");
   const [message, setMessage] = useState("");
-  const [preview, setPreview] = useState<number | null>(null);
-  const [previewing, setPreviewing] = useState(false);
   const [sending, setSending] = useState(false);
   const [sendResult, setSendResult] = useState<{ sent: number; failed: number; total: number } | null>(null);
   const [confirming, setConfirming] = useState(false);
+  const [audienceCounts, setAudienceCounts] = useState<Record<string, number>>({});
+
+  const loadCounts = useCallback(async (marketId: string) => {
+    const audiences = ["all", "buyers", "dealers"] as const;
+    const results = await Promise.all(
+      audiences.map(async (a) => {
+        const params = new URLSearchParams({ audience: a });
+        if (marketId) params.set("market_id", marketId);
+        const res = await apiFetch(`/api/admin/sms-blast-preview?${params}`);
+        if (res.ok) {
+          const data = await res.json();
+          return [a, data.count] as const;
+        }
+        return [a, 0] as const;
+      })
+    );
+    setAudienceCounts(Object.fromEntries(results));
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -1400,20 +1416,14 @@ function SmsTab() {
       if (mRes.ok) setMarkets(await mRes.json());
       if (bRes.ok) setBlasts(await bRes.json());
       setLoading(false);
+      await loadCounts("");
     })();
-  }, []);
+  }, [loadCounts]);
 
-  const loadPreview = async () => {
-    setPreviewing(true);
-    const params = new URLSearchParams({ audience });
-    if (market) params.set("market_id", market);
-    const res = await apiFetch(`/api/admin/sms-blast-preview?${params}`);
-    if (res.ok) {
-      const data = await res.json();
-      setPreview(data.count);
-    }
-    setPreviewing(false);
-  };
+  // Reload counts when market changes
+  useEffect(() => {
+    loadCounts(market);
+  }, [market, loadCounts]);
 
   const sendBlast = async () => {
     if (sending) return;
@@ -1432,10 +1442,10 @@ function SmsTab() {
       setSendResult(result);
       setMessage("");
       setConfirming(false);
-      setPreview(null);
-      // Reload blast history
+      // Reload blast history + counts
       const bRes = await apiFetch("/api/admin/sms-blasts");
       if (bRes.ok) setBlasts(await bRes.json());
+      loadCounts(market);
     } else {
       const data = await res.json();
       setSendResult({ sent: 0, failed: 0, total: 0 });
@@ -1465,7 +1475,7 @@ function SmsTab() {
             <select
               className="eb-input text-eb-caption"
               value={market}
-              onChange={(e) => { setMarket(e.target.value); setPreview(null); }}
+              onChange={(e) => setMarket(e.target.value)}
             >
               <option value="">General (no market)</option>
               {markets.filter((m) => !m.archived).map((m) => (
@@ -1480,12 +1490,12 @@ function SmsTab() {
               {(["all", "buyers", "dealers"] as const).map((a) => (
                 <button
                   key={a}
-                  onClick={() => { setAudience(a); setPreview(null); }}
+                  onClick={() => setAudience(a)}
                   className={`flex-1 py-2 text-eb-caption font-bold uppercase tracking-wider border-2 ${
                     audience === a ? "border-eb-black text-eb-black" : "border-eb-border text-eb-muted"
                   }`}
                 >
-                  {a}
+                  {a}{audienceCounts[a] != null ? ` (${audienceCounts[a]})` : ""}
                 </button>
               ))}
             </div>
@@ -1503,35 +1513,20 @@ function SmsTab() {
             />
           </div>
 
-          {/* Preview + Send */}
-          <div className="flex gap-2">
-            <button
-              onClick={loadPreview}
-              disabled={previewing}
-              className="flex-1 py-2 text-eb-caption font-bold uppercase tracking-wider border-2 border-eb-border text-eb-muted"
-            >
-              {previewing ? "Counting\u2026" : "Preview"}
-            </button>
-            <button
-              onClick={() => setConfirming(true)}
-              disabled={!message.trim() || sending}
-              className="flex-1 eb-btn"
-            >
-              Send
-            </button>
-          </div>
-
-          {preview !== null && (
-            <div className="text-eb-caption text-eb-text py-2 px-3 bg-eb-cream border border-eb-border">
-              Will send to <span className="font-bold">{preview}</span> recipient{preview !== 1 ? "s" : ""}
-            </div>
-          )}
+          {/* Send */}
+          <button
+            onClick={() => setConfirming(true)}
+            disabled={!message.trim() || sending}
+            className="eb-btn"
+          >
+            Send
+          </button>
 
           {/* Confirmation step */}
           {confirming && (
             <div className="py-3 px-4 border-2 border-eb-pop bg-eb-pop-light">
               <div className="text-eb-caption font-bold text-eb-pop mb-2">
-                Send to {preview !== null ? preview : "?"} people?
+                Send to {audienceCounts[audience] ?? 0} people?
               </div>
               <div className="text-eb-micro text-eb-text mb-3 break-words">
                 {message.slice(0, 120)}{message.length > 120 ? "\u2026" : ""}
