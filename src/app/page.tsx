@@ -92,7 +92,7 @@ export default function LandingPage() {
   }, []);
 
   const handleSend = async () => {
-    if (!phone || !smsConsent || sending) return;
+    if (!phone || sending) return;
     setSending(true);
     const digits = phone.replace(/\D/g, "");
     const formatted =
@@ -103,7 +103,7 @@ export default function LandingPage() {
           : `+${digits}`;
     const res = await apiFetch("/api/auth/start", {
       method: "POST",
-      body: JSON.stringify({ phone: formatted, dealer: mode === "dealer" }),
+      body: JSON.stringify({ phone: formatted, dealer: mode === "dealer", sms_consent: smsConsent }),
     });
     setSending(false);
     if (res.ok) setSent(true);
@@ -164,7 +164,7 @@ export default function LandingPage() {
       <button
         className="eb-btn mt-3"
         onClick={handleSend}
-        disabled={sending || !smsConsent}
+        disabled={sending}
       >
         {sending ? "SENDING\u2026" : "TEXT ME A SIGN-IN LINK"}
       </button>
