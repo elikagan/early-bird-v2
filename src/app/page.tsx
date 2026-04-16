@@ -149,12 +149,12 @@ export default function LandingPage() {
         value={phone}
         onChange={(e) => setPhone(e.target.value)}
       />
-      <label className="flex items-start gap-2.5 mt-2 cursor-pointer">
+      <label className="flex items-center gap-2.5 mt-2 cursor-pointer">
         <input
           type="checkbox"
           checked={smsConsent}
           onChange={(e) => setSmsConsent(e.target.checked)}
-          className="mt-0.5 shrink-0 accent-eb-black"
+          className="shrink-0 accent-eb-black"
         />
         <span className="text-eb-meta text-eb-muted">
           {mode === "dealer" ? "Text me about upcoming markets" : "Text me when new items drop"}
@@ -258,23 +258,23 @@ export default function LandingPage() {
 
               {/* Value props — tight, scannable */}
               <section className="px-5 py-6 border-t border-eb-border">
-                <div className="grid grid-cols-3 gap-4 text-center">
+                <div className="grid grid-cols-3 gap-3 text-center">
                   <div>
                     <div className="text-eb-display text-eb-black">{"\u2709"}</div>
-                    <div className="text-eb-micro uppercase tracking-widest text-eb-muted mt-1">
-                      Text the dealer directly
+                    <div className="text-eb-micro uppercase tracking-wider text-eb-muted mt-1">
+                      Text dealers directly
                     </div>
                   </div>
                   <div>
                     <div className="text-eb-display text-eb-black">{"\u2764"}</div>
-                    <div className="text-eb-micro uppercase tracking-widest text-eb-muted mt-1">
-                      Save items to your watchlist
+                    <div className="text-eb-micro uppercase tracking-wider text-eb-muted mt-1">
+                      Save to your watchlist
                     </div>
                   </div>
                   <div>
                     <div className="text-eb-display text-eb-black">{"\u26a1"}</div>
-                    <div className="text-eb-micro uppercase tracking-widest text-eb-muted mt-1">
-                      Get notified on price drops
+                    <div className="text-eb-micro uppercase tracking-wider text-eb-muted mt-1">
+                      Price drop alerts
                     </div>
                   </div>
                 </div>
@@ -309,23 +309,23 @@ export default function LandingPage() {
 
               {/* Value props — same as live, always relevant */}
               <section className="px-5 py-6 border-t border-eb-border">
-                <div className="grid grid-cols-3 gap-4 text-center">
+                <div className="grid grid-cols-3 gap-3 text-center">
                   <div>
                     <div className="text-eb-display text-eb-black">{"\u2709"}</div>
-                    <div className="text-eb-micro uppercase tracking-widest text-eb-muted mt-1">
-                      Text the dealer directly
+                    <div className="text-eb-micro uppercase tracking-wider text-eb-muted mt-1">
+                      Text dealers directly
                     </div>
                   </div>
                   <div>
                     <div className="text-eb-display text-eb-black">{"\u2764"}</div>
-                    <div className="text-eb-micro uppercase tracking-widest text-eb-muted mt-1">
-                      Save items to your watchlist
+                    <div className="text-eb-micro uppercase tracking-wider text-eb-muted mt-1">
+                      Save to your watchlist
                     </div>
                   </div>
                   <div>
                     <div className="text-eb-display text-eb-black">{"\u26a1"}</div>
-                    <div className="text-eb-micro uppercase tracking-widest text-eb-muted mt-1">
-                      Get notified on price drops
+                    <div className="text-eb-micro uppercase tracking-wider text-eb-muted mt-1">
+                      Price drop alerts
                     </div>
                   </div>
                 </div>

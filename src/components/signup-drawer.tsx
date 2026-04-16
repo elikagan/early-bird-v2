@@ -86,12 +86,12 @@ export function SignupDrawer({
               onChange={(e) => setPhone(e.target.value)}
               autoFocus
             />
-            <label className="flex items-start gap-2.5 mt-2 cursor-pointer">
+            <label className="flex items-center gap-2.5 mt-2 cursor-pointer">
               <input
                 type="checkbox"
                 checked={smsConsent}
                 onChange={(e) => setSmsConsent(e.target.checked)}
-                className="mt-0.5 shrink-0 accent-eb-black"
+                className="shrink-0 accent-eb-black"
               />
               <span className="text-eb-meta text-eb-muted">
                 {consentLabel || "Text me when new items drop"}
