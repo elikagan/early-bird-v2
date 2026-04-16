@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -43,7 +43,7 @@ function BuyFeedContent() {
 
   const [items, setItems] = useState<Item[]>([]);
   const [market, setMarket] = useState<Market | null>(null);
-  const [favIds, setFavIds] = useState<Set<string>>(new Set());
+  const [favMap, setFavMap] = useState<Map<string, string>>(new Map());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -66,8 +66,8 @@ function BuyFeedContent() {
       if (marketRes.ok) setMarket(await marketRes.json());
 
       if (favsRes?.ok) {
-        const favs: { id: string }[] = await favsRes.json();
-        setFavIds(new Set(favs.map((f) => f.id)));
+        const favs: { id: string; favorite_id: string }[] = await favsRes.json();
+        setFavMap(new Map(favs.map((f) => [f.id, f.favorite_id])));
       }
 
       setLoading(false);
@@ -75,6 +75,25 @@ function BuyFeedContent() {
 
     load();
   }, [marketId, router, user]);
+
+  const toggleFav = useCallback(async (e: React.MouseEvent, itemId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const existingFavId = favMap.get(itemId);
+    if (existingFavId) {
+      setFavMap((prev) => { const next = new Map(prev); next.delete(itemId); return next; });
+      await apiFetch(`/api/favorites/${existingFavId}`, { method: "DELETE" });
+    } else {
+      const res = await apiFetch("/api/favorites", {
+        method: "POST",
+        body: JSON.stringify({ item_id: itemId }),
+      });
+      if (res.ok) {
+        const fav = await res.json();
+        setFavMap((prev) => new Map([...prev, [itemId, fav.id]]));
+      }
+    }
+  }, [favMap]);
 
   // Countdown timer (ticks every second for pre-drop)
   const [now, setNow] = useState(() => Date.now());
@@ -202,7 +221,7 @@ function BuyFeedContent() {
           )}
         </main>
 
-        <BottomNav active="buy" watchingCount={favIds.size} />
+        <BottomNav active="buy" watchingCount={favMap.size} />
       </>
     );
   }
@@ -227,12 +246,15 @@ function BuyFeedContent() {
               const isSold = item.status === "sold";
               const isHeld = item.status === "hold";
 
+              const isFav = favMap.has(item.id);
               const cardContent = (
                 <>
-                  {user && favIds.has(item.id) && (
-                    <span className="eb-fav">
-                      <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" /></svg>
-                    </span>
+                  {user && (
+                    <button className="eb-fav" onClick={(e) => toggleFav(e, item.id)}>
+                      <svg viewBox="0 0 24 24" className={isFav ? "eb-fav-filled" : "eb-fav-outline"}>
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                      </svg>
+                    </button>
                   )}
                   {item.photo_url ? (
                     <Image
@@ -291,7 +313,7 @@ function BuyFeedContent() {
         )}
       </main>
 
-      <BottomNav active="buy" watchingCount={favIds.size} />
+      <BottomNav active="buy" watchingCount={favMap.size} />
 
     </>
   );
