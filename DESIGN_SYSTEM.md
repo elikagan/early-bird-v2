@@ -44,11 +44,11 @@ Mockup source: `/tmp/eb-designs/` (5 HTML files)
 
 ## Typography
 
-**Brand font:** JetBrains Mono — headings, body, buttons, navigation. The monospace is the brand.
+**Brand font:** JetBrains Mono — everything except fine print. The monospace is the brand. Tags, section labels, dealer names, stat labels, navigation — all mono.
 
-**Readable font:** Inter — small text only (meta + micro, 12px and below). Sans-serif for legibility at small sizes. Fine print, timestamps, tags, section labels, dealer names in grids.
+**Fine print font:** Inter — `eb-micro` only. Legal disclaimers, SMS consent text, copyright lines. Nothing else.
 
-Tailwind: `font-sans` = JetBrains Mono, `font-readable` = Inter. The split is automatic — `text-eb-micro` and `text-eb-meta` trigger Inter via CSS. Component classes in globals.css also set it explicitly.
+Tailwind: `font-sans` = JetBrains Mono, `font-readable` = Inter. The split is automatic — `text-eb-micro` triggers Inter via CSS.
 
 ### Scale (7 sizes)
 | Name | Size | Weight | Font | Use |
@@ -58,8 +58,8 @@ Tailwind: `font-sans` = JetBrains Mono, `font-readable` = Inter. The split is au
 | `title` | 17px | 700 | Mono | Masthead, card titles (detail view) |
 | `body` | 15px | 400–500 | Mono | Descriptions, form inputs, buttons |
 | `caption` | 13px | 400–700 | Mono | Grid titles, nav items, drop bar |
-| `meta` | 12px | 400–500 | **Inter** | Section labels, dealer info, dates |
-| `micro` | 11px | 700 | **Inter** | Tags, badges, fine print, timestamps |
+| `meta` | 12px | 400–500 | Mono | Section labels, dealer info, dates |
+| `micro` | 11px | 400 | **Inter** | Fine print, legal text, disclaimers |
 
 ### Letter Spacing
 - Uppercase labels: `0.08–0.1em`
@@ -210,4 +210,4 @@ colors: {
 
 Use as: `text-eb-pop`, `bg-eb-bg`, `border-eb-border`, etc.
 
-Font families: `font-sans` (JetBrains Mono), `font-readable` (Inter). Small text gets Inter automatically via CSS — no need to add `font-readable` manually when using `text-eb-micro` or `text-eb-meta`.
+Font families: `font-sans` (JetBrains Mono), `font-readable` (Inter). Fine print gets Inter automatically — `text-eb-micro` triggers it via CSS. Everything else is mono.
