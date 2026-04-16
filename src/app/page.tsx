@@ -33,7 +33,6 @@ export default function LandingPage() {
   const { user, loading: authLoading } = useAuth();
   const [mode, setMode] = useState<"buyer" | "dealer">("buyer");
   const [phone, setPhone] = useState("");
-  const [smsConsent, setSmsConsent] = useState(false);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [markets, setMarkets] = useState<Market[]>([]);
@@ -92,7 +91,7 @@ export default function LandingPage() {
   }, []);
 
   const handleSend = async () => {
-    if (!phone || !smsConsent || sending) return;
+    if (!phone || sending) return;
     setSending(true);
     const digits = phone.replace(/\D/g, "");
     const formatted =
@@ -130,7 +129,7 @@ export default function LandingPage() {
         We texted a sign-in link to {phone}. Tap it to get in.
       </p>
       <button
-        onClick={() => { setSent(false); setPhone(""); setSmsConsent(false); }}
+        onClick={() => { setSent(false); setPhone(""); }}
         className="text-eb-meta text-eb-light mt-4"
       >
         Didn&apos;t get it? Try again
@@ -146,29 +145,18 @@ export default function LandingPage() {
         value={phone}
         onChange={(e) => setPhone(e.target.value)}
       />
-      <label className="flex items-start gap-2.5 mt-3 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={smsConsent}
-          onChange={(e) => setSmsConsent(e.target.checked)}
-          className="mt-0.5 shrink-0 accent-eb-black"
-        />
-        <span className="text-eb-meta text-eb-muted leading-loose">
-          I agree to receive texts from Early Bird (sign-in links, alerts,
-          price drops). Msg frequency varies. Msg &amp; data rates may
-          apply. STOP to cancel, HELP for help. No mobile info shared with
-          third parties.
-        </span>
-      </label>
       <button
         className="eb-btn mt-3"
         onClick={handleSend}
-        disabled={sending || !smsConsent}
+        disabled={sending}
       >
         {sending ? "SENDING\u2026" : "TEXT ME A SIGN-IN LINK"}
       </button>
-      <p className="text-eb-micro text-eb-light mt-2">
-        <a href="/privacy" className="underline">Privacy Policy</a>{" \u00b7 "}
+      <p className="text-eb-meta text-eb-muted mt-3 leading-relaxed">
+        By signing up you agree to receive texts. Msg &amp; data rates
+        may apply. Reply STOP to cancel.{" "}
+        <a href="/privacy" className="underline">Privacy</a>
+        {" \u00b7 "}
         <a href="/terms" className="underline">Terms</a>
       </p>
     </>
