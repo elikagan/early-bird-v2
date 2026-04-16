@@ -154,15 +154,16 @@ export default function HomePage() {
             {previewItems.length > 0 && (
               <div className="grid grid-cols-3 gap-1.5 mt-4">
                 {previewItems.map((pi) => (
-                  <Image
-                    key={pi.id}
-                    src={pi.thumb_url || pi.photo_url || ""}
-                    alt=""
-                    width={200}
-                    height={200}
-                    sizes="(max-width: 430px) 33vw, 130px"
-                    className="w-full aspect-square object-cover"
-                  />
+                  <Link key={pi.id} href={`/item/${pi.id}`}>
+                    <Image
+                      src={pi.thumb_url || pi.photo_url || ""}
+                      alt=""
+                      width={200}
+                      height={200}
+                      sizes="(max-width: 430px) 33vw, 130px"
+                      className="w-full aspect-square object-cover"
+                    />
+                  </Link>
                 ))}
               </div>
             )}
