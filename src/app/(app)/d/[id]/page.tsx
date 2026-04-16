@@ -142,8 +142,13 @@ function DealerPageContent() {
     );
   }
 
-  const dealerName = dealer.display_name || dealer.business_name || dealer.first_name || "Dealer";
+  const dealerName = dealer.display_name || dealer.first_name || null;
+  const boothName = dealer.business_name || dealerName || "Dealer";
+  const showDealerName = dealerName && dealerName !== dealer.business_name;
   const marketDate = market ? formatDate(market.starts_at) : "";
+
+  const formatMethod = (m: string) =>
+    ({ cash: "Cash", venmo: "Venmo", zelle: "Zelle", apple_pay: "Apple Pay", card: "Card" }[m] || m);
 
   return (
     <>
@@ -161,36 +166,33 @@ function DealerPageContent() {
         </div>
       )}
 
-      {/* Dealer profile card */}
-      <section className="px-5 pt-6 pb-5 border-b border-eb-border">
-        <div className="flex items-center gap-4">
-          <span className="eb-avatar eb-avatar-lg">
-            {getInitials(dealerName)}
-          </span>
-          <div className="flex-1 min-w-0">
-            <h2 className="text-eb-display text-eb-black leading-tight">
-              {dealerName}
-            </h2>
-            {dealer.business_name && dealer.display_name && dealer.business_name !== dealer.display_name && (
-              <div className="text-eb-caption text-eb-muted mt-0.5">
-                {dealer.business_name}
-              </div>
-            )}
-            <div className="text-eb-meta text-eb-muted mt-1">
-              {[
-                dealer.booth_number ? `Booth ${dealer.booth_number}` : null,
-                market?.name,
-                marketDate,
-              ].filter(Boolean).join(" \u00b7 ")}
-            </div>
+      {/* Dealer profile */}
+      <section className="px-5 pt-7 pb-5 border-b border-eb-border">
+        <h2 className="text-eb-display text-eb-black leading-tight">
+          {boothName}
+        </h2>
+
+        {showDealerName && (
+          <div className="flex items-center gap-2 mt-2">
+            <span className="eb-avatar eb-avatar-sm">
+              {getInitials(dealerName)}
+            </span>
+            <span className="text-eb-caption text-eb-muted">{dealerName}</span>
           </div>
+        )}
+
+        <div className="text-eb-meta text-eb-muted mt-2">
+          {[
+            dealer.booth_number ? `Booth ${dealer.booth_number}` : null,
+            market?.name,
+            marketDate,
+          ].filter(Boolean).join(" \u00b7 ")}
         </div>
 
-        {/* Instagram */}
         {dealer.instagram_handle && (
           <a
             href={`https://instagram.com/${dealer.instagram_handle.replace("@", "")}`}
-            className="inline-block text-eb-meta text-eb-muted mt-3"
+            className="inline-block text-eb-meta text-eb-muted mt-2"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -198,15 +200,9 @@ function DealerPageContent() {
           </a>
         )}
 
-        {/* Payment methods */}
         {dealer.payment_methods.length > 0 && (
-          <div className="mt-3">
-            <span className="text-eb-micro uppercase tracking-widest text-eb-muted">
-              Accepts{" "}
-            </span>
-            <span className="text-eb-meta text-eb-text">
-              {dealer.payment_methods.join(", ")}
-            </span>
+          <div className="text-eb-meta text-eb-muted mt-3 pt-3 border-t border-eb-border">
+            {dealer.payment_methods.map(formatMethod).join(" \u00b7 ")}
           </div>
         )}
       </section>
