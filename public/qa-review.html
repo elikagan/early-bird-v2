@@ -603,12 +603,106 @@
     background: var(--border);
     border-radius: 2px;
   }
+
+  /* ── Fix annotation dots ── */
+  .phone-column { overflow: visible; }
+
+  .fix-dots-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 20;
+  }
+
+  .fix-dot {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #ff4fa0;
+    box-shadow: 0 0 6px rgba(255,79,160,0.6), 0 0 12px rgba(255,79,160,0.2);
+    cursor: pointer;
+    pointer-events: auto;
+    transition: transform 0.15s, box-shadow 0.15s;
+    z-index: 21;
+  }
+
+  .fix-dot:hover {
+    transform: scale(1.4);
+    box-shadow: 0 0 10px rgba(255,79,160,0.8), 0 0 20px rgba(255,79,160,0.35);
+  }
+
+  .fix-dot .fix-tooltip {
+    position: absolute;
+    width: 220px;
+    padding: 8px 10px;
+    background: var(--surface);
+    border: 1px solid #ff4fa0;
+    border-radius: 6px;
+    font-size: 11px;
+    color: var(--text);
+    line-height: 1.45;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s;
+    z-index: 30;
+    white-space: normal;
+  }
+
+  .fix-dot:hover .fix-tooltip { opacity: 1; pointer-events: auto; }
+
+  /* Right-side dots: tooltip extends right */
+  .fix-dot.dot-right .fix-tooltip {
+    left: calc(100% + 10px);
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  /* Left-side dots: tooltip extends left */
+  .fix-dot.dot-left .fix-tooltip {
+    right: calc(100% + 10px);
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  /* Connector line from dot to tooltip */
+  .fix-dot.dot-right::after,
+  .fix-dot.dot-left::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 10px;
+    height: 1px;
+    background: #ff4fa0;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .fix-dot.dot-right::after { left: 100%; transform: translateY(-50%); }
+  .fix-dot.dot-left::after { right: 100%; transform: translateY(-50%); }
+  .fix-dot:hover::after { opacity: 0.5; }
+
+  .fix-legend {
+    position: absolute;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    color: #ff4fa0;
+    white-space: nowrap;
+    letter-spacing: 0.03em;
+    opacity: 0.7;
+  }
 </style>
 </head>
 <body>
 
 <!-- ── Left: iPhone ── -->
 <div class="phone-column">
+  <div class="fix-dots-container" id="fixDotsContainer"></div>
+  <div class="fix-legend" id="fixLegend"></div>
   <div class="iphone-frame">
     <div class="dynamic-island"></div>
     <div class="ios-status-bar">
@@ -812,16 +906,16 @@ const PAGES = [
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   { id: "buy-bad-market", title: "Buy — Bad Market ID (Error State)", path: "/buy?market=nonexistent", role: null, desc: "WHO: anyone (edge case). WHEN: hit /buy with a market ID that doesn't exist — stale bookmark, typo, broken link, or a market that was deleted.", badge: "live", badgeClass: "badge-live",
-    context: "Error state test. Currently falls back silently to the default market hub (Downtown Modernism) instead of showing a 'market not found' error. QA decision: is the silent fallback acceptable, or should it show an explicit error and a way back?" },
+    context: "Error state — shows a NotFoundScreen: 'We couldn\u2019t find this market. It may have been removed or the link might be wrong.' with a 'Browse markets' button back to /home." },
 
   { id: "item-404", title: "Item — 404 (Error State)", path: "/item/nonexistent-id-12345", role: null, desc: "WHO: anyone (edge case). WHEN: hit /item/{id} with an item ID that doesn't exist — stale link from SMS/share, typo, or a deleted item.", badge: "live", badgeClass: "badge-live",
-    context: "Error state test. Currently shows a near-empty page with just a Sign Up button — no explicit 'item not found' message. QA decision: this should probably show a clear not-found state with a link back to the market grid." },
+    context: "Error state — shows a NotFoundScreen: 'This item may have been removed or the link might be wrong.' with a 'Browse listings' button back to /home." },
 
   { id: "dealer-404", title: "Dealer Storefront — 404 (Error State)", path: "/d/nonexistent-dealer-id", role: null, desc: "WHO: anyone (edge case). WHEN: hit /d/{id} with a dealer ID that doesn't exist — stale IG link, typo, or a dealer that got removed.", badge: "live", badgeClass: "badge-live",
     context: "Error state test. Correctly shows a 'Dealer not found' error with the empty-state icon. This is the reference for how the other 404s should work (item-404, buy-bad-market)." },
 
   { id: "invite-bad", title: "Invite — Bad Code (Error State)", path: "/invite/BADCODE999", role: null, desc: "WHO: anyone (edge case). WHEN: hit /invite/{code} with a fake or expired code — QA probing, leaked old codes, or someone sharing an invite that's been revoked.", badge: "auth", badgeClass: "badge-auth",
-    context: "Error state test. BUG: shows the same 'YOU'RE INVITED' welcome as a valid code. Invite codes aren't actually validated on this page — any string works. Needs validation + a not-found/expired state." },
+    context: "Error state — shows a NotFoundScreen: 'This invite link has expired, already been used, or doesn\u2019t exist. Contact the person who sent it to get a new one.' with a 'Go to Early Bird' button." },
 ];
 
 let currentIndex = 0;
@@ -978,6 +1072,7 @@ async function renderPage() {
   document.getElementById("prevBtn").disabled = currentIndex === 0;
   document.getElementById("nextBtn").disabled = currentIndex === PAGES.length - 1;
   renderComments();
+  renderFixDots();
   updateStats();
 
   // Ensure the iframe loads with the correct auth state for this page.
@@ -1234,6 +1329,191 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "ArrowRight") navigate(1);
   if (e.key === "Escape") closeModal();
 });
+
+// ── Fix annotation dots ──
+// Maps page IDs to arrays of { text } describing what was fixed.
+const FIXES = {
+  "landing": [
+    "Changed CTA from \"browse all 13 items\" to \"Shop the market\"",
+    "Fixed vertical rhythm — tightened spacing between sections",
+    "Shared Masthead component replaces inline header",
+    "Dealer fee copy rewritten: transparent \"free for the foreseeable future\" language",
+    "Dealer/Buyer toggle button vertical alignment fixed",
+  ],
+  "landing-dealer": [
+    "Fixed vertical rhythm and spacing throughout dealer pitch",
+    "Buyer toggle button vertical alignment fixed",
+    "Fee section rewritten: \"We're dealers too. It's free now and for the foreseeable future while we grow.\"",
+  ],
+  "home": [
+    "Signed-out users now redirect to / (landing page) — this page only renders for signed-in users",
+  ],
+  "buy-grid": [
+    "Price rendered in gray (text-eb-muted), differentiated from bold title",
+    "\"Drop is live\" bar replaces old \"ALL LISTINGS\" header",
+    "Shared Masthead with sign-in link for signed-out visitors",
+  ],
+  "item-credenza": [
+    "FIRM tag vertical alignment fixed (vertical-align: middle)",
+    "Price styled differently from title (text-eb-muted vs text-eb-black)",
+    "Shared Masthead with sign-in link",
+  ],
+  "item-nesting": [
+    "Prominent HOLD badge added inline with price row",
+    "Price styled differently from title",
+    "Holder identity card added on dealer-own view (name + avatar)",
+    "Shared Masthead with sign-in link",
+  ],
+  "item-enamel": [
+    "Prominent SOLD badge added inline with price row",
+    "Price styled differently from title",
+    "Buyer identity card added on dealer-own view (name + avatar)",
+    "Shared Masthead with sign-in link",
+  ],
+  "dealer-page": [
+    "Market name context bar added (\"Downtown Modernism · Apr 19\")",
+    "Shared Masthead with sign-in link",
+  ],
+  "onboarding-buyer": [
+    "Phone number displayed from verified session (read-only)",
+    "Button uses full-width eb-cta class",
+    "Shared Masthead component",
+  ],
+  "onboarding-dealer": [
+    "Removed \"Takes about a minute\" — misleading for review timeline",
+    "Camera selfie enabled (capture=\"user\" on file input)",
+    "Button width fixed — full-width eb-cta",
+    "Shared Masthead component",
+  ],
+  "onboarding-confirm": [
+    "\"START BROWSING\" routes to /home as a signed-in buyer",
+    "Pending application banner shows on home hub while awaiting review",
+  ],
+  "home-buyer": [
+    "Promo image grid: 3-column thumbnail grid on hero market card",
+    "Pending dealer application banner for buyers who applied",
+  ],
+  "buy-grid-buyer": [
+    "Price/title typography differentiated (price in gray)",
+    "\"Drop is live\" header with item count",
+  ],
+  "item-buyer": [
+    "FIRM tag vertical alignment fixed",
+    "Price styled differently from title",
+    "HOLD/SOLD badges visible inline with price",
+  ],
+  "watching-buyer": [
+    "Empty state CTA changed from \"Browse the drop\" to \"Browse listings\"",
+  ],
+  "account-buyer": [
+    "Avatar overlay: 2px white/60% stroke so + icon doesn't blend on dark photos",
+    "Camera selfie on avatar upload (capture=\"user\")",
+    "Shared Masthead component",
+  ],
+  "dealer-page-buyer": [
+    "Market name context bar visible (booth at specific market)",
+  ],
+  "sell-inventory": [
+    "Copy button height matched to input field (items-stretch + flex alignment)",
+    "\"Your booth at [Market Name]\" — market context already in place",
+    "Shared Masthead component",
+  ],
+  "sell-add": [
+    "Removed \"Add at least one photo\" message — disabled button is sufficient",
+    "\"Back to my booth\" header replaces logo",
+    "Button uses full-width eb-cta",
+  ],
+  "item-dealer-own": [
+    "\"Back to my booth\" text (was \"Back to listings\")",
+    "HOLD badge inline with price — visible at a glance",
+    "SOLD badge inline with price — visible at a glance",
+    "Held-for identity card: buyer name + avatar shown to dealer",
+    "Sold-to identity card: buyer name + avatar shown to dealer",
+    "API returns holder/buyer data via LEFT JOIN on users table",
+  ],
+  "account-dealer": [
+    "Avatar overlay: 2px white/60% stroke on + icon",
+    "Instagram input: fixed @ prefix — user never types it",
+    "Camera selfie on avatar upload",
+    "Shared Masthead component",
+  ],
+  "buy-bad-market": [
+    "NotFoundScreen: \"We couldn't find this market. It may have been removed or the link might be wrong.\"",
+    "Action button: \"Browse markets\" links to /home",
+  ],
+  "item-404": [
+    "NotFoundScreen: \"This item may have been removed or the link might be wrong.\"",
+    "Action button: \"Browse listings\" links to /home",
+  ],
+  "invite-bad": [
+    "NotFoundScreen: \"This invite link has expired, already been used, or doesn't exist. Contact the person who sent it to get a new one.\"",
+    "Action button: \"Go to Early Bird\" links to /",
+  ],
+  "admin": [
+    "Shared Masthead component",
+  ],
+  "privacy": [
+    "Shared Masthead with sign-in link",
+  ],
+  "terms": [
+    "Shared Masthead with sign-in link",
+  ],
+};
+
+function renderFixDots() {
+  const container = document.getElementById("fixDotsContainer");
+  const legend = document.getElementById("fixLegend");
+  container.innerHTML = "";
+
+  const page = PAGES[currentIndex];
+  const fixes = FIXES[page.id] || [];
+
+  if (fixes.length === 0) {
+    legend.textContent = "";
+    return;
+  }
+
+  legend.textContent = fixes.length + " fix" + (fixes.length === 1 ? "" : "es") + " on this page";
+
+  // Phone frame geometry (relative to phone-column)
+  // phone-column is 440px wide, 20px padding, frame is 393px centered
+  const colW = 440;
+  const frameW = 393;
+  const frameLeft = (colW - frameW) / 2; // ~23.5
+  const frameRight = frameLeft + frameW; // ~416.5
+
+  // Vertical range: 15% to 85% of phone-column height
+  const topPct = 15;
+  const bottomPct = 85;
+  const rangePct = bottomPct - topPct;
+
+  fixes.forEach((text, i) => {
+    const dot = document.createElement("div");
+    dot.className = "fix-dot";
+
+    // Alternate left/right
+    const isRight = i % 2 === 0;
+    dot.classList.add(isRight ? "dot-right" : "dot-left");
+
+    // Horizontal position: just outside the frame edge
+    const x = isRight ? frameRight + 2 : frameLeft - 12;
+    dot.style.left = x + "px";
+
+    // Vertical position: evenly distributed
+    const pct = fixes.length === 1
+      ? topPct + rangePct / 2
+      : topPct + (rangePct * i) / (fixes.length - 1);
+    dot.style.top = pct + "%";
+
+    // Tooltip
+    const tip = document.createElement("div");
+    tip.className = "fix-tooltip";
+    tip.textContent = text;
+    dot.appendChild(tip);
+
+    container.appendChild(dot);
+  });
+}
 
 // ── Init ──
 function init() {
