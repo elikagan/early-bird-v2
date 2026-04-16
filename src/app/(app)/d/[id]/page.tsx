@@ -49,6 +49,7 @@ function DealerPageContent() {
   const [dealer, setDealer] = useState<DealerProfile | null>(null);
   const [items, setItems] = useState<Item[]>([]);
   const [market, setMarket] = useState<Market | null>(null);
+  const [favIds, setFavIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [showSignup, setShowSignup] = useState(false);
 
@@ -72,11 +73,14 @@ function DealerPageContent() {
         return;
       }
 
-      const [dealerRes, itemsRes, marketRes] = await Promise.all([
+      const fetches: Promise<Response>[] = [
         apiFetch(`/api/dealers/${id}?market_id=${marketId}`),
         apiFetch(`/api/items?market_id=${marketId}&dealer_id=${id}`),
         apiFetch(`/api/markets/${marketId}`),
-      ]);
+      ];
+      if (user) fetches.push(apiFetch("/api/favorites"));
+
+      const [dealerRes, itemsRes, marketRes, favsRes] = await Promise.all(fetches);
 
       if (dealerRes.ok) setDealer(await dealerRes.json());
       if (itemsRes.ok) {
@@ -85,6 +89,10 @@ function DealerPageContent() {
         setItems(allItems.filter((i) => i.status !== "deleted"));
       }
       if (marketRes.ok) setMarket(await marketRes.json());
+      if (favsRes?.ok) {
+        const favs: { id: string }[] = await favsRes.json();
+        setFavIds(new Set(favs.map((f) => f.id)));
+      }
 
       setLoading(false);
     }
@@ -199,6 +207,9 @@ function DealerPageContent() {
 
               const cardContent = (
                 <>
+                  {user && favIds.has(item.id) && (
+                    <span className="eb-fav">{"\u2665"}</span>
+                  )}
                   {item.photo_url ? (
                     <Image
                       src={item.thumb_url || item.photo_url}

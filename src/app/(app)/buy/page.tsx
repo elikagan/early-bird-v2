@@ -43,7 +43,7 @@ function BuyFeedContent() {
 
   const [items, setItems] = useState<Item[]>([]);
   const [market, setMarket] = useState<Market | null>(null);
-  const [favCount, setFavCount] = useState(0);
+  const [favIds, setFavIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -66,8 +66,8 @@ function BuyFeedContent() {
       if (marketRes.ok) setMarket(await marketRes.json());
 
       if (favsRes?.ok) {
-        const favs = await favsRes.json();
-        setFavCount(favs.length);
+        const favs: { id: string }[] = await favsRes.json();
+        setFavIds(new Set(favs.map((f) => f.id)));
       }
 
       setLoading(false);
@@ -202,7 +202,7 @@ function BuyFeedContent() {
           )}
         </main>
 
-        <BottomNav active="buy" watchingCount={favCount} />
+        <BottomNav active="buy" watchingCount={favIds.size} />
       </>
     );
   }
@@ -229,6 +229,9 @@ function BuyFeedContent() {
 
               const cardContent = (
                 <>
+                  {user && favIds.has(item.id) && (
+                    <span className="eb-fav">{"\u2665"}</span>
+                  )}
                   {item.photo_url ? (
                     <Image
                       src={item.thumb_url || item.photo_url}
@@ -286,7 +289,7 @@ function BuyFeedContent() {
         )}
       </main>
 
-      <BottomNav active="buy" watchingCount={favCount} />
+      <BottomNav active="buy" watchingCount={favIds.size} />
 
     </>
   );
