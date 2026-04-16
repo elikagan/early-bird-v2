@@ -511,12 +511,20 @@ export default function LandingPage() {
         <div className="text-eb-micro text-eb-muted mt-1">
           Los Angeles, CA
         </div>
-        <div className="mt-3">
+        <div className="flex gap-4 mt-3">
           <a
             href="mailto:hi@earlybird.la"
             className="text-eb-micro text-eb-muted"
           >
             hi@earlybird.la
+          </a>
+          <a
+            href="https://instagram.com/early_bird_la"
+            className="text-eb-micro text-eb-muted"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            @early_bird_la
           </a>
         </div>
         <div className="flex gap-4 mt-4">
