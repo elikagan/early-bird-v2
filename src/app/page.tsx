@@ -154,8 +154,8 @@ export default function LandingPage() {
           className="mt-0.5 shrink-0 accent-eb-black"
         />
         <span className="text-eb-meta text-eb-muted leading-relaxed">
-          I agree to receive texts from Early Bird. Msg &amp; data rates
-          may apply. STOP to cancel.{" "}
+          Text me when new items drop. Msg &amp; data rates may apply.
+          STOP to cancel.{" "}
           <a href="/terms" className="underline">Terms</a>
           {" \u00b7 "}
           <a href="/privacy" className="underline">Privacy</a>
