@@ -41,7 +41,11 @@ interface ItemDetail {
   price_firm: number;
   status: string;
   held_for: string | null;
+  held_for_name: string | null;
+  held_for_avatar: string | null;
   sold_to: string | null;
+  sold_to_name: string | null;
+  sold_to_avatar: string | null;
   dealer_ref: string;
   dealer_name: string;
   dealer_instagram: string | null;
@@ -783,6 +787,12 @@ export default function ItemDetailPage() {
               {item.price_firm === 1 && !item.original_price && (
                 <span className="eb-tag-firm">FIRM</span>
               )}
+              {item.status === "hold" && (
+                <span className="eb-tag-hold">HOLD</span>
+              )}
+              {item.status === "sold" && (
+                <span className="eb-tag-sold">SOLD</span>
+              )}
             </div>
           </section>
 
@@ -800,6 +810,60 @@ export default function ItemDetailPage() {
               <div className="eb-stat">
                 <div className="eb-stat-num">{item.inquiry_count}</div>
                 <div className="eb-stat-label">Inquiries</div>
+              </div>
+            </div>
+          )}
+
+          {/* Dealer-own: Held-for identity */}
+          {isOwner && item.status === "hold" && item.held_for && (
+            <div className="mx-5 mb-4 p-4 border border-eb-amber bg-eb-pop-bg">
+              <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-2">
+                Held For
+              </div>
+              <div className="flex items-center gap-3">
+                {item.held_for_avatar ? (
+                  <Image
+                    src={item.held_for_avatar}
+                    alt=""
+                    width={32}
+                    height={32}
+                    className="w-8 h-8 rounded-full object-cover"
+                  />
+                ) : (
+                  <span className="eb-avatar eb-avatar-md">
+                    {getInitials(item.held_for_name || "Buyer")}
+                  </span>
+                )}
+                <span className="text-eb-body font-bold text-eb-black">
+                  {item.held_for_name || "Buyer"}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Dealer-own: Sold-to identity */}
+          {isOwner && item.status === "sold" && item.sold_to && (
+            <div className="mx-5 mb-4 p-4 border border-eb-border">
+              <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-2">
+                Sold To
+              </div>
+              <div className="flex items-center gap-3">
+                {item.sold_to_avatar ? (
+                  <Image
+                    src={item.sold_to_avatar}
+                    alt=""
+                    width={32}
+                    height={32}
+                    className="w-8 h-8 rounded-full object-cover"
+                  />
+                ) : (
+                  <span className="eb-avatar eb-avatar-md">
+                    {getInitials(item.sold_to_name || "Buyer")}
+                  </span>
+                )}
+                <span className="text-eb-body font-bold text-eb-black">
+                  {item.sold_to_name || "Buyer"}
+                </span>
               </div>
             </div>
           )}

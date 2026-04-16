@@ -225,6 +225,18 @@
     vertical-align: middle;
     margin-left: 3px;
   }
+  .eb-tag-sold {
+    display: inline-block;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 1px 4px;
+    background: var(--eb-black);
+    color: #fff;
+    vertical-align: middle;
+    margin-left: 3px;
+  }
 
   /* ---- Status dots ---- */
   .eb-dot {

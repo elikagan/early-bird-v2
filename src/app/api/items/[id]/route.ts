@@ -27,11 +27,17 @@ export async function GET(
         u.id as dealer_user_id,
         (SELECT COUNT(*) FROM favorites f WHERE f.item_id = i.id) as watcher_count,
         (SELECT COUNT(*) FROM inquiries q WHERE q.item_id = i.id) as inquiry_count,
-        bs.booth_number
+        bs.booth_number,
+        holder.display_name as held_for_name,
+        holder.avatar_url as held_for_avatar,
+        buyer.display_name as sold_to_name,
+        buyer.avatar_url as sold_to_avatar
       FROM items i
       JOIN dealers d ON d.id = i.dealer_id
       JOIN users u ON u.id = d.user_id
       LEFT JOIN booth_settings bs ON bs.dealer_id = d.id AND bs.market_id = i.market_id
+      LEFT JOIN users holder ON holder.id = i.held_for
+      LEFT JOIN users buyer ON buyer.id = i.sold_to
       WHERE i.id = ?
     `,
     args: [id],
