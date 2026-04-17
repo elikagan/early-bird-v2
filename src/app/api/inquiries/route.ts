@@ -16,6 +16,12 @@ export async function POST(request: Request) {
 
   if (!item_id) return error("item_id is required");
 
+  // Message is required — empty inquiries produced garbage SMS like
+  // `... says: "" about ...` before this guard existed.
+  if (!message || typeof message !== "string" || message.trim().length === 0) {
+    return error("message is required", 400);
+  }
+
   // Verify item exists
   const item = await db.execute({
     sql: `SELECT i.*, d.user_id as dealer_user_id FROM items i JOIN dealers d ON d.id = i.dealer_id WHERE i.id = ?`,

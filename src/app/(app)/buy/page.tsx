@@ -283,12 +283,10 @@ function BuyFeedContent() {
                     {user && (
                       <div className="eb-dealer">
                         <span className="eb-avatar eb-avatar-sm">
-                          {getInitials(
-                            item.dealer_display_name || item.dealer_name
-                          )}
+                          {getInitials(item.dealer_name)}
                         </span>
                         <span className="eb-dealer-name">
-                          {item.dealer_display_name || item.dealer_name}
+                          {item.dealer_name}
                         </span>
                       </div>
                     )}

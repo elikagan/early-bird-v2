@@ -108,6 +108,9 @@ export default function ItemDetailPage() {
   // Inquiry drawer (buyer)
   const [showInquiry, setShowInquiry] = useState(false);
   const [inquiryMsg, setInquiryMsg] = useState("");
+  const [inquiryOption, setInquiryOption] = useState<
+    "buy" | "discuss" | "price" | "custom" | null
+  >(null);
   const [sending, setSending] = useState(false);
 
   // Confirm drawer (dealer-own)
@@ -359,19 +362,27 @@ export default function ItemDetailPage() {
   }, [item, isFav, favId]);
 
   const sendInquiry = useCallback(async () => {
-    if (!item || sending) return;
+    if (!item || sending || !inquiryOption) return;
+    let message = "";
+    if (inquiryOption === "buy") message = "I'm interested and ready to buy.";
+    else if (inquiryOption === "discuss") message = "I'm interested — I'd like to discuss.";
+    else if (inquiryOption === "price") message = "What's your best price?";
+    else if (inquiryOption === "custom") message = inquiryMsg.trim();
+    if (!message) return;
+
     setSending(true);
     const res = await apiFetch("/api/inquiries", {
       method: "POST",
-      body: JSON.stringify({ item_id: item.id, message: inquiryMsg }),
+      body: JSON.stringify({ item_id: item.id, message }),
     });
     setSending(false);
     if (res.ok) {
       setShowInquiry(false);
       setInquiryMsg("");
+      setInquiryOption(null);
       setIsFav(true);
     }
-  }, [item, inquiryMsg, sending]);
+  }, [item, inquiryMsg, inquiryOption, sending]);
 
   const updateStatus = useCallback(
     async (status: string, heldFor?: string, soldTo?: string) => {
@@ -902,7 +913,7 @@ export default function ItemDetailPage() {
           className="mx-5 mb-5 p-4 border border-eb-border flex gap-3 items-center"
         >
           <span className="eb-avatar eb-avatar-lg">
-            {getInitials(item.dealer_display_name || item.dealer_name)}
+            {getInitials(item.dealer_name)}
           </span>
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between">
@@ -1180,44 +1191,107 @@ export default function ItemDetailPage() {
             className="fixed inset-0 bg-black/40 z-40"
             onClick={() => setShowInquiry(false)}
           />
-          <div className="fixed bottom-0 left-0 right-0 max-w-[430px] mx-auto bg-white rounded-t-2xl border-t border-eb-border z-50 px-6 pt-3 pb-6">
+          <div className="fixed bottom-0 left-0 right-0 max-w-[430px] mx-auto bg-white rounded-t-2xl border-t border-eb-border z-50 px-5 pt-3 pb-6">
             <div className="w-12 h-1 bg-eb-border rounded-full mx-auto mb-4" />
-            <button
-              className="absolute top-3 right-4 text-eb-body text-eb-muted"
-              aria-label="Close"
-              onClick={() => setShowInquiry(false)}
-            >
-              {"\u2715"}
-            </button>
-            <h3 className="text-eb-body font-bold uppercase tracking-widest text-eb-black mb-3">
-              Send Inquiry
-            </h3>
-            <p className="text-eb-caption text-eb-muted mb-4 leading-relaxed">
-              We&apos;ll text {item.dealer_name}{" "}your message and number.
-              They&apos;ll contact you directly — no in-app messaging.
-            </p>
-            <div className="mb-4">
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-eb-meta uppercase tracking-wider text-eb-muted">
-                  Your Message
-                </span>
-                <span className="text-eb-meta text-eb-muted">
-                  {inquiryMsg.length} / 240
-                </span>
-              </div>
-              <textarea
-                className="eb-input h-24 resize-none"
-                placeholder={`Love the ${item.title.toLowerCase()} \u2014 any details?`}
-                value={inquiryMsg}
-                onChange={(e) =>
-                  setInquiryMsg(e.target.value.slice(0, 240))
-                }
-              />
+
+            {/* Header */}
+            <div className="flex items-start justify-between gap-4 mb-1">
+              <h3 className="text-eb-title font-bold uppercase tracking-widest text-eb-black">
+                I&apos;m Interested
+              </h3>
+              <button
+                aria-label="Close"
+                className="text-eb-body text-eb-muted leading-none -mt-1"
+                onClick={() => setShowInquiry(false)}
+              >
+                {"\u2715"}
+              </button>
             </div>
+            <p className="text-eb-caption text-eb-muted leading-relaxed mb-5">
+              We&apos;ll text{" "}
+              <span className="font-bold text-eb-black">{item.dealer_name}</span>{" "}
+              your message and number. They&apos;ll contact you directly — no
+              in-app messaging.
+            </p>
+
+            {/* Preset options + custom */}
+            <div className="space-y-2">
+              {[
+                { key: "buy" as const,     label: "Ready to buy",            text: "I'm interested and ready to buy." },
+                { key: "discuss" as const, label: "Let's discuss",           text: "I'm interested \u2014 I'd like to discuss." },
+                { key: "price" as const,   label: "What's your best price?", text: "What's your best price?" },
+                { key: "custom" as const,  label: "Write your own",          text: "" },
+              ].map((opt) => {
+                const isSelected = inquiryOption === opt.key;
+                return (
+                  <button
+                    key={opt.key}
+                    type="button"
+                    onClick={() => setInquiryOption(opt.key)}
+                    className={
+                      "w-full text-left px-4 py-3 border-2 transition-colors " +
+                      (isSelected
+                        ? "border-eb-pop bg-eb-pop-bg"
+                        : "border-eb-border bg-white active:bg-eb-border/30")
+                    }
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="text-eb-caption font-bold uppercase tracking-wider text-eb-black">
+                          {opt.label}
+                        </div>
+                        {opt.key !== "custom" && (
+                          <div className="text-eb-meta text-eb-muted mt-1 leading-relaxed">
+                            &ldquo;{opt.text}&rdquo;
+                          </div>
+                        )}
+                      </div>
+                      <div
+                        className={
+                          "shrink-0 w-5 h-5 rounded-full border-2 mt-0.5 flex items-center justify-center " +
+                          (isSelected ? "border-eb-pop" : "border-eb-border")
+                        }
+                      >
+                        {isSelected && (
+                          <div className="w-2.5 h-2.5 rounded-full bg-eb-pop" />
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Custom textarea — reveals when "Write your own" is selected */}
+            {inquiryOption === "custom" && (
+              <div className="mt-4">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-eb-meta uppercase tracking-wider text-eb-muted">
+                    Your Message
+                  </span>
+                  <span className="text-eb-meta text-eb-muted tabular-nums">
+                    {inquiryMsg.length} / 240
+                  </span>
+                </div>
+                <textarea
+                  className="eb-input h-24 resize-none"
+                  placeholder={`Love the ${item.title.toLowerCase()} \u2014 any details?`}
+                  value={inquiryMsg}
+                  onChange={(e) => setInquiryMsg(e.target.value.slice(0, 240))}
+                  autoFocus
+                />
+              </div>
+            )}
+
+            {/* Send button — disabled until a valid selection exists */}
             <button
-              className="eb-btn"
+              className="eb-btn mt-5"
               onClick={sendInquiry}
-              disabled={sending}
+              disabled={
+                sending ||
+                !inquiryOption ||
+                (inquiryOption === "custom" && inquiryMsg.trim().length === 0)
+              }
             >
               {sending ? "Sending..." : "Send Inquiry"}
             </button>
