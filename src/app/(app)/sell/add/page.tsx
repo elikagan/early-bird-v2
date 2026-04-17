@@ -6,7 +6,7 @@ import { apiFetch } from "@/lib/api-client";
 import { useRequireAuth } from "@/lib/require-auth";
 import { processImage, createThumbnail } from "@/lib/image-processing";
 import { formatDate } from "@/lib/format";
-import { BottomNav } from "@/components/bottom-nav";
+import { BottomNav, adjustNavCount } from "@/components/bottom-nav";
 
 interface Market {
   id: string;
@@ -197,6 +197,7 @@ function AddItemContent() {
         throw new Error(data.error || `Failed (${res.status})`);
       }
 
+      adjustNavCount("sell", +1);
       router.push(`/sell?market=${marketId}`);
     } catch (err) {
       setFormError(err instanceof Error ? err.message : "Something went wrong");

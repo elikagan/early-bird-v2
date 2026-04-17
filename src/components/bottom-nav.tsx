@@ -8,6 +8,7 @@ import { apiFetch } from "@/lib/api-client";
 type Tab = "buy" | "watching" | "sell" | "account" | null;
 
 const CACHE_KEY = "eb_nav_counts";
+const COUNTS_EVENT = "eb-nav-counts-updated";
 
 interface Counts {
   watching: number | null;
@@ -15,8 +16,7 @@ interface Counts {
 }
 
 /** Synchronously read the last-known counts from localStorage so the
- *  badges render instantly on page load — no flash from "Watching" →
- *  "Watching (3)" when the fetch completes. */
+ *  badges render instantly on page load — no flash. */
 function readCachedCounts(): Counts {
   if (typeof window === "undefined") return { watching: null, sell: null };
   try {
@@ -36,30 +36,40 @@ function writeCachedCounts(counts: Counts) {
   if (typeof window === "undefined") return;
   try {
     localStorage.setItem(CACHE_KEY, JSON.stringify(counts));
+    window.dispatchEvent(new CustomEvent(COUNTS_EVENT, { detail: counts }));
   } catch {}
 }
 
-export function BottomNav({
-  active,
-  watchingCount,
-  sellCount,
-}: {
-  active: Tab;
-  /** Optional override — if a page already knows the fresh count
-   *  (e.g. the watching page after a toggle), pass it in and it
-   *  wins over the cached/fetched default. */
-  watchingCount?: number;
-  sellCount?: number;
-}) {
+/** Optimistic update helper for pages that mutate favorites/items.
+ *  Call this after a successful mutation — e.g. after a favorite
+ *  toggle or an item create/delete — and the bottom nav badge
+ *  updates instantly across all mounted instances.
+ *
+ *  Example:
+ *    await apiFetch("/api/favorites", { method: "POST", ... });
+ *    adjustNavCount("watching", +1);
+ */
+export function adjustNavCount(key: "watching" | "sell", delta: number) {
+  if (typeof window === "undefined") return;
+  const current = readCachedCounts();
+  const currentValue = typeof current[key] === "number" ? current[key]! : 0;
+  const next: Counts = {
+    ...current,
+    [key]: Math.max(0, currentValue + delta),
+  };
+  writeCachedCounts(next);
+}
+
+export function BottomNav({ active }: { active: Tab }) {
   const { user } = useAuth();
   const isDealer = user?.is_dealer === 1;
   const isLoggedIn = !!user;
 
-  // Hydrate from localStorage on first render so badges show correct
-  // numbers immediately — avoids the "Watching" → "Watching (3)" flash
-  // on every navigation.
+  // Hydrate synchronously from localStorage — first paint already has
+  // the correct numbers from the last session.
   const [counts, setCounts] = useState<Counts>(() => readCachedCounts());
 
+  // Fetch the authoritative counts once per mount and update the cache.
   useEffect(() => {
     if (!isLoggedIn) return;
     let cancelled = false;
@@ -76,11 +86,40 @@ export function BottomNav({
         setCounts(fresh);
         writeCachedCounts(fresh);
       } catch {
-        // Network error — keep whatever cached counts we already had.
+        // Network error — keep the cached counts.
       }
     })();
     return () => { cancelled = true; };
   }, [isLoggedIn]);
+
+  // Listen for optimistic updates from other pages in the same tab
+  // (e.g. user favorites an item on /buy — the badge updates without
+  // waiting for a refetch).
+  useEffect(() => {
+    function handler(e: Event) {
+      const detail = (e as CustomEvent<Counts>).detail;
+      if (detail) setCounts(detail);
+    }
+    window.addEventListener(COUNTS_EVENT, handler);
+    return () => window.removeEventListener(COUNTS_EVENT, handler);
+  }, []);
+
+  // Cross-tab sync: pick up updates from other tabs via localStorage events.
+  useEffect(() => {
+    function handler(e: StorageEvent) {
+      if (e.key === CACHE_KEY && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          setCounts({
+            watching: typeof parsed.watching === "number" ? parsed.watching : null,
+            sell: typeof parsed.sell === "number" ? parsed.sell : null,
+          });
+        } catch {}
+      }
+    }
+    window.addEventListener("storage", handler);
+    return () => window.removeEventListener("storage", handler);
+  }, []);
 
   // Clear the cache when the user logs out so the next user doesn't
   // briefly see the previous user's numbers.
@@ -90,39 +129,15 @@ export function BottomNav({
     }
   }, [isLoggedIn]);
 
-  // Sync prop overrides into the cache so navigating away from a page
-  // that just mutated a count (e.g. unhearting on /watching) doesn't
-  // briefly show the stale value on the next page.
-  useEffect(() => {
-    if (watchingCount == null && sellCount == null) return;
-    setCounts((prev) => {
-      const next: Counts = {
-        watching: watchingCount ?? prev.watching,
-        sell: sellCount ?? prev.sell,
-      };
-      writeCachedCounts(next);
-      return next;
-    });
-  }, [watchingCount, sellCount]);
-
-  // Prop override wins over cached/fetched — used when a page knows
-  // its local state is fresher than the last sync.
-  const effectiveWatching = watchingCount ?? counts.watching;
-  const effectiveSell = sellCount ?? counts.sell;
-
   const watchLabel =
-    effectiveWatching != null && effectiveWatching > 0
-      ? `Watching (${effectiveWatching})`
+    counts.watching != null && counts.watching > 0
+      ? `Watching (${counts.watching})`
       : "Watching";
   const sellLabel =
-    effectiveSell != null && effectiveSell > 0
-      ? `Sell (${effectiveSell})`
+    counts.sell != null && counts.sell > 0
+      ? `Sell (${counts.sell})`
       : "Sell";
 
-  // Signed-out users never see the bottom nav. They reach sign-in via
-  // the top-right SignInLink in the masthead, matching web conventions
-  // (Airbnb, Etsy, StockX, Depop). The previous lone-button signed-out
-  // branch rendered as a 5px-tall vestigial bar — dead code removed.
   if (!isLoggedIn) return null;
 
   return (

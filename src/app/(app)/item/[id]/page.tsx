@@ -14,7 +14,7 @@ import {
   formatPhone,
   timeAgo,
 } from "@/lib/format";
-import { BottomNav } from "@/components/bottom-nav";
+import { BottomNav, adjustNavCount } from "@/components/bottom-nav";
 import { SignupDrawer } from "@/components/signup-drawer";
 import { NotFoundScreen } from "@/components/not-found-screen";
 
@@ -343,6 +343,7 @@ export default function ItemDetailPage() {
       await apiFetch(`/api/favorites/${favId}`, { method: "DELETE" });
       setIsFav(false);
       setFavId(null);
+      adjustNavCount("watching", -1);
     } else {
       const res = await apiFetch("/api/favorites", {
         method: "POST",
@@ -352,6 +353,7 @@ export default function ItemDetailPage() {
         const fav = await res.json();
         setIsFav(true);
         setFavId(fav.id);
+        adjustNavCount("watching", +1);
       }
     }
   }, [item, isFav, favId]);
@@ -396,12 +398,17 @@ export default function ItemDetailPage() {
     setDeleting(true);
     const res = await apiFetch(`/api/items/${id}`, { method: "DELETE" });
     if (res.ok) {
+      // Only dealers delete their own items, and only items in the
+      // current sell-focus market affect the sell count. Safe to
+      // optimistically decrement — the fresh fetch on /sell will
+      // reconcile if this item wasn't in the counted market.
+      if (isOwner) adjustNavCount("sell", -1);
       router.replace("/sell");
     } else {
       setDeleting(false);
       setShowDeleteConfirm(false);
     }
-  }, [id, router]);
+  }, [id, router, isOwner]);
 
   if (loading) {
     return (

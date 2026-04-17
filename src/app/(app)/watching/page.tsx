@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
 import { getInitials, formatPrice } from "@/lib/format";
-import { BottomNav } from "@/components/bottom-nav";
+import { BottomNav, adjustNavCount } from "@/components/bottom-nav";
 import { Masthead } from "@/components/masthead";
 import { SignupDrawer } from "@/components/signup-drawer";
 
@@ -51,6 +51,7 @@ export default function WatchingPage() {
     e.preventDefault();
     e.stopPropagation();
     setItems((prev) => prev.filter((i) => i.favorite_id !== favId));
+    adjustNavCount("watching", -1);
     await apiFetch(`/api/favorites/${favId}`, { method: "DELETE" });
   }, []);
 
@@ -201,7 +202,7 @@ export default function WatchingPage() {
         )}
       </main>
 
-      <BottomNav active="watching" watchingCount={items.length} />
+      <BottomNav active="watching" />
     </>
   );
 }

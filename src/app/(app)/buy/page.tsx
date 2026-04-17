@@ -7,7 +7,7 @@ import Image from "next/image";
 import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
 import { getInitials, formatPrice, formatDate } from "@/lib/format";
-import { BottomNav } from "@/components/bottom-nav";
+import { BottomNav, adjustNavCount } from "@/components/bottom-nav";
 import { Masthead } from "@/components/masthead";
 import { NotFoundScreen } from "@/components/not-found-screen";
 
@@ -82,9 +82,11 @@ function BuyFeedContent() {
     const existingFavId = favMap.get(itemId);
     if (existingFavId) {
       setFavMap((prev) => { const next = new Map(prev); next.delete(itemId); return next; });
+      adjustNavCount("watching", -1);
       await apiFetch(`/api/favorites/${existingFavId}`, { method: "DELETE" });
     } else {
       setFavMap((prev) => new Map([...prev, [itemId, "_pending"]]));
+      adjustNavCount("watching", +1);
       const res = await apiFetch("/api/favorites", {
         method: "POST",
         body: JSON.stringify({ item_id: itemId }),
@@ -94,6 +96,7 @@ function BuyFeedContent() {
         setFavMap((prev) => new Map([...prev, [itemId, fav.id]]));
       } else {
         setFavMap((prev) => { const next = new Map(prev); next.delete(itemId); return next; });
+        adjustNavCount("watching", -1); // revert optimistic bump
       }
     }
   }, [favMap]);
@@ -224,7 +227,7 @@ function BuyFeedContent() {
           )}
         </main>
 
-        <BottomNav active="buy" watchingCount={favMap.size} />
+        <BottomNav active="buy" />
       </>
     );
   }
@@ -316,7 +319,7 @@ function BuyFeedContent() {
         )}
       </main>
 
-      <BottomNav active="buy" watchingCount={favMap.size} />
+      <BottomNav active="buy" />
 
     </>
   );

@@ -129,7 +129,7 @@ function SellContent() {
         <div className="flex-1 flex items-center justify-center">
           <span className="eb-spinner" />
         </div>
-        <BottomNav active="sell" sellCount={items.filter(i => i.status !== "deleted").length} />
+        <BottomNav active="sell" />
       </>
     );
   }
@@ -358,7 +358,7 @@ function SellContent() {
         +
       </Link>
 
-      <BottomNav active="sell" sellCount={items.filter(i => i.status !== "deleted").length} />
+      <BottomNav active="sell" />
     </>
   );
 }
