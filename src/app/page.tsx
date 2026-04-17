@@ -163,7 +163,7 @@ export default function LandingPage() {
           className="shrink-0 accent-eb-black"
         />
         <span className="text-eb-meta text-eb-muted">
-          {mode === "dealer" ? "Text me about upcoming markets" : "Text me when the drop goes live"}
+          {mode === "dealer" ? "Text me about upcoming markets" : "Text me when shopping opens"}
         </span>
       </label>
 
@@ -212,7 +212,7 @@ export default function LandingPage() {
                 {liveMarket.name}
               </h2>
               <p className="text-eb-body text-eb-text leading-relaxed mt-3">
-                Shop the market before it opens.
+                Shop the market before the gates open.
               </p>
 
               {/* Preview grid */}
@@ -253,15 +253,34 @@ export default function LandingPage() {
               </Link>
             </section>
           ) : (
-            <section className="px-5 pt-12 pb-8 border-b-2 border-eb-black">
-              <h2 className="text-eb-hero text-eb-black leading-tight">
-                Shop before <span className="text-eb-pop">sunrise.</span>
-              </h2>
-              <p className="text-eb-body text-eb-text leading-relaxed mt-4">
-                Dealers post what they{"\u2019"}re bringing before each
-                market. You browse from your couch and reach out to the ones
-                you want.
-              </p>
+            // Full-bleed editorial hero — image-forward, no apology.
+            <section className="relative border-b-2 border-eb-black">
+              <div className="relative aspect-[4/5]">
+                <Image
+                  src="/promo/hero.webp"
+                  alt=""
+                  fill
+                  priority
+                  sizes="(max-width: 430px) 100vw, 430px"
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/40 to-black/85" />
+                <div className="absolute inset-x-0 bottom-0 p-5 pb-8">
+                  <div className="text-eb-micro uppercase tracking-widest font-bold text-white/80">
+                    Pre-shopping for LA flea markets
+                  </div>
+                  <h1 className="text-eb-hero text-white leading-[0.95] mt-3">
+                    Shop before
+                    <br />
+                    sunrise.
+                  </h1>
+                  <p className="text-eb-body text-white/90 leading-relaxed mt-4 max-w-md">
+                    Dealers post what they&apos;re bringing to market the
+                    night before the gates open. See what&apos;s coming,
+                    claim what you want, skip the 4am crowd.
+                  </p>
+                </div>
+              </div>
             </section>
           )}
 
@@ -272,11 +291,11 @@ export default function LandingPage() {
                 Get notified
               </div>
               <h3 className="text-eb-title font-bold text-eb-black mt-1.5">
-                See items before everyone else
+                First look at the next market
               </h3>
               <p className="text-eb-body text-eb-text leading-relaxed mt-2 mb-5">
-                Get a text when the drop goes live — browse and claim items
-                before the 4am crowd.
+                Drop your number. We&apos;ll text you the moment each market
+                opens for pre-shopping — the night before the gates.
               </p>
               {phoneForm}
             </div>
@@ -290,7 +309,7 @@ export default function LandingPage() {
                   Coming up
                 </div>
                 <h3 className="text-eb-title font-bold text-eb-black mt-1.5 mb-4">
-                  Next drops
+                  Upcoming markets
                 </h3>
               </div>
 
@@ -312,12 +331,52 @@ export default function LandingPage() {
                     </div>
                     <div className="shrink-0 text-right">
                       <div className="text-eb-micro uppercase tracking-widest text-eb-muted">
-                        Drop in
+                        Shopping opens
                       </div>
                       <div className="text-eb-caption font-bold tabular-nums text-eb-black mt-0.5">
                         {heroCountdown(m.drop_at)}
                       </div>
                     </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* ═══════════════ WHAT COMES THROUGH ═══════════════ */}
+          {/* Image-forward gallery — proof that real stuff moves through
+              Early Bird. Skipped when there's a live-market preview
+              grid above (that already shows real items). */}
+          {!liveMarket && (
+            <section className="pt-8 pb-8 border-b-2 border-eb-black">
+              <div className="px-5 mb-5">
+                <div className="text-eb-micro uppercase tracking-widest font-bold text-eb-muted">
+                  From the markets
+                </div>
+                <h3 className="text-eb-title font-bold text-eb-black mt-1.5">
+                  What comes through
+                </h3>
+              </div>
+              <div className="grid grid-cols-2 gap-0.5">
+                {[
+                  "/promo/2.webp",
+                  "/promo/3.webp",
+                  "/promo/bowl.webp",
+                  "/promo/sold.webp",
+                  "/promo/drop.webp",
+                  "/promo/crowd.webp",
+                ].map((src) => (
+                  <div
+                    key={src}
+                    className="relative aspect-square overflow-hidden bg-eb-border"
+                  >
+                    <Image
+                      src={src}
+                      alt=""
+                      fill
+                      sizes="(max-width: 430px) 50vw, 215px"
+                      className="object-cover"
+                    />
                   </div>
                 ))}
               </div>
