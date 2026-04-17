@@ -284,13 +284,15 @@ export async function PATCH(
         };
       }
 
-      // Price drop → notify all watchers (anti-yo-yo: only if new price
-      // is below the lowest price we've ever alerted about for this item).
+      // Price drop → notify all watchers. Exactly ONE alert per item,
+      // ever. Once last_price_alerted is set, no further drops generate
+      // SMS — no matter how far the price keeps falling. Prevents any
+      // possible spam to watchers.
       if (priceDropped) {
         const oldPrice = item.price as number;
         const newPrice = Number(body.price);
         const lastAlerted = item.last_price_alerted as number | null;
-        const shouldAlert = lastAlerted === null || newPrice < lastAlerted;
+        const shouldAlert = lastAlerted === null;
 
         if (shouldAlert) {
           const itemUrl = `${proto}://${host}/item/${id}`;
