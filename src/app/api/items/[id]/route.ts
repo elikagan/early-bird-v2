@@ -163,33 +163,20 @@ export async function PATCH(
     args.push(body.price_firm ? 1 : 0);
   }
   if (body.status !== undefined) {
-    // Guard: hold always requires a held_for — no "held for nobody" state.
-    if (body.status === "hold" && !body.held_for) {
-      return error(
-        "held_for is required when setting status to hold",
-        400
-      );
-    }
     updates.push("status = ?");
     args.push(body.status);
-  }
-
-  // held_for / sold_to are centrally managed based on the target status
-  // so the row never drifts into an inconsistent state (e.g. status=live
-  // with stale held_for, or status=sold without held_for cleared).
-  if (body.held_for !== undefined) {
-    updates.push("held_for = ?");
-    args.push(body.held_for);
-  } else if (body.status === "live" || body.status === "sold") {
-    // Any transition to live or sold wipes held_for.
+    // HOLD is now a plain global status — no buyer tied to it. Always
+    // null out held_for so no stale data lingers from the old per-
+    // inquiry hold feature.
     updates.push("held_for = ?");
     args.push(null);
   }
+
   if (body.sold_to !== undefined) {
     updates.push("sold_to = ?");
     args.push(body.sold_to);
   } else if (body.status === "live" || body.status === "hold") {
-    // Any transition to live or hold wipes sold_to.
+    // Transition to live or hold wipes sold_to.
     updates.push("sold_to = ?");
     args.push(null);
   }
@@ -245,26 +232,17 @@ export async function PATCH(
     });
   }
 
-  // Inquiry state-machine sync. Every status transition leaves inquiries
-  // consistent with the item's new state. 'sold' inquiries are historical
-  // and never reset.
+  // Inquiry state sync on status change.
+  //   live  → reset any lost inquiries back to open (relisting). Sold
+  //           ones stay sold (history).
+  //   hold  → no change to inquiries. Hold is a global "paused" state
+  //           that doesn't touch individual inquiries.
+  //   sold  → standard: winner = sold, rest = lost (per-inquiry Sell)
+  //           or walk-up: all = lost (status-pill Sell with no buyer).
   if (body.status === "live") {
-    // Relist — any held or lost inquiry comes back as open.
     await db.execute({
-      sql: `UPDATE inquiries SET status = 'open' WHERE item_id = ? AND status IN ('held', 'lost')`,
+      sql: `UPDATE inquiries SET status = 'open' WHERE item_id = ? AND status = 'lost'`,
       args: [id],
-    });
-  }
-  if (body.status === "hold" && body.held_for) {
-    // Wipe any prior held/lost first (fixes stale state from a previous
-    // hold-for-Jamie-then-switch-to-Alex), then mark the new held buyer.
-    await db.execute({
-      sql: `UPDATE inquiries SET status = 'open' WHERE item_id = ? AND status IN ('held', 'lost')`,
-      args: [id],
-    });
-    await db.execute({
-      sql: `UPDATE inquiries SET status = 'held' WHERE item_id = ? AND buyer_id = ?`,
-      args: [id, body.held_for],
     });
   }
   if (body.status === "sold" && body.sold_to) {
@@ -273,13 +251,13 @@ export async function PATCH(
       args: [id, body.sold_to],
     });
     await db.execute({
-      sql: `UPDATE inquiries SET status = 'lost' WHERE item_id = ? AND buyer_id != ? AND status IN ('open', 'held')`,
+      sql: `UPDATE inquiries SET status = 'lost' WHERE item_id = ? AND buyer_id != ? AND status = 'open'`,
       args: [id, body.sold_to],
     });
   }
   if (body.status === "sold" && !body.sold_to) {
     await db.execute({
-      sql: `UPDATE inquiries SET status = 'lost' WHERE item_id = ? AND status IN ('open', 'held')`,
+      sql: `UPDATE inquiries SET status = 'lost' WHERE item_id = ? AND status = 'open'`,
       args: [id],
     });
   }

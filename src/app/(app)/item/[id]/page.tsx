@@ -391,10 +391,9 @@ export default function ItemDetailPage() {
   }, [item, inquiryMsg, inquiryOption, sending]);
 
   const updateStatus = useCallback(
-    async (status: string, heldFor?: string, soldTo?: string) => {
+    async (status: string, soldTo?: string) => {
       if (!item) return;
       const body: Record<string, unknown> = { status };
-      if (heldFor) body.held_for = heldFor;
       if (soldTo) body.sold_to = soldTo;
       const res = await apiFetch(`/api/items/${id}`, {
         method: "PATCH",
@@ -682,36 +681,26 @@ export default function ItemDetailPage() {
           <div className="flex w-full border border-eb-border">
             {(["live", "hold", "sold"] as const).map((s, i) => {
               const isActive = item.status === s;
-              // HOLD is never reachable from the pill — it requires a
-              // specific buyer, which only exists via the inquiry card's
-              // Hold button. Show it as an indicator, never clickable.
-              const isHoldPill = s === "hold";
-              const disabled = isHoldPill && !isActive;
-
               const handleClick = () => {
-                if (disabled) return;
-                if (s === "sold" && !isActive) {
-                  // Walk-up sale — open confirm drawer instead of firing
-                  // an irreversible destructive action on a single tap.
+                if (isActive) return; // no-op if already in this state
+                if (s === "sold") {
+                  // SOLD from the status pill = walk-up sale. Destructive,
+                  // open confirm drawer. (Per-inquiry sell uses a
+                  // different drawer.)
                   setConfirmWalkupSold(true);
                   return;
                 }
-                if (s === "live" && isActive) return; // no-op
                 updateStatus(s);
               };
-
               return (
                 <button
                   key={s}
-                  disabled={disabled}
                   className={`flex-1 py-2 text-eb-caption font-bold uppercase tracking-wider ${
                     i > 0 ? "border-l border-eb-border" : ""
                   } ${
                     isActive
                       ? "bg-eb-black text-white"
-                      : disabled
-                        ? "bg-white text-eb-light cursor-not-allowed"
-                        : "bg-white text-eb-text"
+                      : "bg-white text-eb-text"
                   }`}
                   onClick={handleClick}
                 >
@@ -721,11 +710,12 @@ export default function ItemDetailPage() {
             })}
           </div>
           <p className="text-eb-meta text-eb-muted mt-2 leading-relaxed">
-            To hold for a buyer, tap{" "}
-            <span className="font-bold text-eb-black">Hold</span> on an
-            inquiry below. Tap{" "}
+            Tap <span className="font-bold text-eb-black">Hold</span> to
+            pause the listing temporarily. Tap{" "}
             <span className="font-bold text-eb-black">Sold</span> for a
-            walk-up sale with no inquiry.
+            walk-up sale with no prior inquiry, or hit{" "}
+            <span className="font-bold text-eb-black">Sell</span> on a
+            specific inquiry below to text that buyer a receipt.
           </p>
         </section>
       )}
@@ -865,33 +855,6 @@ export default function ItemDetailPage() {
               <div className="eb-stat">
                 <div className="eb-stat-num">{item.inquiry_count}</div>
                 <div className="eb-stat-label">Inquiries</div>
-              </div>
-            </div>
-          )}
-
-          {/* Dealer-own: Held-for identity */}
-          {isOwner && item.status === "hold" && item.held_for && (
-            <div className="mx-5 mb-4 p-4 border border-eb-amber bg-eb-pop-bg">
-              <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-2">
-                Held For
-              </div>
-              <div className="flex items-center gap-3">
-                {item.held_for_avatar ? (
-                  <Image
-                    src={item.held_for_avatar}
-                    alt=""
-                    width={32}
-                    height={32}
-                    className="w-8 h-8 rounded-full object-cover"
-                  />
-                ) : (
-                  <span className="eb-avatar eb-avatar-md">
-                    {getInitials(item.held_for_name || "Buyer")}
-                  </span>
-                )}
-                <span className="text-eb-body font-bold text-eb-black">
-                  {item.held_for_name || "Buyer"}
-                </span>
               </div>
             </div>
           )}
@@ -1055,14 +1018,6 @@ export default function ItemDetailPage() {
                         <div className="flex gap-2 mt-3">
                           <button
                             className="px-3 py-1 text-eb-caption font-bold border border-eb-border text-eb-text"
-                            onClick={() =>
-                              updateStatus("hold", inq.buyer_id)
-                            }
-                          >
-                            Hold
-                          </button>
-                          <button
-                            className="px-3 py-1 text-eb-caption font-bold border border-eb-border text-eb-text"
                             onClick={() => setConfirmInquiry(inq)}
                           >
                             Sell
@@ -1080,11 +1035,6 @@ export default function ItemDetailPage() {
                             Text
                           </a>
                         </div>
-                      )}
-                      {inq.status === "held" && (
-                        <span className="inline-block mt-3 text-eb-micro uppercase tracking-wider text-eb-amber border border-eb-amber px-1">
-                          HELD
-                        </span>
                       )}
                       {inq.status === "sold" && (
                         <span className="inline-block mt-3 text-eb-micro uppercase tracking-wider text-eb-green border border-eb-green px-1">
@@ -1420,7 +1370,7 @@ export default function ItemDetailPage() {
               <button
                 className="flex-1 min-w-0 py-3 text-eb-caption font-bold uppercase tracking-wider bg-eb-black text-white whitespace-nowrap overflow-hidden text-ellipsis"
                 onClick={() =>
-                  updateStatus("sold", undefined, confirmInquiry.buyer_id)
+                  updateStatus("sold", confirmInquiry.buyer_id)
                 }
               >
                 Mark sold to{" "}

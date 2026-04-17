@@ -156,18 +156,10 @@ export default function WatchingPage() {
                           {item.dealer_name}
                         </span>
                       </div>
-                      {isHeld && item.my_inquiry_status === "held" && (
+                      {isHeld && (
                         <div className="eb-status">
-                          <span className="eb-dot eb-dot-green" />
-                          <span className="text-eb-black font-bold">
-                            Held for you
-                          </span>
-                        </div>
-                      )}
-                      {isHeld && item.my_inquiry_status !== "held" && (
-                        <div className="eb-status">
-                          <span className="eb-dot bg-eb-muted" />
-                          <span>On hold for another buyer</span>
+                          <span className="eb-dot eb-dot-amber" />
+                          <span>On hold</span>
                         </div>
                       )}
                       {isSold && item.my_inquiry_status === "sold" && (
