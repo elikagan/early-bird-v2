@@ -18,6 +18,22 @@ import { composeDropAlert } from "@/lib/sms-templates";
 import { getBaseUrl } from "@/lib/url";
 
 export async function GET(request: Request) {
+  try {
+    return await handle(request);
+  } catch (err) {
+    console.error("drop-markets cron error:", err);
+    return NextResponse.json(
+      {
+        error: "cron_failed",
+        message: err instanceof Error ? err.message : String(err),
+        stack: err instanceof Error ? err.stack : null,
+      },
+      { status: 500 }
+    );
+  }
+}
+
+async function handle(request: Request) {
   // Auth: only Vercel Cron (or someone with the secret) can fire this.
   const authHeader = request.headers.get("authorization");
   const expected = `Bearer ${process.env.CRON_SECRET || ""}`;
