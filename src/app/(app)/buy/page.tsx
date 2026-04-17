@@ -246,19 +246,9 @@ function BuyFeedContent() {
     <>
       <Masthead />
 
-      {/* PRE-SHOPPING IS LIVE — green status banner, dealers only */}
-      {dealerPreshop && (
-        <div className="px-5 py-3 border-b-2 border-eb-green bg-eb-green/10">
-          <div className="flex items-center gap-2">
-            <span className="inline-block w-2 h-2 rounded-full bg-eb-green" />
-            <span className="text-eb-micro uppercase tracking-widest font-bold text-eb-green">
-              Dealer pre-shopping is live
-            </span>
-          </div>
-        </div>
-      )}
-
-      {/* Countdown / drop-time banner — dealers only, before the drop */}
+      {/* Countdown / drop-time banner — dealers only, before the drop.
+          The black eb-drop-bar below already signals "Pre-shop OPEN", so
+          a separate green status banner here would just duplicate it. */}
       {dealerPreshop && (
         <div className="px-5 py-3 border-b-2 border-eb-pop bg-eb-pop-bg">
           <div className="text-eb-micro uppercase tracking-widest font-bold text-eb-pop">

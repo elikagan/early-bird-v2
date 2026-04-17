@@ -115,19 +115,6 @@ export default function HomePage() {
     <>
       <Masthead href={null} right={null} />
 
-      {/* Dealer pre-shopping status — only for dealers, only when an
-          upcoming market has pre-shop enabled. */}
-      {showPreshopBanner && (
-        <div className="px-5 py-3 border-b-2 border-eb-green bg-eb-green/10">
-          <div className="flex items-center gap-2">
-            <span className="inline-block w-2 h-2 rounded-full bg-eb-green" />
-            <span className="text-eb-micro uppercase tracking-widest font-bold text-eb-green">
-              Dealer pre-shopping is live
-            </span>
-          </div>
-        </div>
-      )}
-
       {/* Pending dealer application banner */}
       {pendingApp && (
         <div className="px-5 py-3 bg-eb-cream border-b-2 border-eb-pop">
@@ -190,17 +177,37 @@ export default function HomePage() {
               </div>
             )}
 
-            {/* Countdown to when the market opens for shopping */}
+            {/* Countdown to when the market opens for shopping.
+                For dealers on pre-shop-enabled markets, this doubles as
+                the pre-shop status indicator (green dot + "pre-shopping
+                is live" header) so the countdown and status live in
+                one component instead of two stacked banners. */}
             {heroMarket.status === "upcoming" && (
-              <div className="eb-drop-box">
-                <div>
-                  <div className="eb-drop-label">Shopping opens</div>
-                  <div className="eb-drop-sub">
-                    {formatDate(heroMarket.drop_at)}
+              <div className="mt-4">
+                {isDealer &&
+                  (heroMarket.dealer_preshop_enabled ?? 1) === 1 && (
+                    <div className="px-4 py-2 border-t-2 border-x-2 border-eb-green bg-eb-green/10 flex items-center gap-2">
+                      <span className="inline-block w-2 h-2 rounded-full bg-eb-green" />
+                      <span className="text-eb-micro uppercase tracking-widest font-bold text-eb-green">
+                        Dealer pre-shopping is live
+                      </span>
+                    </div>
+                  )}
+                <div className="eb-drop-box">
+                  <div>
+                    <div className="eb-drop-label">
+                      {isDealer &&
+                      (heroMarket.dealer_preshop_enabled ?? 1) === 1
+                        ? "Regular shopping opens"
+                        : "Shopping opens"}
+                    </div>
+                    <div className="eb-drop-sub">
+                      {formatDate(heroMarket.drop_at)}
+                    </div>
                   </div>
-                </div>
-                <div className="eb-drop-time">
-                  {heroCountdown(heroMarket.drop_at)}
+                  <div className="eb-drop-time">
+                    {heroCountdown(heroMarket.drop_at)}
+                  </div>
                 </div>
               </div>
             )}
@@ -219,7 +226,10 @@ export default function HomePage() {
                 href={`/buy?market=${heroMarket.id}`}
                 className="eb-btn mt-6 text-center"
               >
-                Preview items {"\u2192"}
+                {isDealer && (heroMarket.dealer_preshop_enabled ?? 1) === 1
+                  ? "Pre-shop now"
+                  : "Preview items"}{" "}
+                {"\u2192"}
               </Link>
             )}
             {heroMarket.status === "upcoming" && !user && (
