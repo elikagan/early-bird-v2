@@ -126,7 +126,7 @@ export default function HomePreview() {
           <div className="px-5 pb-10 space-y-9">
             <div>
               <div className="flex items-baseline gap-3 mb-2">
-                <span className="text-eb-display font-bold tabular-nums text-eb-pop leading-none">
+                <span className="text-eb-caption font-bold tabular-nums text-eb-pop">
                   01
                 </span>
                 <span className="text-eb-caption font-bold uppercase tracking-wider text-eb-black">
@@ -142,7 +142,7 @@ export default function HomePreview() {
 
             <div>
               <div className="flex items-baseline gap-3 mb-2">
-                <span className="text-eb-display font-bold tabular-nums text-eb-pop leading-none">
+                <span className="text-eb-caption font-bold tabular-nums text-eb-pop">
                   02
                 </span>
                 <span className="text-eb-caption font-bold uppercase tracking-wider text-eb-black">
@@ -158,7 +158,7 @@ export default function HomePreview() {
 
             <div>
               <div className="flex items-baseline gap-3 mb-2">
-                <span className="text-eb-display font-bold tabular-nums text-eb-pop leading-none">
+                <span className="text-eb-caption font-bold tabular-nums text-eb-pop">
                   03
                 </span>
                 <span className="text-eb-caption font-bold uppercase tracking-wider text-eb-black">
