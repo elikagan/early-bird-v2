@@ -35,6 +35,17 @@ export async function POST(request: Request) {
     return error("Cannot inquire on your own item", 400);
   }
 
+  // One inquiry per buyer per item. If there's already an active inquiry
+  // (anything except 'lost' which means the item sold to someone else),
+  // refuse — don't spam the dealer with repeat SMS.
+  const existing = await db.execute({
+    sql: `SELECT id FROM inquiries WHERE buyer_id = ? AND item_id = ? AND status != 'lost' LIMIT 1`,
+    args: [user.id, item_id],
+  });
+  if (existing.rows.length > 0) {
+    return error("You've already inquired on this item", 409);
+  }
+
   const inquiryId = newId();
   await db.execute({
     sql: `INSERT INTO inquiries (id, item_id, buyer_id, message) VALUES (?, ?, ?, ?)`,

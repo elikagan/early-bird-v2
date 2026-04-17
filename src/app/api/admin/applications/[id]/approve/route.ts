@@ -16,16 +16,21 @@ export async function POST(
   if (!user) return error("Unauthorized", 401);
   if (!isAdmin(user.phone)) return error("Forbidden", 403);
 
-  // Get application
-  const appResult = await db.execute({
-    sql: `SELECT * FROM dealer_applications WHERE id = ? AND status = 'pending'`,
+  // Atomically flip status pending → approved. If no row is updated,
+  // another request already approved this application — return without
+  // creating duplicate dealer records or sending duplicate SMS.
+  const approvalResult = await db.execute({
+    sql: `UPDATE dealer_applications
+          SET status = 'approved', reviewed_at = now()
+          WHERE id = ? AND status = 'pending'
+          RETURNING *`,
     args: [id],
   });
-  if (appResult.rows.length === 0) {
+  if (approvalResult.rows.length === 0) {
     return error("Application not found or already reviewed", 404);
   }
 
-  const app = appResult.rows[0] as Record<string, unknown>;
+  const app = approvalResult.rows[0] as Record<string, unknown>;
   const userId = app.user_id as string;
   const phone = app.phone as string;
 
@@ -44,12 +49,6 @@ export async function POST(
   await db.execute({
     sql: `UPDATE users SET is_dealer = 1, display_name = COALESCE(display_name, ?) WHERE id = ?`,
     args: [app.name, userId],
-  });
-
-  // Mark application approved
-  await db.execute({
-    sql: `UPDATE dealer_applications SET status = 'approved', reviewed_at = now() WHERE id = ?`,
-    args: [id],
   });
 
   // Send magic link SMS so they can log in fresh with dealer access

@@ -59,6 +59,7 @@ interface ItemDetail {
   market: Market | null;
   is_favorited?: boolean;
   favorite_id?: string;
+  my_inquiry_status?: string | null;
 }
 
 interface Inquiry {
@@ -381,6 +382,10 @@ export default function ItemDetailPage() {
       setInquiryMsg("");
       setInquiryOption(null);
       setIsFav(true);
+      // Flip the button to "Already inquired" without a refetch
+      setItem((prev) =>
+        prev ? { ...prev, my_inquiry_status: "open" } : prev
+      );
     }
   }, [item, inquiryMsg, inquiryOption, sending]);
 
@@ -1152,17 +1157,41 @@ export default function ItemDetailPage() {
               </p>
             </section>
           )}
-          {(item.status === "live" || item.status === "hold") && user && (
+          {(item.status === "live" || item.status === "hold") && user && !isOwner && (
             <>
-              <section className="px-5 pb-4">
-                <button className="eb-cta" onClick={() => setShowInquiry(true)}>
-                  I&apos;M INTERESTED {"\u2192"}
-                </button>
-              </section>
-              <p className="text-eb-meta text-eb-muted text-center px-5 pb-8 leading-relaxed">
-                Sends {item.dealer_name} a text with your name and number. You deal
-                directly.
-              </p>
+              {item.my_inquiry_status &&
+              item.my_inquiry_status !== "lost" ? (
+                <>
+                  <section className="px-5 pb-4">
+                    <button
+                      className="eb-cta"
+                      disabled
+                      aria-disabled="true"
+                    >
+                      Already inquired {"\u2713"}
+                    </button>
+                  </section>
+                  <p className="text-eb-meta text-eb-muted text-center px-5 pb-8 leading-relaxed">
+                    {item.dealer_name} has your name and number. They&apos;ll
+                    reach out directly.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <section className="px-5 pb-4">
+                    <button
+                      className="eb-cta"
+                      onClick={() => setShowInquiry(true)}
+                    >
+                      I&apos;M INTERESTED {"\u2192"}
+                    </button>
+                  </section>
+                  <p className="text-eb-meta text-eb-muted text-center px-5 pb-8 leading-relaxed">
+                    Sends {item.dealer_name} a text with your name and number.
+                    You deal directly.
+                  </p>
+                </>
+              )}
             </>
           )}
           {(item.status === "live" || item.status === "hold") && !user && (

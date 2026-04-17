@@ -61,7 +61,7 @@ export async function GET(
   });
   (item as Record<string, unknown>).market = market.rows[0] || null;
 
-  // Favorite status for current user
+  // Favorite + inquiry status for current user
   if (user) {
     const fav = await db.execute({
       sql: `SELECT id FROM favorites WHERE buyer_id = ? AND item_id = ?`,
@@ -71,6 +71,16 @@ export async function GET(
     if (fav.rows.length > 0) {
       (item as Record<string, unknown>).favorite_id = (fav.rows[0] as Record<string, unknown>).id;
     }
+
+    // Buyer's own inquiry status on this item (for "Already inquired" UI).
+    const myInq = await db.execute({
+      sql: `SELECT status FROM inquiries WHERE buyer_id = ? AND item_id = ? ORDER BY created_at DESC LIMIT 1`,
+      args: [user.id, id],
+    });
+    (item as Record<string, unknown>).my_inquiry_status =
+      myInq.rows.length > 0
+        ? (myInq.rows[0] as Record<string, unknown>).status
+        : null;
   }
 
   // Payment methods for the dealer
@@ -274,26 +284,37 @@ export async function PATCH(
         };
       }
 
-      // Price drop → notify all watchers
+      // Price drop → notify all watchers (anti-yo-yo: only if new price
+      // is below the lowest price we've ever alerted about for this item).
       if (priceDropped) {
         const oldPrice = item.price as number;
         const newPrice = Number(body.price);
-        const itemUrl = `${proto}://${host}/item/${id}`;
-        const watchers = await db.execute({
-          sql: `SELECT u.id, u.phone FROM favorites f JOIN users u ON u.id = f.buyer_id WHERE f.item_id = ?`,
-          args: [id],
-        });
-        await Promise.allSettled(
-          watchers.rows.map(async (row) => {
-            const w = row as Record<string, unknown>;
-            if (await shouldNotify(w.id as string, "price_drops")) {
-              await sendSMS(
-                w.phone as string,
-                composePriceDropNotification(itemTitle, formatPrice(oldPrice), formatPrice(newPrice), itemUrl)
-              );
-            }
-          })
-        );
+        const lastAlerted = item.last_price_alerted as number | null;
+        const shouldAlert = lastAlerted === null || newPrice < lastAlerted;
+
+        if (shouldAlert) {
+          const itemUrl = `${proto}://${host}/item/${id}`;
+          const watchers = await db.execute({
+            sql: `SELECT u.id, u.phone FROM favorites f JOIN users u ON u.id = f.buyer_id WHERE f.item_id = ?`,
+            args: [id],
+          });
+          await Promise.allSettled(
+            watchers.rows.map(async (row) => {
+              const w = row as Record<string, unknown>;
+              if (await shouldNotify(w.id as string, "price_drops")) {
+                await sendSMS(
+                  w.phone as string,
+                  composePriceDropNotification(itemTitle, formatPrice(oldPrice), formatPrice(newPrice), itemUrl)
+                );
+              }
+            })
+          );
+          // Record the new low so the next alert requires an even lower price
+          await db.execute({
+            sql: `UPDATE items SET last_price_alerted = ? WHERE id = ?`,
+            args: [newPrice, id],
+          });
+        }
       }
 
       // Hold → no SMS. Other inquirers see "On hold for another buyer"

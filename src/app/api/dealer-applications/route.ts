@@ -1,7 +1,10 @@
+import { after } from "next/server";
 import db from "@/lib/db";
 import { json, error } from "@/lib/api";
 import { getSession } from "@/lib/auth";
 import { newId } from "@/lib/id";
+import { sendSMS } from "@/lib/sms";
+import { getBaseUrl } from "@/lib/url";
 
 export async function POST(request: Request) {
   const user = await getSession(request);
@@ -42,6 +45,24 @@ export async function POST(request: Request) {
     sql: `INSERT INTO dealer_applications (id, user_id, name, business_name, instagram_handle, phone)
           VALUES (?, ?, ?, ?, ?, ?)`,
     args: [id, user.id, name.trim(), business_name.trim(), igClean, user.phone],
+  });
+
+  // Deferred: notify admins by SMS so they can review the application.
+  after(async () => {
+    try {
+      const raw = process.env.ADMIN_PHONES || "";
+      const adminPhones = raw
+        .split(",")
+        .map((p) => p.trim())
+        .filter(Boolean);
+      if (adminPhones.length === 0) return;
+
+      const url = `${getBaseUrl(request)}/admin`;
+      const body = `Early Bird: New dealer application from ${name.trim()} (${business_name.trim()}). Review: ${url}`;
+      await Promise.allSettled(adminPhones.map((p) => sendSMS(p, body)));
+    } catch (err) {
+      console.error("Admin notification SMS failed:", err);
+    }
   });
 
   return json({ id, status: "pending" }, 201);

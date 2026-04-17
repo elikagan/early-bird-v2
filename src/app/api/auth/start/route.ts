@@ -6,11 +6,31 @@ import { composeMagicLink } from "@/lib/sms-templates";
 import { getBaseUrl } from "@/lib/url";
 import { nanoid } from "nanoid";
 
+// Max magic-link SMS per phone per rolling hour. Generous enough to cover
+// mistyped phones and lost messages; low enough to prevent harassment if
+// someone tries to spam a stranger's number via the public sign-in form.
+const MAX_LINKS_PER_HOUR = 5;
+
 export async function POST(request: Request) {
   const body = await request.json();
   const { phone, dealer, sms_consent } = body;
 
   if (!phone) return error("phone is required");
+
+  // Rate-limit: count recent auth_tokens for this phone.
+  const recent = await db.execute({
+    sql: `SELECT COUNT(*) AS n FROM auth_tokens WHERE phone = ? AND created_at > now() - interval '1 hour'`,
+    args: [phone],
+  });
+  const recentCount = Number(
+    (recent.rows[0] as Record<string, unknown>)?.n ?? 0
+  );
+  if (recentCount >= MAX_LINKS_PER_HOUR) {
+    return error(
+      "Too many sign-in attempts. Try again in an hour.",
+      429
+    );
+  }
 
   // Create or find user
   const existing = await db.execute({
