@@ -73,3 +73,15 @@ export function composePriceDropNotification(
 export function composeMagicLink(url: string): string {
   return `Early Bird\n\n${url}`;
 }
+
+/**
+ * SMS sent to followers when a market drops (goes live).
+ */
+export function composeDropAlert(
+  marketName: string,
+  itemCount: number,
+  dealerCount: number,
+  url: string
+): string {
+  return `Early Bird: ${marketName} is live — ${itemCount} items from ${dealerCount} dealers. Shop now.\n\n${url}`;
+}

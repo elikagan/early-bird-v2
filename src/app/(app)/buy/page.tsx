@@ -33,6 +33,7 @@ interface Market {
   status: string;
   dealer_count: number;
   item_count: number;
+  dealer_preshop_enabled: number;
 }
 
 function BuyFeedContent() {
@@ -144,8 +145,17 @@ function BuyFeedContent() {
     );
   }
 
-  // Pre-drop view
-  if (market.status !== "live") {
+  // Dealer pre-shop access — dealers see the full grid even while the
+  // market is upcoming, as long as the admin has left pre-shop enabled
+  // for that market. Banner above the grid flags the early-access view.
+  const isDealer = user?.is_dealer === 1;
+  const dealerPreshop =
+    market.status === "upcoming" &&
+    isDealer &&
+    (market.dealer_preshop_enabled ?? 1) === 1;
+
+  // Pre-drop view — non-dealers, or dealers without pre-shop access
+  if (market.status !== "live" && !dealerPreshop) {
     const dropTime = new Date(market.drop_at).getTime();
     const diff = Math.max(0, dropTime - now);
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -236,10 +246,42 @@ function BuyFeedContent() {
     <>
       <Masthead />
 
+      {/* Pre-shop banner — dealers only, before the drop */}
+      {dealerPreshop && (
+        <div className="px-5 py-3 border-b-2 border-eb-pop bg-eb-pop-bg">
+          <div className="text-eb-micro uppercase tracking-widest font-bold text-eb-pop">
+            Dealer pre-shop
+          </div>
+          <p className="text-eb-caption text-eb-black mt-1 leading-relaxed">
+            You&apos;re seeing this early. Buyers can&apos;t see items until
+            the drop —{" "}
+            <span className="font-bold">
+              {new Date(market.drop_at).toLocaleString("en-US", {
+                timeZone: "America/Los_Angeles",
+                weekday: "short",
+                month: "short",
+                day: "numeric",
+                hour: "numeric",
+                minute: "2-digit",
+              })}
+            </span>
+            . Favorite and inquire as usual.
+          </p>
+        </div>
+      )}
+
       {/* Drop bar */}
       <div className="eb-drop-bar">
         <div>
-          Drop is <span className="eb-live">LIVE</span>
+          {dealerPreshop ? (
+            <>
+              Pre-shop <span className="eb-live">OPEN</span>
+            </>
+          ) : (
+            <>
+              Drop is <span className="eb-live">LIVE</span>
+            </>
+          )}
         </div>
         <span className="eb-cd">{items.length} items</span>
       </div>

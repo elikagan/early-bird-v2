@@ -76,7 +76,7 @@ export async function PATCH(
   const { id } = await params;
   const body = await request.json();
 
-  const allowed = ["name", "location", "starts_at", "drop_at", "status", "is_test", "archived"];
+  const allowed = ["name", "location", "starts_at", "drop_at", "status", "is_test", "archived", "dealer_preshop_enabled", "drop_notified_at"];
   const sets: string[] = [];
   const args: unknown[] = [];
 

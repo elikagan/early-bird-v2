@@ -47,6 +47,26 @@ export async function GET(
 
   const item = result.rows[0] as Record<string, unknown>;
 
+  // Dealer pre-shop gate: non-dealers can't see items from markets that
+  // haven't dropped. Owners can always see their own items.
+  const isOwner = user?.id === item.dealer_user_id;
+  if (!isOwner) {
+    const marketCheck = await db.execute({
+      sql: `SELECT status, dealer_preshop_enabled FROM markets WHERE id = ?`,
+      args: [item.market_id as string],
+    });
+    if (marketCheck.rows.length > 0) {
+      const mkt = marketCheck.rows[0] as Record<string, unknown>;
+      if (mkt.status === "upcoming") {
+        const isDealer = !!user?.dealer_id;
+        const preshopOn = Number(mkt.dealer_preshop_enabled ?? 1) === 1;
+        if (!isDealer || !preshopOn) {
+          return error("Market is pre-drop", 403);
+        }
+      }
+    }
+  }
+
   // Photos
   const photos = await db.execute({
     sql: `SELECT id, url, thumb_url, position FROM item_photos WHERE item_id = ? ORDER BY position`,
@@ -91,7 +111,6 @@ export async function GET(
   (item as Record<string, unknown>).dealer_payment_methods = methods.rows;
 
   // Increment view count (non-owner views only, fire-and-forget)
-  const isOwner = user && user.id === (item.dealer_user_id as string);
   if (!isOwner) {
     db.execute({
       sql: `UPDATE items SET view_count = view_count + 1 WHERE id = ?`,

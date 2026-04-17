@@ -47,3 +47,4 @@ supabase/.temp/
 public/_scratch/
 .gstack/
 qa-comments.json
+.cron-secret.local

@@ -31,6 +31,7 @@ interface Market {
   status: string;
   is_test: number;
   archived: number;
+  dealer_preshop_enabled: number;
   dealer_count: number;
   item_count: number;
   created_at: string;
@@ -299,6 +300,7 @@ function MarketsTab() {
   const [editDate, setEditDate] = useState("");
   const [editDrop, setEditDrop] = useState("");
   const [editStatus, setEditStatus] = useState("");
+  const [editPreshop, setEditPreshop] = useState(true);
   const [saving, setSaving] = useState(false);
 
   const loadMarkets = async () => {
@@ -345,6 +347,7 @@ function MarketsTab() {
     setEditDate(m.starts_at.slice(0, 16));
     setEditDrop(m.drop_at.slice(0, 16));
     setEditStatus(m.status);
+    setEditPreshop(m.dealer_preshop_enabled !== 0);
   };
 
   const saveEdit = async () => {
@@ -358,6 +361,7 @@ function MarketsTab() {
         starts_at: new Date(editDate).toISOString(),
         drop_at: new Date(editDrop).toISOString(),
         status: editStatus,
+        dealer_preshop_enabled: editPreshop ? 1 : 0,
       }),
     });
     setEditId(null);
@@ -506,6 +510,20 @@ function MarketsTab() {
                         <option value="live">Live</option>
                         <option value="closed">Closed</option>
                       </select>
+                      <label className="flex items-center gap-2.5 py-1 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={editPreshop}
+                          onChange={(e) => setEditPreshop(e.target.checked)}
+                          className="shrink-0 accent-eb-black"
+                        />
+                        <span className="text-eb-caption text-eb-text">
+                          Dealer pre-shop enabled
+                          <span className="text-eb-muted ml-1">
+                            (dealers see items before the drop)
+                          </span>
+                        </span>
+                      </label>
                       <div className="flex gap-2">
                         <button onClick={saveEdit} disabled={saving} className="eb-btn flex-1">
                           {saving ? "SAVING\u2026" : "SAVE"}

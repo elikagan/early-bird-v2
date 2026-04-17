@@ -10,6 +10,24 @@ export async function GET(request: Request) {
 
   if (!marketId) return error("market_id is required");
 
+  // Dealer pre-shop gate: if this market hasn't dropped yet, only
+  // dealers may see the item list (and only when dealer_preshop_enabled
+  // is on for the market). Non-dealers get 403 → UI shows countdown.
+  const marketCheck = await db.execute({
+    sql: `SELECT status, dealer_preshop_enabled FROM markets WHERE id = ?`,
+    args: [marketId],
+  });
+  if (marketCheck.rows.length === 0) return error("Market not found", 404);
+  const mkt = marketCheck.rows[0] as Record<string, unknown>;
+  if (mkt.status === "upcoming") {
+    const user = await getSession(request);
+    const isDealer = !!user?.dealer_id;
+    const preshopOn = Number(mkt.dealer_preshop_enabled ?? 1) === 1;
+    if (!isDealer || !preshopOn) {
+      return error("Market is pre-drop", 403);
+    }
+  }
+
   let sql = `
     SELECT
       i.*,
