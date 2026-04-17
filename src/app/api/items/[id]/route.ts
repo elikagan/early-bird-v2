@@ -163,17 +163,37 @@ export async function PATCH(
     args.push(body.price_firm ? 1 : 0);
   }
   if (body.status !== undefined) {
+    // Guard: hold always requires a held_for — no "held for nobody" state.
+    if (body.status === "hold" && !body.held_for) {
+      return error(
+        "held_for is required when setting status to hold",
+        400
+      );
+    }
     updates.push("status = ?");
     args.push(body.status);
   }
+
+  // held_for / sold_to are centrally managed based on the target status
+  // so the row never drifts into an inconsistent state (e.g. status=live
+  // with stale held_for, or status=sold without held_for cleared).
   if (body.held_for !== undefined) {
     updates.push("held_for = ?");
     args.push(body.held_for);
+  } else if (body.status === "live" || body.status === "sold") {
+    // Any transition to live or sold wipes held_for.
+    updates.push("held_for = ?");
+    args.push(null);
   }
   if (body.sold_to !== undefined) {
     updates.push("sold_to = ?");
     args.push(body.sold_to);
+  } else if (body.status === "live" || body.status === "hold") {
+    // Any transition to live or hold wipes sold_to.
+    updates.push("sold_to = ?");
+    args.push(null);
   }
+
   const hasFieldUpdates = updates.length > 0;
 
   // Photo management — accept add_photos [{url, thumb_url}] or legacy add_photo_urls [string]
@@ -225,8 +245,23 @@ export async function PATCH(
     });
   }
 
-  // Update inquiry statuses (synchronous — must complete before response)
+  // Inquiry state-machine sync. Every status transition leaves inquiries
+  // consistent with the item's new state. 'sold' inquiries are historical
+  // and never reset.
+  if (body.status === "live") {
+    // Relist — any held or lost inquiry comes back as open.
+    await db.execute({
+      sql: `UPDATE inquiries SET status = 'open' WHERE item_id = ? AND status IN ('held', 'lost')`,
+      args: [id],
+    });
+  }
   if (body.status === "hold" && body.held_for) {
+    // Wipe any prior held/lost first (fixes stale state from a previous
+    // hold-for-Jamie-then-switch-to-Alex), then mark the new held buyer.
+    await db.execute({
+      sql: `UPDATE inquiries SET status = 'open' WHERE item_id = ? AND status IN ('held', 'lost')`,
+      args: [id],
+    });
     await db.execute({
       sql: `UPDATE inquiries SET status = 'held' WHERE item_id = ? AND buyer_id = ?`,
       args: [id, body.held_for],

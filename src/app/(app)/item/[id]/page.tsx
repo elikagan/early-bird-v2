@@ -116,6 +116,7 @@ export default function ItemDetailPage() {
 
   // Confirm drawer (dealer-own)
   const [confirmInquiry, setConfirmInquiry] = useState<Inquiry | null>(null);
+  const [confirmWalkupSold, setConfirmWalkupSold] = useState(false);
 
   // Delete
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -679,25 +680,52 @@ export default function ItemDetailPage() {
             Status
           </div>
           <div className="flex w-full border border-eb-border">
-            {(["live", "hold", "sold"] as const).map((s, i) => (
-              <button
-                key={s}
-                className={`flex-1 py-2 text-eb-caption font-bold uppercase tracking-wider ${
-                  i > 0 ? "border-l border-eb-border" : ""
-                } ${
-                  item.status === s
-                    ? "bg-eb-black text-white"
-                    : "bg-white text-eb-text"
-                }`}
-                onClick={() => updateStatus(s)}
-              >
-                {s.charAt(0).toUpperCase() + s.slice(1)}
-              </button>
-            ))}
+            {(["live", "hold", "sold"] as const).map((s, i) => {
+              const isActive = item.status === s;
+              // HOLD is never reachable from the pill — it requires a
+              // specific buyer, which only exists via the inquiry card's
+              // Hold button. Show it as an indicator, never clickable.
+              const isHoldPill = s === "hold";
+              const disabled = isHoldPill && !isActive;
+
+              const handleClick = () => {
+                if (disabled) return;
+                if (s === "sold" && !isActive) {
+                  // Walk-up sale — open confirm drawer instead of firing
+                  // an irreversible destructive action on a single tap.
+                  setConfirmWalkupSold(true);
+                  return;
+                }
+                if (s === "live" && isActive) return; // no-op
+                updateStatus(s);
+              };
+
+              return (
+                <button
+                  key={s}
+                  disabled={disabled}
+                  className={`flex-1 py-2 text-eb-caption font-bold uppercase tracking-wider ${
+                    i > 0 ? "border-l border-eb-border" : ""
+                  } ${
+                    isActive
+                      ? "bg-eb-black text-white"
+                      : disabled
+                        ? "bg-white text-eb-light cursor-not-allowed"
+                        : "bg-white text-eb-text"
+                  }`}
+                  onClick={handleClick}
+                >
+                  {s.charAt(0).toUpperCase() + s.slice(1)}
+                </button>
+              );
+            })}
           </div>
           <p className="text-eb-meta text-eb-muted mt-2 leading-relaxed">
-            Mark SOLD the moment it sells at your booth. This closes the
-            listing so no one else inquires.
+            To hold for a buyer, tap{" "}
+            <span className="font-bold text-eb-black">Hold</span> on an
+            inquiry below. Tap{" "}
+            <span className="font-bold text-eb-black">Sold</span> for a
+            walk-up sale with no inquiry.
           </p>
         </section>
       )}
@@ -1399,6 +1427,68 @@ export default function ItemDetailPage() {
                 {confirmInquiry.buyer_first_name ||
                   confirmInquiry.buyer_display_name ||
                   "buyer"}
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Walk-up sold confirm drawer — dealer hit the SOLD status pill
+          with no specific buyer. Destructive, irreversible; require
+          explicit confirmation. */}
+      {confirmWalkupSold && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/40 z-40"
+            onClick={() => setConfirmWalkupSold(false)}
+          />
+          <div className="fixed bottom-0 left-0 right-0 max-w-[430px] mx-auto bg-white rounded-t-2xl border-t border-eb-border z-50 px-5 pt-3 pb-6">
+            <div className="w-12 h-1 bg-eb-border rounded-full mx-auto mb-4" />
+            <button
+              className="absolute top-3 right-4 text-eb-body text-eb-muted"
+              aria-label="Close"
+              onClick={() => setConfirmWalkupSold(false)}
+            >
+              {"\u2715"}
+            </button>
+            <h3 className="text-eb-title font-bold uppercase tracking-widest text-eb-black">
+              Mark sold at the booth?
+            </h3>
+
+            <p className="text-eb-body text-eb-text leading-relaxed mt-3">
+              This is for a walk-up sale — someone bought it in person with
+              no prior inquiry. If you&apos;re selling to someone who
+              inquired through Early Bird,{" "}
+              <span className="font-bold text-eb-black">
+                use the Sell button on their inquiry card below
+              </span>{" "}
+              so they get the receipt text.
+            </p>
+
+            <p className="text-eb-caption text-eb-muted leading-relaxed mt-4">
+              Tapping below closes the listing and marks anyone who
+              inquired as &ldquo;sold to another buyer&rdquo; in the app.
+              No text goes out.{" "}
+              <span className="text-eb-black font-bold">
+                Can&apos;t be undone.
+              </span>
+            </p>
+
+            <div className="flex gap-2 mt-5">
+              <button
+                className="shrink-0 px-5 py-3 text-eb-caption font-bold uppercase tracking-wider border border-eb-border text-eb-text"
+                onClick={() => setConfirmWalkupSold(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="flex-1 min-w-0 py-3 text-eb-caption font-bold uppercase tracking-wider bg-eb-black text-white whitespace-nowrap"
+                onClick={() => {
+                  setConfirmWalkupSold(false);
+                  updateStatus("sold");
+                }}
+              >
+                Mark sold at booth
               </button>
             </div>
           </div>
