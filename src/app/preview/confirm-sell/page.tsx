@@ -72,11 +72,26 @@ export default function ConfirmSellPreview() {
           </p>
 
           <div className="flex gap-2 mt-5">
-            <button className="flex-1 py-3 text-eb-caption font-bold uppercase tracking-wider border border-eb-border text-eb-text">
+            <button className="shrink-0 px-5 py-3 text-eb-caption font-bold uppercase tracking-wider border border-eb-border text-eb-text">
               Cancel
             </button>
-            <button className="flex-1 py-3 text-eb-caption font-bold uppercase tracking-wider bg-eb-black text-white">
+            <button className="flex-1 min-w-0 py-3 text-eb-caption font-bold uppercase tracking-wider bg-eb-black text-white whitespace-nowrap overflow-hidden text-ellipsis">
               Mark sold to {buyerFirst}
+            </button>
+          </div>
+        </div>
+
+        {/* Demo of button with a long first name to prove it doesn't overflow */}
+        <div className="px-5 pb-6">
+          <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-2">
+            Same drawer with a longer name (to prove the button fits):
+          </div>
+          <div className="flex gap-2">
+            <button className="shrink-0 px-5 py-3 text-eb-caption font-bold uppercase tracking-wider border border-eb-border text-eb-text">
+              Cancel
+            </button>
+            <button className="flex-1 min-w-0 py-3 text-eb-caption font-bold uppercase tracking-wider bg-eb-black text-white whitespace-nowrap overflow-hidden text-ellipsis">
+              Mark sold to Alessandra
             </button>
           </div>
         </div>
@@ -173,6 +188,96 @@ export default function ConfirmSellPreview() {
               <span className="inline-block w-2 h-2 rounded-full bg-eb-pop" />
               <span className="text-eb-meta text-eb-black font-bold">
                 Sold to you
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════ 4. HOLD FLOW ═══════════ */}
+      <section className="border-t-2 border-eb-black">
+        <div className="px-5 pt-8 pb-5">
+          <div className="text-eb-micro uppercase tracking-widest font-bold text-eb-muted">
+            Piece 04
+          </div>
+          <h2 className="text-eb-title font-bold text-eb-black mt-1.5">
+            Hold flow — no SMS, in-app only
+          </h2>
+          <p className="text-eb-body text-eb-text leading-relaxed mt-3">
+            Today, tapping Hold three times sends three text messages to the
+            same buyer. That&apos;s out — <span className="font-bold">no
+            SMS goes out when a dealer taps Hold</span>. Everything happens
+            in-app. Status rows:
+          </p>
+        </div>
+
+        {/* Dealer's own item — shows who it's held for */}
+        <div className="px-5 pb-2 text-eb-meta text-eb-muted uppercase tracking-widest font-bold">
+          Dealer&apos;s own item (item detail, Sell tab):
+        </div>
+        <div className="mx-5 mb-6 border border-eb-border p-4 flex gap-3 items-start">
+          <div className="w-24 h-24 bg-eb-border shrink-0" aria-hidden />
+          <div className="flex-1 min-w-0">
+            <div className="text-eb-body font-bold text-eb-black">
+              {itemTitle}
+            </div>
+            <div className="text-eb-caption text-eb-text mt-0.5">$175</div>
+            <div className="flex items-center gap-1.5 mt-2">
+              <span className="inline-block w-2 h-2 rounded-full bg-eb-amber" />
+              <span className="text-eb-meta text-eb-black font-bold">
+                Held for {buyerFirst}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* The buyer it's held for */}
+        <div className="px-5 pb-2 text-eb-meta text-eb-muted uppercase tracking-widest font-bold">
+          The buyer it&apos;s held for (Watching):
+        </div>
+        <div className="mx-5 mb-6 border border-eb-border p-4 flex gap-3 items-start">
+          <div className="w-24 h-24 bg-eb-border shrink-0" aria-hidden />
+          <div className="flex-1 min-w-0">
+            <div className="text-eb-body font-bold text-eb-black">
+              {itemTitle}
+            </div>
+            <div className="text-eb-caption text-eb-text mt-0.5">$175</div>
+            <div className="flex items-center gap-1.5 mt-2">
+              <span className="eb-avatar eb-avatar-sm">OL</span>
+              <span className="text-eb-meta text-eb-muted">
+                {dealerBusiness}
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 mt-2">
+              <span className="inline-block w-2 h-2 rounded-full bg-eb-pop" />
+              <span className="text-eb-meta text-eb-black font-bold">
+                Held for you
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Other inquirers */}
+        <div className="px-5 pb-2 text-eb-meta text-eb-muted uppercase tracking-widest font-bold">
+          Other inquirers (Watching):
+        </div>
+        <div className="mx-5 mb-10 border border-eb-border p-4 flex gap-3 items-start">
+          <div className="w-24 h-24 bg-eb-border shrink-0" aria-hidden />
+          <div className="flex-1 min-w-0">
+            <div className="text-eb-body font-bold text-eb-black">
+              {itemTitle}
+            </div>
+            <div className="text-eb-caption text-eb-text mt-0.5">$175</div>
+            <div className="flex items-center gap-1.5 mt-2">
+              <span className="eb-avatar eb-avatar-sm">OL</span>
+              <span className="text-eb-meta text-eb-muted">
+                {dealerBusiness}
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 mt-2">
+              <span className="inline-block w-2 h-2 rounded-full bg-eb-muted" />
+              <span className="text-eb-meta text-eb-muted">
+                On hold for another buyer
               </span>
             </div>
           </div>
