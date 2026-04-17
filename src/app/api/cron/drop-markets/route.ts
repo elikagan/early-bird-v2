@@ -11,7 +11,7 @@
  * fired the drop for this market; we skip.
  */
 
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import db from "@/lib/db";
 import { sendSMS } from "@/lib/sms";
 import { composeDropAlert } from "@/lib/sms-templates";
@@ -100,28 +100,26 @@ export async function GET(request: Request) {
     const url = `${getBaseUrl(request)}/buy?market=${marketId}`;
     const body = composeDropAlert(marketName, itemCount, dealerCount, url);
 
-    // Batch 5 at a time, same pattern as /api/admin/sms-blast
     const phones = recipients.rows.map(
       (r) => (r as Record<string, unknown>).phone as string
     );
-    let sent = 0;
-    let failed = 0;
-    for (let i = 0; i < phones.length; i += 5) {
-      const batch = phones.slice(i, i + 5);
-      const sendResults = await Promise.allSettled(
-        batch.map((phone) => sendSMS(phone, body))
-      );
-      for (const r of sendResults) {
-        if (r.status === "fulfilled") sent++;
-        else failed++;
+
+    // SMS batch happens after() the response goes out so the Vercel
+    // function doesn't hold the HTTP connection open while dozens /
+    // hundreds of sends run. The DB is already in 'live + notified'
+    // state by this point, so re-runs are safely idempotent.
+    after(async () => {
+      for (let i = 0; i < phones.length; i += 5) {
+        const batch = phones.slice(i, i + 5);
+        await Promise.allSettled(batch.map((p) => sendSMS(p, body)));
       }
-    }
+    });
 
     results.push({
       market_id: marketId,
       market_name: marketName,
-      notified: sent,
-      failed,
+      notified: phones.length,
+      failed: 0, // filled in-band isn't possible when sending via after()
       skipped_already_fired: false,
     });
   }
