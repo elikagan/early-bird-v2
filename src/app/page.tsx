@@ -202,225 +202,188 @@ export default function LandingPage() {
 
       {mode === "buyer" ? (
         <>
-          {/* ════════════════════════════════════
-              LIVE MARKET — the main event
-          ════════════════════════════════════ */}
+          {/* ═══════════════ HERO ═══════════════ */}
           {liveMarket ? (
-            <>
-              {/* Hero */}
-              <section className="px-5 pt-8 pb-4">
-                <span className="inline-block text-eb-micro uppercase tracking-wider text-eb-pop bg-eb-pop-light px-1.5 py-0.5 mb-4 font-bold">
-                  LIVE NOW
-                </span>
-                <h2 className="text-eb-hero tracking-tight text-eb-black leading-none">
-                  {liveMarket.name}
-                </h2>
-                <p className="mt-3 text-eb-body text-eb-muted">
-                  Shop the market before it opens.
-                </p>
-              </section>
+            <section className="px-5 pt-8 pb-7 border-b-2 border-eb-black">
+              <div className="text-eb-micro uppercase tracking-widest font-bold text-eb-pop">
+                Live now
+              </div>
+              <h2 className="text-eb-hero text-eb-black leading-tight mt-2">
+                {liveMarket.name}
+              </h2>
+              <p className="text-eb-body text-eb-text leading-relaxed mt-3">
+                Shop the market before it opens.
+              </p>
 
-              {/* Preview grid — real items from the market */}
+              {/* Preview grid */}
               {previewItems.length > 0 && (
-                <section className="px-5 pt-4 pb-2">
-                  <div className="grid grid-cols-3 gap-1">
-                    {previewItems.map((item) => (
-                      <Link
-                        key={item.id}
-                        href={`/item/${item.id}`}
-                        className="relative aspect-square overflow-hidden bg-eb-cream"
-                      >
-                        {item.photo_url ? (
-                          <Image
-                            src={item.thumb_url || item.photo_url}
-                            alt={item.title}
-                            fill
-                            sizes="33vw"
-                            className="object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-eb-border" />
-                        )}
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-1.5 pt-4">
-                          <span className="text-eb-micro text-white font-bold">
-                            {formatPrice(item.price)}
-                          </span>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                </section>
+                <div className="grid grid-cols-3 gap-1.5 mt-6">
+                  {previewItems.map((item) => (
+                    <Link
+                      key={item.id}
+                      href={`/item/${item.id}`}
+                      className="relative aspect-square overflow-hidden bg-eb-border"
+                    >
+                      {item.photo_url ? (
+                        <Image
+                          src={item.thumb_url || item.photo_url}
+                          alt={item.title}
+                          fill
+                          sizes="33vw"
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-eb-border" />
+                      )}
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-1.5 pt-4">
+                        <span className="text-eb-micro text-white font-bold tabular-nums">
+                          {formatPrice(item.price)}
+                        </span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
               )}
 
-              {/* Browse CTA */}
-              <section className="px-5 pt-4 pb-6">
-                <Link
-                  href={`/buy?market=${liveMarket.id}`}
-                  className="eb-btn text-center block"
-                >
-                  SHOP THE MARKET {"\u2192"}
-                </Link>
-              </section>
-
-              {/* Value props — tight, scannable */}
-              <section className="px-5 py-6 border-t border-eb-border">
-                <div className="grid grid-cols-3 gap-3 text-center">
-                  <div>
-                    <div className="text-eb-display text-eb-black">{"\u2709"}</div>
-                    <div className="text-eb-micro uppercase tracking-wider text-eb-muted mt-1">
-                      Text dealers directly
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-eb-display text-eb-black">{"\u2764"}</div>
-                    <div className="text-eb-micro uppercase tracking-wider text-eb-muted mt-1">
-                      Save to your watchlist
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-eb-display text-eb-black">{"\u26a1"}</div>
-                    <div className="text-eb-micro uppercase tracking-wider text-eb-muted mt-1">
-                      Price drop alerts
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              {/* Signup */}
-              <section className="px-5 pt-6 pb-8 border-t border-eb-border bg-eb-cream">
-                <h3 className="text-eb-body font-bold text-eb-black">
-                  See items before everyone else
-                </h3>
-                <p className="text-eb-caption text-eb-muted mt-1 mb-4">
-                  Get a text when the drop goes live — browse and claim
-                  items before the 4am crowd.
-                </p>
-                {phoneForm}
-              </section>
-            </>
+              <Link
+                href={`/buy?market=${liveMarket.id}`}
+                className="eb-btn mt-6 text-center"
+              >
+                Shop the market {"\u2192"}
+              </Link>
+            </section>
           ) : (
-            <>
-              {/* ════════════════════════════════════
-                  NO LIVE MARKET — build anticipation
-              ════════════════════════════════════ */}
-              <section className="px-5 pt-12 pb-6">
-                <h2 className="text-eb-hero tracking-tight text-eb-black">
-                  Shop before <span className="text-eb-pop">sunrise.</span>
-                </h2>
-                <p className="mt-4 text-eb-body text-eb-muted leading-relaxed">
-                  Dealers post what they{"\u2019"}re bringing before each market. You
-                  browse from your couch and reach out to the ones you want.
-                </p>
-              </section>
-
-              {/* Value props — same as live, always relevant */}
-              <section className="px-5 py-6 border-t border-eb-border">
-                <div className="grid grid-cols-3 gap-3 text-center">
-                  <div>
-                    <div className="text-eb-display text-eb-black">{"\u2709"}</div>
-                    <div className="text-eb-micro uppercase tracking-wider text-eb-muted mt-1">
-                      Text dealers directly
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-eb-display text-eb-black">{"\u2764"}</div>
-                    <div className="text-eb-micro uppercase tracking-wider text-eb-muted mt-1">
-                      Save to your watchlist
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-eb-display text-eb-black">{"\u26a1"}</div>
-                    <div className="text-eb-micro uppercase tracking-wider text-eb-muted mt-1">
-                      Price drop alerts
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              {/* Signup */}
-              <section className="px-5 pt-6 pb-8 border-t border-eb-border bg-eb-cream">
-                <h3 className="text-eb-body font-bold text-eb-black">
-                  See items before everyone else
-                </h3>
-                <p className="text-eb-caption text-eb-muted mt-1 mb-4">
-                  Get a text when the drop goes live — browse and claim
-                  items before the 4am crowd.
-                </p>
-                {phoneForm}
-              </section>
-            </>
-          )}
-
-          {/* Upcoming markets */}
-          {upcomingMarkets.length > 0 && (
-            <section className="px-5 pb-6">
-              <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-3">
-                Coming up
-              </div>
-              {upcomingMarkets.map((m) => (
-                <div
-                  key={m.id}
-                  className="py-3.5 border-t border-eb-border flex justify-between items-baseline"
-                >
-                  <div>
-                    <div className="text-eb-body font-bold text-eb-black">
-                      {m.name}
-                    </div>
-                    <div className="text-eb-meta text-eb-muted mt-0.5">
-                      {formatDate(m.starts_at)} {"\u00b7"} {m.location}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-eb-meta text-eb-muted">Drop in</div>
-                    <div className="text-eb-meta font-bold text-eb-black">
-                      {heroCountdown(m.drop_at)}
-                    </div>
-                  </div>
-                </div>
-              ))}
+            <section className="px-5 pt-12 pb-8 border-b-2 border-eb-black">
+              <h2 className="text-eb-hero text-eb-black leading-tight">
+                Shop before <span className="text-eb-pop">sunrise.</span>
+              </h2>
+              <p className="text-eb-body text-eb-text leading-relaxed mt-4">
+                Dealers post what they{"\u2019"}re bringing before each
+                market. You browse from your couch and reach out to the ones
+                you want.
+              </p>
             </section>
           )}
 
-          {/* How it works */}
-          <section className="px-5 py-6 border-t border-eb-border">
-            <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-4">
-              How it works
+          {/* ═══════════════ SIGN UP ═══════════════ */}
+          <section className="pt-8 pb-8 border-b-2 border-eb-black">
+            <div className="px-5">
+              <div className="text-eb-micro uppercase tracking-widest font-bold text-eb-muted">
+                Get notified
+              </div>
+              <h3 className="text-eb-title font-bold text-eb-black mt-1.5">
+                See items before everyone else
+              </h3>
+              <p className="text-eb-body text-eb-text leading-relaxed mt-2 mb-5">
+                Get a text when the drop goes live — browse and claim items
+                before the 4am crowd.
+              </p>
+              {phoneForm}
             </div>
-            <div className="space-y-4">
-              {[
-                { num: "1", title: "Browse", desc: "Browse the best vintage dealers at the best flea markets before the crowd." },
-                { num: "2", title: "Deal", desc: "Communicate directly with the dealers and make whatever deal you want." },
-                { num: "3", title: "Pick up", desc: "Pick up at the flea market or make other arrangements." },
-              ].map((step) => (
-                <div key={step.num} className="flex gap-4">
-                  <span className="text-eb-display font-bold text-eb-light leading-none">
-                    {step.num}
-                  </span>
-                  <div>
-                    <div className="text-eb-body font-bold text-eb-black">
-                      {step.title}
+          </section>
+
+          {/* ═══════════════ COMING UP ═══════════════ */}
+          {upcomingMarkets.length > 0 && (
+            <section className="pt-8 pb-8 border-b-2 border-eb-black">
+              <div className="px-5">
+                <div className="text-eb-micro uppercase tracking-widest font-bold text-eb-muted">
+                  Coming up
+                </div>
+                <h3 className="text-eb-title font-bold text-eb-black mt-1.5 mb-4">
+                  Next drops
+                </h3>
+              </div>
+
+              <div className="divide-y divide-eb-border border-t border-eb-border">
+                {upcomingMarkets.map((m) => (
+                  <div
+                    key={m.id}
+                    className="flex items-start justify-between gap-4 px-5 py-4"
+                  >
+                    <div className="min-w-0">
+                      <div className="text-eb-body font-bold text-eb-black truncate">
+                        {m.name}
+                      </div>
+                      <div className="text-eb-meta text-eb-muted mt-1">
+                        {formatDate(m.starts_at)}
+                        <span className="mx-1.5 text-eb-light">·</span>
+                        {m.location}
+                      </div>
                     </div>
-                    <div className="text-eb-caption text-eb-muted mt-0.5 leading-relaxed">
-                      {step.desc}
+                    <div className="shrink-0 text-right">
+                      <div className="text-eb-micro uppercase tracking-widest text-eb-muted">
+                        Drop in
+                      </div>
+                      <div className="text-eb-caption font-bold tabular-nums text-eb-black mt-0.5">
+                        {heroCountdown(m.drop_at)}
+                      </div>
                     </div>
                   </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* ═══════════════ HOW IT WORKS ═══════════════ */}
+          <section>
+            <div className="px-5 pt-8 pb-5">
+              <div className="text-eb-micro uppercase tracking-widest font-bold text-eb-muted">
+                How it works
+              </div>
+              <h3 className="text-eb-title font-bold text-eb-black mt-1.5">
+                Shopping Early Bird
+              </h3>
+            </div>
+
+            <div className="px-5 pb-10 space-y-9">
+              {[
+                {
+                  num: "01",
+                  label: "Browse",
+                  body: "Dealers post what they\u2019re bringing before each flea market. Browse from your couch, save what you like, and reach out before the crowd shows up at 4am.",
+                },
+                {
+                  num: "02",
+                  label: "Connect",
+                  body: "Tap \u201cI\u2019m Interested\u201d on any item to send the dealer a single text with your name, number, and message. Take it from there — call, text, or meet at the booth.",
+                },
+                {
+                  num: "03",
+                  label: "Get it",
+                  body: "Pay the dealer in person, however they take payment. Early Bird never handles money.",
+                },
+              ].map((step) => (
+                <div key={step.num}>
+                  <div className="flex items-baseline gap-3 mb-2">
+                    <span className="text-eb-caption font-bold tabular-nums text-eb-pop">
+                      {step.num}
+                    </span>
+                    <span className="text-eb-caption font-bold uppercase tracking-wider text-eb-black">
+                      {step.label}
+                    </span>
+                  </div>
+                  <p className="text-eb-body text-eb-text leading-relaxed">
+                    {step.body}
+                  </p>
                 </div>
               ))}
             </div>
           </section>
 
-          {/* Tagline + footer */}
-          <div className="py-6 text-center text-eb-meta text-eb-muted italic">
+          {/* Tagline */}
+          <div className="py-8 text-center text-eb-caption text-eb-muted italic border-t border-eb-border">
             The early bird gets the credenza.
           </div>
-          <footer className="px-5 py-6 border-t border-eb-border space-y-3">
-            <p className="text-eb-meta text-center text-eb-muted">
+
+          {/* Dealer switch */}
+          <section className="px-5 py-6 border-t border-eb-border text-center">
+            <p className="text-eb-meta text-eb-muted">
               Selling at a market?{" "}
               <button onClick={toggleMode} className="font-bold text-eb-pop">
                 Dealer sign up {"\u2192"}
               </button>
             </p>
-          </footer>
+          </section>
         </>
       ) : (
         <>

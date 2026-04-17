@@ -132,19 +132,18 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Hero market */}
+        {/* ═══════════════ HERO MARKET ═══════════════ */}
         {heroMarket && (
-          <section className="px-5 pt-7 pb-6 border-b-2 border-eb-black">
-            {heroMarket.status === "live" && (
-              <span className="inline-block text-eb-micro uppercase tracking-wider text-eb-pop bg-eb-pop-light px-1 py-0.5 mb-3">
-                LIVE NOW
-              </span>
-            )}
-            <h2 className="text-eb-display text-eb-black leading-tight">
+          <section className="px-5 pt-8 pb-7 border-b-2 border-eb-black">
+            <div className="text-eb-micro uppercase tracking-widest font-bold text-eb-pop">
+              {heroMarket.status === "live" ? "Live now" : "Next drop"}
+            </div>
+            <h2 className="text-eb-hero text-eb-black leading-tight mt-2">
               {heroMarket.name}
             </h2>
-            <div className="text-eb-caption text-eb-muted mt-2 leading-relaxed">
-              {formatDate(heroMarket.starts_at)} ·{" "}
+            <div className="text-eb-caption text-eb-muted mt-2">
+              {formatDate(heroMarket.starts_at)}
+              <span className="mx-1.5 text-eb-light">·</span>
               {heroMarket.status === "live"
                 ? `${heroMarket.dealer_count} dealers · ${heroMarket.item_count} items`
                 : `~${heroMarket.dealer_count} dealers`}
@@ -152,7 +151,7 @@ export default function HomePage() {
 
             {/* Preview image grid */}
             {previewItems.length > 0 && (
-              <div className="grid grid-cols-3 gap-1.5 mt-4">
+              <div className="grid grid-cols-3 gap-1.5 mt-5">
                 {previewItems.map((pi) => (
                   <Link key={pi.id} href={`/item/${pi.id}`}>
                     <Image
@@ -168,7 +167,7 @@ export default function HomePage() {
               </div>
             )}
 
-            {/* Drop box (upcoming only) */}
+            {/* Drop countdown (upcoming only) */}
             {heroMarket.status === "upcoming" && (
               <div className="eb-drop-box">
                 <div>
@@ -187,7 +186,7 @@ export default function HomePage() {
             {heroMarket.status === "live" && (
               <Link
                 href={`/buy?market=${heroMarket.id}`}
-                className="eb-btn mt-5 text-center"
+                className="eb-btn mt-6 text-center"
               >
                 Browse the market {"\u2192"}
               </Link>
@@ -195,92 +194,121 @@ export default function HomePage() {
             {heroMarket.status === "upcoming" && user && (
               <Link
                 href={`/buy?market=${heroMarket.id}`}
-                className="eb-btn mt-5 text-center"
+                className="eb-btn mt-6 text-center"
               >
                 Preview items {"\u2192"}
               </Link>
             )}
             {heroMarket.status === "upcoming" && !user && (
-              <Link
-                href="/"
-                className="eb-btn mt-5 text-center"
-              >
+              <Link href="/" className="eb-btn mt-6 text-center">
                 Sign up to get texted when items drop {"\u2192"}
               </Link>
             )}
           </section>
         )}
 
-        {/* Coming up */}
+        {/* ═══════════════ COMING UP ═══════════════ */}
         {otherMarkets.length > 0 && (
-          <>
-            <div className="eb-section">
-              <span>Coming up</span>
+          <section className="pt-8 pb-8 border-b-2 border-eb-black">
+            <div className="px-5">
+              <div className="text-eb-micro uppercase tracking-widest font-bold text-eb-muted">
+                Coming up
+              </div>
+              <h3 className="text-eb-title font-bold text-eb-black mt-1.5 mb-4">
+                Next drops
+              </h3>
             </div>
-            {otherMarkets.map((m) => (
-              <Link
-                key={m.id}
-                href={`/buy?market=${m.id}`}
-                className="block px-5 py-4 border-b border-eb-border"
-              >
-                <div className="flex items-baseline justify-between gap-3">
-                  <span className="text-eb-body font-bold text-eb-black">
-                    {m.name}
-                  </span>
-                  <span className="text-eb-caption font-bold tabular-nums text-eb-black">
+
+            <div className="divide-y divide-eb-border border-t border-eb-border">
+              {otherMarkets.map((m) => (
+                <Link
+                  key={m.id}
+                  href={`/buy?market=${m.id}`}
+                  className="flex items-start justify-between gap-4 px-5 py-4 active:bg-eb-border/40"
+                >
+                  <div className="min-w-0">
+                    <div className="text-eb-body font-bold text-eb-black truncate">
+                      {m.name}
+                    </div>
+                    <div className="text-eb-meta text-eb-muted mt-1">
+                      {formatDate(m.starts_at)}
+                      <span className="mx-1.5 text-eb-light">·</span>~
+                      {m.dealer_count} dealers
+                    </div>
+                  </div>
+                  <div className="shrink-0 text-eb-caption font-bold tabular-nums text-eb-black pt-0.5">
                     {daysUntil(m.drop_at)}d
-                  </span>
-                </div>
-                <div className="text-eb-meta text-eb-muted mt-1">
-                  {formatDate(m.starts_at)} · ~{m.dealer_count} dealers
-                </div>
-              </Link>
-            ))}
-          </>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
         )}
 
-        {/* How it works */}
-        <div className="eb-section border-t border-eb-border">
-          <span>How it works</span>
-        </div>
-        <section className="px-5 pb-8">
-          <div className="text-eb-body text-eb-muted leading-relaxed space-y-3">
-            {user && isDealer ? (
-              <>
-                <p>
-                  Post your items anytime before the market. When we drop
-                  the market — typically the day before — everything goes
-                  live at once and buyers start browsing.
+        {/* ═══════════════ HOW IT WORKS ═══════════════ */}
+        <section>
+          <div className="px-5 pt-8 pb-5">
+            <div className="text-eb-micro uppercase tracking-widest font-bold text-eb-muted">
+              How it works
+            </div>
+            <h3 className="text-eb-title font-bold text-eb-black mt-1.5">
+              {user && isDealer
+                ? "Selling on Early Bird"
+                : "Shopping Early Bird"}
+            </h3>
+          </div>
+
+          <div className="px-5 pb-10 space-y-9">
+            {(user && isDealer
+              ? [
+                  {
+                    num: "01",
+                    label: "Post",
+                    body: "List your items anytime before the market. When we drop the market — typically the day before — everything goes live at once and buyers start browsing.",
+                  },
+                  {
+                    num: "02",
+                    label: "Connect",
+                    body: "When a buyer\u2019s interested, you get a single text with their name, number, and message. Take it from there — call, text, or meet at the booth.",
+                  },
+                  {
+                    num: "03",
+                    label: "Get paid",
+                    body: "Arrange payment with buyers however you like — cash, Venmo, Zelle, whatever works. Early Bird never handles money.",
+                  },
+                ]
+              : [
+                  {
+                    num: "01",
+                    label: "Browse",
+                    body: "Dealers post what they\u2019re bringing before each flea market. Browse from your couch, save what you like, and reach out before the crowd shows up at 4am.",
+                  },
+                  {
+                    num: "02",
+                    label: "Connect",
+                    body: "Tap \u201cI\u2019m Interested\u201d on any item to send the dealer a single text with your name, number, and message. Take it from there — call, text, or meet at the booth.",
+                  },
+                  {
+                    num: "03",
+                    label: "Get it",
+                    body: "Pay the dealer in person, however they take payment. Early Bird never handles money.",
+                  },
+                ]
+            ).map((step) => (
+              <div key={step.num}>
+                <div className="flex items-baseline gap-3 mb-2">
+                  <span className="text-eb-caption font-bold tabular-nums text-eb-pop">
+                    {step.num}
+                  </span>
+                  <span className="text-eb-caption font-bold uppercase tracking-wider text-eb-black">
+                    {step.label}
+                  </span>
+                </div>
+                <p className="text-eb-body text-eb-text leading-relaxed">
+                  {step.body}
                 </p>
-                <p>
-                  When a buyer is interested, you get a single text with their
-                  name, phone number, and message. From there you talk directly
-                  — call, text, or sort it out at the booth.
-                </p>
-                <p>
-                  Buyers pay you in person, after you&apos;ve confirmed the
-                  sale. Early Bird never holds payment.
-                </p>
-              </>
-            ) : (
-              <>
-                <p>
-                  Dealers post what they&apos;re bringing before each flea
-                  market. You browse from your couch, save what you like, and
-                  reach out before the crowd shows up at 4am.
-                </p>
-                <p>
-                  Tap &ldquo;I&apos;m Interested&rdquo; on any item to send
-                  the dealer a single text with your name, number, and message.
-                  From there you talk directly — call, text, or meet at the
-                  booth.
-                </p>
-                <p>
-                  You pay the dealer in person, however they take payment. Early
-                  Bird never handles money.
-                </p>
-              </>
-            )}
+              </div>
+            ))}
           </div>
         </section>
       </main>
