@@ -100,8 +100,8 @@ export function DealerApplyDrawer({ open, onClose, onSubmitted }: Props) {
           </div>
 
           <p className="text-eb-micro text-eb-muted">
-            We review your Instagram to verify your business.
-            We&apos;ll text you at {formatPhone(user.phone)} when approved.
+            We&apos;ll review your application and text you at{" "}
+            {formatPhone(user.phone)} when you&apos;re approved.
           </p>
 
           {error && <p className="text-eb-meta text-eb-red">{error}</p>}

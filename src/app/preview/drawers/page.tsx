@@ -102,8 +102,8 @@ export default function DrawersPreview() {
             <input type="text" className="eb-input" placeholder="@vintage_finds_la" disabled />
           </div>
           <p className="text-eb-micro text-eb-muted">
-            We review your Instagram to verify your business. We&apos;ll
-            text you at (213) 555-0134 when approved.
+            We&apos;ll review your application and text you at (213)
+            555-0134 when you&apos;re approved.
           </p>
           <div className="flex gap-2">
             <button className="eb-btn flex-1">Submit Application</button>
