@@ -695,12 +695,12 @@ export default function ItemDetailPage() {
               return (
                 <button
                   key={s}
-                  className={`flex-1 py-2 text-eb-caption font-bold uppercase tracking-wider ${
+                  className={`flex-1 py-4 text-eb-body font-bold uppercase tracking-wider ${
                     i > 0 ? "border-l border-eb-border" : ""
                   } ${
                     isActive
                       ? "bg-eb-black text-white"
-                      : "bg-white text-eb-text"
+                      : "bg-white text-eb-text active:bg-eb-border/30"
                   }`}
                   onClick={handleClick}
                 >
