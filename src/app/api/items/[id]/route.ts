@@ -3,7 +3,7 @@ import { after } from "next/server";
 import { json, error } from "@/lib/api";
 import { getSession } from "@/lib/auth";
 import { sendSMS } from "@/lib/sms";
-import { composeHoldReceipt, composeSoldReceipt, composeLostReceipt, composePriceDropNotification } from "@/lib/sms-templates";
+import { composeSoldReceipt, composePriceDropNotification } from "@/lib/sms-templates";
 import { shouldNotify } from "@/lib/notifications";
 import { formatPrice } from "@/lib/format";
 
@@ -296,22 +296,13 @@ export async function PATCH(
         );
       }
 
-      // Hold → receipt to buyer
-      if (body.status === "hold" && body.held_for) {
-        const buyer = await db.execute({
-          sql: `SELECT phone FROM users WHERE id = ?`,
-          args: [body.held_for],
-        });
-        if (buyer.rows.length > 0) {
-          const ctx = await getReceiptContext();
-          await sendSMS(
-            (buyer.rows[0] as Record<string, unknown>).phone as string,
-            composeHoldReceipt(ctx.dealerName, itemTitle, ctx.boothNumber, ctx.marketName, ctx.marketDate)
-          );
-        }
-      }
+      // Hold → no SMS. Other inquirers see "On hold for another buyer"
+      // and the held-for buyer sees "Held for you" in-app via their
+      // Watching tab (inquiries.status is still updated to 'held' above).
+      // Previously this sent an SMS on every tap, spamming the buyer.
 
-      // Sold → receipt to winner + lost receipts to others
+      // Sold to a specific buyer → one SMS to the winner only.
+      // Losers see "Sold to another buyer" in-app. No SMS to them.
       if (body.status === "sold" && body.sold_to) {
         const ctx = await getReceiptContext();
         const winner = await db.execute({
@@ -324,36 +315,11 @@ export async function PATCH(
             composeSoldReceipt(ctx.dealerName, itemTitle, ctx.boothNumber, ctx.marketName, ctx.marketDate)
           );
         }
-        const losers = await db.execute({
-          sql: `SELECT u.phone FROM inquiries q JOIN users u ON u.id = q.buyer_id WHERE q.item_id = ? AND q.buyer_id != ?`,
-          args: [id, body.sold_to],
-        });
-        await Promise.allSettled(
-          losers.rows.map((loser) =>
-            sendSMS(
-              (loser as Record<string, unknown>).phone as string,
-              composeLostReceipt(itemTitle, ctx.dealerName)
-            )
-          )
-        );
       }
 
-      // Walk-up sale → lost receipts to all inquirers
-      if (body.status === "sold" && !body.sold_to) {
-        const ctx = await getReceiptContext();
-        const allInquirers = await db.execute({
-          sql: `SELECT u.phone FROM inquiries q JOIN users u ON u.id = q.buyer_id WHERE q.item_id = ?`,
-          args: [id],
-        });
-        await Promise.allSettled(
-          allInquirers.rows.map((inq) =>
-            sendSMS(
-              (inq as Record<string, unknown>).phone as string,
-              composeLostReceipt(itemTitle, ctx.dealerName)
-            )
-          )
-        );
-      }
+      // Walk-up sale (no specific buyer) → no SMS.
+      // Inquirers see "Sold to another buyer" in-app; inquiries.status
+      // is already updated to 'lost' above.
     } catch (err) {
       console.error("Deferred SMS error:", err);
     }

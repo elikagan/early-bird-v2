@@ -1306,7 +1306,7 @@ export default function ItemDetailPage() {
             className="fixed inset-0 bg-black/40 z-40"
             onClick={() => setConfirmInquiry(null)}
           />
-          <div className="fixed bottom-0 left-0 right-0 max-w-[430px] mx-auto bg-white rounded-t-2xl border-t border-eb-border z-50 px-6 pt-3 pb-6">
+          <div className="fixed bottom-0 left-0 right-0 max-w-[430px] mx-auto bg-white rounded-t-2xl border-t border-eb-border z-50 px-5 pt-3 pb-6">
             <div className="w-12 h-1 bg-eb-border rounded-full mx-auto mb-4" />
             <button
               className="absolute top-3 right-4 text-eb-body text-eb-muted"
@@ -1315,73 +1315,61 @@ export default function ItemDetailPage() {
             >
               {"\u2715"}
             </button>
-            <h3 className="text-eb-body font-bold uppercase tracking-widest text-eb-black mb-3">
-              Sell To{" "}
-              {confirmInquiry.buyer_display_name ||
-                confirmInquiry.buyer_first_name}
+            <h3 className="text-eb-title font-bold uppercase tracking-widest text-eb-black">
+              Mark sold to{" "}
+              {confirmInquiry.buyer_first_name ||
+                confirmInquiry.buyer_display_name ||
+                "this buyer"}
               ?
             </h3>
-            <p className="text-eb-caption text-eb-muted mb-4 leading-relaxed">
-              Closes the listing and sends these texts. No undo after this —
-              make sure you&apos;ve confirmed with{" "}
-              {confirmInquiry.buyer_first_name} at the booth.
+
+            <p className="text-eb-body text-eb-text leading-relaxed mt-3">
+              Before you confirm, make sure you&apos;ve actually talked with{" "}
+              <span className="font-bold text-eb-black">
+                {confirmInquiry.buyer_first_name ||
+                  confirmInquiry.buyer_display_name ||
+                  "this buyer"}
+              </span>{" "}
+              and agreed on price, pickup, and payment.
             </p>
-            {/* SMS preview: winner */}
-            <div className="border border-eb-border bg-eb-bg p-4 mb-3">
-              <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-1">
-                {confirmInquiry.buyer_first_name} Gets
-              </div>
-              <p className="text-eb-caption leading-relaxed text-eb-text">
-                &ldquo;Early Bird: Sold! {item.title} is yours.{" "}
-                {boothStr
-                  ? `See ${item.dealer_name} at ${boothStr}`
-                  : `See ${item.dealer_name}`}
-                , {item.market?.name}, {marketDate}. Bring payment.&rdquo;
-              </p>
-            </div>
-            {/* SMS preview: losers */}
-            {inquiries.filter(
-              (i) =>
-                i.buyer_id !== confirmInquiry.buyer_id &&
-                (i.status === "open" || i.status === "held")
-            ).length > 0 && (
-              <div className="border border-eb-border bg-eb-bg p-4 mb-4">
-                <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-1">
-                  {inquiries
-                    .filter(
-                      (i) =>
-                        i.buyer_id !== confirmInquiry.buyer_id &&
-                        (i.status === "open" || i.status === "held")
-                    )
-                    .map(
-                      (i) =>
-                        i.buyer_display_name ||
-                        `${i.buyer_first_name} ${(i.buyer_last_name || "")[0] || ""}`.trim()
-                    )
-                    .join(" + ")}{" "}
-                  Get
-                </div>
-                <p className="text-eb-caption leading-relaxed text-eb-text">
-                  &ldquo;Early Bird: {item.title} sold to another buyer. Keep
-                  an eye on {item.dealer_name}&apos;s booth for more
-                  drops.&rdquo;
-                </p>
-              </div>
-            )}
-            <div className="flex gap-2">
+
+            <p className="text-eb-body text-eb-text leading-relaxed mt-3">
+              Early Bird doesn&apos;t handle money or warranty the transaction
+              — closing the deal is between you and{" "}
+              {confirmInquiry.buyer_first_name ||
+                confirmInquiry.buyer_display_name ||
+                "the buyer"}
+              . Use common sense.
+            </p>
+
+            <p className="text-eb-caption text-eb-muted leading-relaxed mt-4">
+              Tapping below closes the listing, texts{" "}
+              {confirmInquiry.buyer_first_name ||
+                confirmInquiry.buyer_display_name ||
+                "the buyer"}{" "}
+              a receipt, and marks it sold in the app for the other inquirers.{" "}
+              <span className="text-eb-black font-bold">
+                Can&apos;t be undone.
+              </span>
+            </p>
+
+            <div className="flex gap-2 mt-5">
               <button
-                className="flex-1 py-3 text-eb-caption font-bold border border-eb-border text-eb-text"
+                className="shrink-0 px-5 py-3 text-eb-caption font-bold uppercase tracking-wider border border-eb-border text-eb-text"
                 onClick={() => setConfirmInquiry(null)}
               >
                 Cancel
               </button>
               <button
-                className="flex-1 py-3 text-eb-caption font-bold bg-eb-black text-white"
+                className="flex-1 min-w-0 py-3 text-eb-caption font-bold uppercase tracking-wider bg-eb-black text-white whitespace-nowrap overflow-hidden text-ellipsis"
                 onClick={() =>
                   updateStatus("sold", undefined, confirmInquiry.buyer_id)
                 }
               >
-                Yes, Sell To {confirmInquiry.buyer_first_name}
+                Mark sold to{" "}
+                {confirmInquiry.buyer_first_name ||
+                  confirmInquiry.buyer_display_name ||
+                  "buyer"}
               </button>
             </div>
           </div>

@@ -25,17 +25,24 @@ export function composeHoldReceipt(
 }
 
 /**
- * SMS sent to winning buyer when dealer sells to them.
+ * SMS sent to winning buyer when dealer sells to them. No pickup details —
+ * payment and logistics are arranged directly between buyer and dealer.
+ * Includes a no-warranty / common-sense disclaimer.
+ *
+ * The booth/market/date args are accepted for backward compatibility but
+ * intentionally unused in the current copy.
  */
 export function composeSoldReceipt(
   dealerName: string,
   itemTitle: string,
-  boothNumber: string | null,
-  marketName: string,
-  marketDate: string
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _boothNumber: string | null,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _marketName: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _marketDate: string
 ): string {
-  const booth = boothNumber ? `See ${dealerName} at Booth ${boothNumber}` : `See ${dealerName}`;
-  return `Early Bird: Sold! ${itemTitle} is yours. ${booth}, ${marketName}, ${marketDate}. Bring payment.`;
+  return `Early Bird: Congrats! ${dealerName} marked the ${itemTitle} sold to you. We trust you'll both honor whatever you agreed on. Early Bird doesn't warranty this transaction — use common sense.`;
 }
 
 /**
