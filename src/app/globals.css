@@ -107,10 +107,10 @@
     align-items: center;
   }
   .eb-drop-box .eb-drop-label {
-    font-size: 13px;
+    font-size: 11px;
     color: var(--eb-pop);
     font-weight: 700;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
   }
   .eb-drop-box .eb-drop-sub {
