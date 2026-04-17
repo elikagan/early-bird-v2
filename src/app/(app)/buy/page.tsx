@@ -246,15 +246,25 @@ function BuyFeedContent() {
     <>
       <Masthead />
 
-      {/* Pre-shop banner — dealers only, before the drop */}
+      {/* PRE-SHOPPING IS LIVE — green status banner, dealers only */}
+      {dealerPreshop && (
+        <div className="px-5 py-3 border-b-2 border-eb-green bg-eb-green/10">
+          <div className="flex items-center gap-2">
+            <span className="inline-block w-2 h-2 rounded-full bg-eb-green" />
+            <span className="text-eb-micro uppercase tracking-widest font-bold text-eb-green">
+              Dealer pre-shopping is live
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Countdown / drop-time banner — dealers only, before the drop */}
       {dealerPreshop && (
         <div className="px-5 py-3 border-b-2 border-eb-pop bg-eb-pop-bg">
           <div className="text-eb-micro uppercase tracking-widest font-bold text-eb-pop">
-            Dealer pre-shop
+            Buyers see this at
           </div>
           <p className="text-eb-caption text-eb-black mt-1 leading-relaxed">
-            You&apos;re seeing this early. Buyers can&apos;t see items until
-            the drop —{" "}
             <span className="font-bold">
               {new Date(market.drop_at).toLocaleString("en-US", {
                 timeZone: "America/Los_Angeles",
@@ -265,7 +275,8 @@ function BuyFeedContent() {
                 minute: "2-digit",
               })}
             </span>
-            . Favorite and inquire as usual.
+            . Favorite and inquire as usual — buyers can&apos;t see any of
+            this until then.
           </p>
         </div>
       )}
