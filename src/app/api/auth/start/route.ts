@@ -1,7 +1,7 @@
 import db from "@/lib/db";
 import { json, error } from "@/lib/api";
 import { newId } from "@/lib/id";
-import { sendSMS } from "@/lib/sms";
+import { sendSMSWithLog } from "@/lib/sms";
 import { composeMagicLink } from "@/lib/sms-templates";
 import { getBaseUrl } from "@/lib/url";
 import { nanoid } from "nanoid";
@@ -72,7 +72,11 @@ export async function POST(request: Request) {
   const url = dealer
     ? `${getBaseUrl(request)}/v/${token}?dealer=1`
     : `${getBaseUrl(request)}/v/${token}`;
-  await sendSMS(phone, composeMagicLink(url));
+  await sendSMSWithLog(phone, composeMagicLink(url), {
+    event_type: "sms.auth.magic_link",
+    entity_type: "user",
+    entity_id: userId,
+  });
 
   return json({ ok: true });
 }

@@ -2,7 +2,7 @@ import db from "@/lib/db";
 import { after } from "next/server";
 import { json, error } from "@/lib/api";
 import { getSession } from "@/lib/auth";
-import { sendSMS } from "@/lib/sms";
+import { sendSMSWithLog } from "@/lib/sms";
 import { composeSoldReceipt, composePriceDropNotification } from "@/lib/sms-templates";
 import { shouldNotify } from "@/lib/notifications";
 import { formatPrice } from "@/lib/format";
@@ -336,9 +336,15 @@ export async function PATCH(
             watchers.rows.map(async (row) => {
               const w = row as Record<string, unknown>;
               if (await shouldNotify(w.id as string, "price_drops")) {
-                await sendSMS(
+                await sendSMSWithLog(
                   w.phone as string,
-                  composePriceDropNotification(itemTitle, formatPrice(oldPrice), formatPrice(newPrice), itemUrl)
+                  composePriceDropNotification(itemTitle, formatPrice(oldPrice), formatPrice(newPrice), itemUrl),
+                  {
+                    event_type: "sms.price_drop",
+                    entity_type: "item",
+                    entity_id: id,
+                    meta: { old_price: oldPrice, new_price: newPrice },
+                  }
                 );
               }
             })
@@ -365,9 +371,15 @@ export async function PATCH(
           args: [body.sold_to],
         });
         if (winner.rows.length > 0) {
-          await sendSMS(
+          await sendSMSWithLog(
             (winner.rows[0] as Record<string, unknown>).phone as string,
-            composeSoldReceipt(ctx.dealerName, itemTitle, ctx.boothNumber, ctx.marketName, ctx.marketDate)
+            composeSoldReceipt(ctx.dealerName, itemTitle, ctx.boothNumber, ctx.marketName, ctx.marketDate),
+            {
+              event_type: "sms.sold_receipt",
+              entity_type: "item",
+              entity_id: id,
+              meta: { winner_user_id: body.sold_to },
+            }
           );
         }
       }

@@ -11,7 +11,7 @@ import { Masthead } from "@/components/masthead";
 
 /* ─── Types ─── */
 
-type Tab = "dashboard" | "markets" | "dealers" | "items" | "sms";
+type Tab = "dashboard" | "markets" | "dealers" | "items" | "sms" | "health";
 
 interface DashboardData {
   dealer_count: number;
@@ -147,7 +147,7 @@ function AdminPage() {
 
       {/* Tab bar */}
       <div className="flex border-b-2 border-eb-black overflow-x-auto">
-        {(["dashboard", "markets", "dealers", "items", "sms"] as Tab[]).map((t) => (
+        {(["dashboard", "markets", "dealers", "items", "sms", "health"] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -169,6 +169,7 @@ function AdminPage() {
         {activeTab === "dealers" && <DealersTab />}
         {activeTab === "items" && <ItemsTab />}
         {activeTab === "sms" && <SmsTab />}
+        {activeTab === "health" && <HealthTab />}
       </main>
     </>
   );
@@ -1619,4 +1620,218 @@ function SmsTab() {
       </div>
     </>
   );
+}
+
+/* ════════════════════════════════════════════════════
+   HEALTH TAB
+   ════════════════════════════════════════════════════ */
+interface HealthData {
+  now: string;
+  status: {
+    db: { ok: boolean; latency_ms: number };
+    drop_cron: { created_at: string; message: string } | null;
+    ops_cron: { created_at: string; message: string } | null;
+    stuck_markets: Array<{ id: string; name: string; drop_at: string }>;
+  };
+  counts_24h: {
+    sms_sent?: number;
+    sms_failed?: number;
+    sms_retried?: number;
+    drops_fired?: number;
+    ops_alerts?: number;
+    errors?: number;
+  };
+  business: {
+    new_users_24h?: number;
+    inquiries_24h?: number;
+    items_24h?: number;
+    total_users?: number;
+    total_dealers?: number;
+    live_items?: number;
+    upcoming_markets?: number;
+    live_markets?: number;
+  };
+  recent_events: Array<{
+    id: string;
+    event_type: string;
+    severity: "info" | "warn" | "error";
+    entity_type: string | null;
+    entity_id: string | null;
+    message: string | null;
+    created_at: string;
+  }>;
+}
+
+function HealthTab() {
+  const [data, setData] = useState<HealthData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [probing, setProbing] = useState(false);
+  const [filter, setFilter] = useState<"all" | "warn" | "error">("all");
+
+  const load = useCallback(async () => {
+    const res = await apiFetch("/api/admin/health");
+    if (res.ok) setData(await res.json());
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    void load();
+    const interval = setInterval(load, 30_000);
+    return () => clearInterval(interval);
+  }, [load]);
+
+  const probeEverything = useCallback(async () => {
+    setProbing(true);
+    await apiFetch("/api/admin/probe", { method: "POST" });
+    await load();
+    setProbing(false);
+  }, [load]);
+
+  if (loading) {
+    return (
+      <div className="px-5 py-12 text-center">
+        <span className="eb-spinner" />
+      </div>
+    );
+  }
+  if (!data) return null;
+
+  const events =
+    filter === "all"
+      ? data.recent_events
+      : data.recent_events.filter((e) => e.severity === filter);
+
+  const dbAgo = formatRelative(data.now);
+  const dropAgo = data.status.drop_cron
+    ? formatRelative(data.status.drop_cron.created_at)
+    : null;
+  const opsAgo = data.status.ops_cron
+    ? formatRelative(data.status.ops_cron.created_at)
+    : null;
+
+  const dropStale =
+    data.status.drop_cron
+      ? Date.now() - new Date(data.status.drop_cron.created_at).getTime() >
+        2 * 60 * 1000
+      : true;
+  const opsStale =
+    data.status.ops_cron
+      ? Date.now() - new Date(data.status.ops_cron.created_at).getTime() >
+        10 * 60 * 1000
+      : true;
+
+  return (
+    <section className="px-5 py-6 space-y-8">
+      <div>
+        <div className="flex items-baseline justify-between mb-3">
+          <h2 className="text-eb-title font-bold uppercase tracking-wider text-eb-black">
+            System status
+          </h2>
+          <button
+            onClick={probeEverything}
+            disabled={probing}
+            className="text-eb-micro uppercase tracking-wider font-bold text-eb-pop"
+          >
+            {probing ? "Probing\u2026" : "Probe everything"}
+          </button>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <StatusCard label="Database" ok={data.status.db.ok} detail={`${data.status.db.latency_ms}ms · checked ${dbAgo}`} />
+          <StatusCard label="Drop cron" ok={!dropStale && !!data.status.drop_cron} detail={data.status.drop_cron ? `last ran ${dropAgo}` : "no runs logged yet"} />
+          <StatusCard label="Ops cron" ok={!opsStale && !!data.status.ops_cron} detail={data.status.ops_cron ? `last ran ${opsAgo}` : "no runs logged yet"} />
+          <StatusCard label="Stuck markets" ok={data.status.stuck_markets.length === 0} detail={data.status.stuck_markets.length === 0 ? "none" : `${data.status.stuck_markets.length} past drop_at`} />
+        </div>
+      </div>
+
+      <div>
+        <h2 className="text-eb-title font-bold uppercase tracking-wider text-eb-black mb-3">Last 24 hours</h2>
+        <div className="grid grid-cols-3 gap-2">
+          <MetricCard label="SMS sent" value={data.counts_24h.sms_sent ?? 0} />
+          <MetricCard label="SMS failed" value={data.counts_24h.sms_failed ?? 0} bad={(data.counts_24h.sms_failed ?? 0) > 0} />
+          <MetricCard label="SMS retried" value={data.counts_24h.sms_retried ?? 0} />
+          <MetricCard label="Drops fired" value={data.counts_24h.drops_fired ?? 0} />
+          <MetricCard label="Ops alerts" value={data.counts_24h.ops_alerts ?? 0} bad={(data.counts_24h.ops_alerts ?? 0) > 0} />
+          <MetricCard label="Errors logged" value={data.counts_24h.errors ?? 0} bad={(data.counts_24h.errors ?? 0) > 0} />
+        </div>
+      </div>
+
+      <div>
+        <h2 className="text-eb-title font-bold uppercase tracking-wider text-eb-black mb-3">Business</h2>
+        <div className="grid grid-cols-3 gap-2">
+          <MetricCard label="New users 24h" value={data.business.new_users_24h ?? 0} />
+          <MetricCard label="Inquiries 24h" value={data.business.inquiries_24h ?? 0} />
+          <MetricCard label="Items 24h" value={data.business.items_24h ?? 0} />
+          <MetricCard label="Total users" value={data.business.total_users ?? 0} />
+          <MetricCard label="Dealers" value={data.business.total_dealers ?? 0} />
+          <MetricCard label="Live items" value={data.business.live_items ?? 0} />
+          <MetricCard label="Upcoming markets" value={data.business.upcoming_markets ?? 0} />
+          <MetricCard label="Live markets" value={data.business.live_markets ?? 0} />
+        </div>
+      </div>
+
+      <div>
+        <div className="flex items-baseline justify-between mb-3">
+          <h2 className="text-eb-title font-bold uppercase tracking-wider text-eb-black">Recent events</h2>
+          <div className="flex gap-2">
+            {(["all", "warn", "error"] as const).map((f) => (
+              <button key={f} onClick={() => setFilter(f)} className={`text-eb-micro uppercase tracking-wider font-bold px-2 py-1 ${filter === f ? "bg-eb-black text-white" : "text-eb-muted"}`}>{f}</button>
+            ))}
+          </div>
+        </div>
+        <div className="border border-eb-border divide-y divide-eb-border">
+          {events.length === 0 && (
+            <div className="px-3 py-6 text-eb-meta text-eb-muted text-center">No events match.</div>
+          )}
+          {events.map((e) => (
+            <div key={e.id} className={`px-3 py-2 flex gap-3 items-start ${e.severity === "error" ? "bg-eb-red/5" : e.severity === "warn" ? "bg-eb-amber/10" : ""}`}>
+              <span className={`shrink-0 w-2 h-2 mt-1.5 rounded-full ${e.severity === "error" ? "bg-eb-red" : e.severity === "warn" ? "bg-eb-amber" : "bg-eb-muted"}`} />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-baseline justify-between gap-2">
+                  <span className="text-eb-micro font-bold tracking-wider text-eb-black truncate">{e.event_type}</span>
+                  <span className="text-eb-micro text-eb-muted shrink-0 tabular-nums">{formatRelative(e.created_at)}</span>
+                </div>
+                {e.message && <div className="text-eb-micro text-eb-text mt-0.5 leading-snug break-words">{e.message}</div>}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function StatusCard({ label, ok, detail }: { label: string; ok: boolean; detail: string }) {
+  return (
+    <div className={`border-2 px-3 py-2 ${ok ? "border-eb-green" : "border-eb-red"}`}>
+      <div className="flex items-center gap-2">
+        <span className={`inline-block w-2 h-2 rounded-full ${ok ? "bg-eb-green" : "bg-eb-red"}`} />
+        <span className="text-eb-micro uppercase tracking-widest font-bold text-eb-black">{label}</span>
+      </div>
+      <div className="text-eb-micro text-eb-muted mt-1 leading-snug">{detail}</div>
+    </div>
+  );
+}
+
+function MetricCard({ label, value, bad }: { label: string; value: number; bad?: boolean }) {
+  return (
+    <div className="border border-eb-border px-3 py-2">
+      <div className={`text-eb-body font-bold tabular-nums ${bad ? "text-eb-red" : "text-eb-black"}`}>{value.toLocaleString()}</div>
+      <div className="text-eb-micro uppercase tracking-wider text-eb-muted mt-0.5">{label}</div>
+    </div>
+  );
+}
+
+function formatRelative(iso: string): string {
+  const then = new Date(iso).getTime();
+  const now = Date.now();
+  const diffMs = now - then;
+  if (diffMs < 0) return "in the future";
+  const s = Math.round(diffMs / 1000);
+  if (s < 60) return `${s}s ago`;
+  const m = Math.round(s / 60);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.round(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.round(h / 24);
+  return `${d}d ago`;
 }

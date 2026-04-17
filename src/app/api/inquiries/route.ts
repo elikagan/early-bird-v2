@@ -3,7 +3,8 @@ import { after } from "next/server";
 import { json, error } from "@/lib/api";
 import { getSession } from "@/lib/auth";
 import { newId } from "@/lib/id";
-import { sendSMS } from "@/lib/sms";
+import { sendSMSWithLog } from "@/lib/sms";
+import { logEvent, EVT } from "@/lib/system-events";
 import { composeInquiryNotification } from "@/lib/sms-templates";
 import { shouldNotify } from "@/lib/notifications";
 
@@ -74,10 +75,24 @@ export async function POST(request: Request) {
         const canNotify = await shouldNotify(dealer.id as string, "new_inquiries");
         if (canNotify) {
           const buyerName = user.display_name || user.first_name || "A buyer";
-          await sendSMS(
+          await sendSMSWithLog(
             dealer.phone as string,
-            composeInquiryNotification(buyerName, user.phone, itemRow.title as string, message || "")
+            composeInquiryNotification(buyerName, user.phone, itemRow.title as string, message || ""),
+            {
+              event_type: "sms.inquiry.new",
+              entity_type: "inquiry",
+              entity_id: inquiryId,
+              meta: { dealer_id: itemRow.dealer_id as string, item_id },
+            }
           );
+        } else {
+          await logEvent({
+            event_type: EVT.INQUIRY_CREATED,
+            severity: "info",
+            entity_type: "inquiry",
+            entity_id: inquiryId,
+            message: "Inquiry created but dealer has opted out of new_inquiries SMS",
+          });
         }
       }
     } catch (err) {

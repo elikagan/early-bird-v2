@@ -3,7 +3,7 @@ import db from "@/lib/db";
 import { json, error } from "@/lib/api";
 import { getSession } from "@/lib/auth";
 import { newId } from "@/lib/id";
-import { sendSMS } from "@/lib/sms";
+import { sendSMSWithLog } from "@/lib/sms";
 import { getBaseUrl } from "@/lib/url";
 
 export async function POST(request: Request) {
@@ -59,7 +59,15 @@ export async function POST(request: Request) {
 
       const url = `${getBaseUrl(request)}/admin`;
       const body = `Early Bird: New dealer application from ${name.trim()} (${business_name.trim()}). Review: ${url}`;
-      await Promise.allSettled(adminPhones.map((p) => sendSMS(p, body)));
+      await Promise.allSettled(
+        adminPhones.map((p) =>
+          sendSMSWithLog(p, body, {
+            event_type: "sms.admin.new_application",
+            entity_type: "dealer_application",
+            entity_id: id,
+          })
+        )
+      );
     } catch (err) {
       console.error("Admin notification SMS failed:", err);
     }

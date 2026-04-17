@@ -2,7 +2,7 @@ import db from "@/lib/db";
 import { json, error } from "@/lib/api";
 import { getSession } from "@/lib/auth";
 import { newId } from "@/lib/id";
-import { sendSMS } from "@/lib/sms";
+import { sendSMSWithLog } from "@/lib/sms";
 import { getBaseUrl } from "@/lib/url";
 import { nanoid } from "nanoid";
 
@@ -55,7 +55,15 @@ export async function POST(request: Request) {
   });
 
   const url = `${getBaseUrl(request)}/v/${token}`;
-  await sendSMS(normalized, `Early Bird: Tap to confirm your new number.\n\n${url}`);
+  await sendSMSWithLog(
+    normalized,
+    `Early Bird: Tap to confirm your new number.\n\n${url}`,
+    {
+      event_type: "sms.auth.phone_change",
+      entity_type: "user",
+      entity_id: user.id,
+    }
+  );
 
   return json({ ok: true });
 }

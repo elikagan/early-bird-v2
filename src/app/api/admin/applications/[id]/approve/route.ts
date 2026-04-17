@@ -3,7 +3,7 @@ import { json, error } from "@/lib/api";
 import { getSession } from "@/lib/auth";
 import { isAdmin } from "@/lib/admin";
 import { newId } from "@/lib/id";
-import { sendSMS } from "@/lib/sms";
+import { sendSMSWithLog } from "@/lib/sms";
 import { getBaseUrl } from "@/lib/url";
 import { nanoid } from "nanoid";
 
@@ -60,9 +60,14 @@ export async function POST(
   });
 
   const url = `${getBaseUrl(request)}/v/${token}`;
-  await sendSMS(
+  await sendSMSWithLog(
     phone,
-    `Early Bird: You're approved as a dealer! Tap to get started.\n\n${url}`
+    `Early Bird: You're approved as a dealer! Tap to get started.\n\n${url}`,
+    {
+      event_type: "sms.dealer_approval",
+      entity_type: "dealer_application",
+      entity_id: id,
+    }
   );
 
   return json({ approved: true, dealer_id: dealerId });

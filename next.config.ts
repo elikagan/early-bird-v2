@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   images: {
@@ -16,4 +17,15 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// Wrap with Sentry: uploads source maps on production builds so stack
+// traces show original source instead of minified bundles. Without
+// SENTRY_AUTH_TOKEN, Sentry skips upload silently and the app still
+// works — just with less legible traces.
+export default withSentryConfig(nextConfig, {
+  org: "early-bird-k7",
+  project: "javascript-nextjs",
+  silent: !process.env.CI,
+  widenClientFileUpload: true,
+  sourcemaps: { disable: false },
+  disableLogger: true,
+});

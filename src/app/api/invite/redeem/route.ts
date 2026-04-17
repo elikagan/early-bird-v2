@@ -1,7 +1,7 @@
 import db from "@/lib/db";
 import { json, error } from "@/lib/api";
 import { newId } from "@/lib/id";
-import { sendSMS } from "@/lib/sms";
+import { sendSMSWithLog } from "@/lib/sms";
 import { getBaseUrl } from "@/lib/url";
 import { nanoid } from "nanoid";
 
@@ -100,9 +100,14 @@ export async function POST(request: Request) {
   });
 
   const url = `${getBaseUrl(request)}/v/${token}`;
-  await sendSMS(
+  await sendSMSWithLog(
     normalized,
-    `Early Bird: Tap to log in to your new dealer account.\n\n${url}`
+    `Early Bird: Tap to log in to your new dealer account.\n\n${url}`,
+    {
+      event_type: "sms.invite.redeem",
+      entity_type: "dealer_invite",
+      entity_id: code,
+    }
   );
 
   return json({ ok: true });

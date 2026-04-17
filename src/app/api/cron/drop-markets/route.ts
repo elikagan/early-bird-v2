@@ -13,9 +13,10 @@
 
 import { NextResponse, after } from "next/server";
 import db from "@/lib/db";
-import { sendSMS } from "@/lib/sms";
+import { sendSMSWithLog } from "@/lib/sms";
 import { composeDropAlert } from "@/lib/sms-templates";
 import { getBaseUrl } from "@/lib/url";
+import { logEvent, EVT } from "@/lib/system-events";
 
 export async function GET(request: Request) {
   try {
@@ -120,6 +121,18 @@ async function handle(request: Request) {
       (r) => (r as Record<string, unknown>).phone as string
     );
 
+    // Log the drop-fired event + what was intended (recipient count,
+    // SMS text) before kicking off the batch — makes forensic analysis
+    // of "did the drop fire?" possible even if SMS fails entirely.
+    await logEvent({
+      event_type: EVT.DROP_FIRED,
+      severity: "info",
+      entity_type: "market",
+      entity_id: marketId,
+      message: `Drop fired for ${marketName} — intended ${phones.length} SMS`,
+      payload: { market_name: marketName, recipient_count: phones.length, item_count: itemCount, dealer_count: dealerCount },
+    });
+
     // SMS batch happens after() the response goes out so the Vercel
     // function doesn't hold the HTTP connection open while dozens /
     // hundreds of sends run. The DB is already in 'live + notified'
@@ -127,7 +140,15 @@ async function handle(request: Request) {
     after(async () => {
       for (let i = 0; i < phones.length; i += 5) {
         const batch = phones.slice(i, i + 5);
-        await Promise.allSettled(batch.map((p) => sendSMS(p, body)));
+        await Promise.allSettled(
+          batch.map((p) =>
+            sendSMSWithLog(p, body, {
+              event_type: "sms.drop_alert",
+              entity_type: "market",
+              entity_id: marketId,
+            })
+          )
+        );
       }
     });
 
@@ -139,6 +160,15 @@ async function handle(request: Request) {
       skipped_already_fired: false,
     });
   }
+
+  // Every cron tick logs a heartbeat — absence of these in the log
+  // means cron itself has stopped running (a category-1 alert).
+  await logEvent({
+    event_type: EVT.CRON_DROP_MARKETS_RAN,
+    severity: "info",
+    message: `Checked ${due.rows.length} due markets, fired ${results.filter((r) => !r.skipped_already_fired).length}`,
+    payload: { markets_checked: due.rows.length, results },
+  });
 
   return NextResponse.json({
     ran_at: new Date().toISOString(),

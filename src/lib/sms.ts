@@ -123,3 +123,82 @@ const provider: SmsProvider = createProvider();
 export async function sendSMS(to: string, body: string): Promise<void> {
   return provider.send(to, body);
 }
+
+/**
+ * Send SMS with retry (up to 2 re-tries with exponential backoff) and
+ * full observability logging via system_events.
+ *
+ * Use this instead of the bare sendSMS() for any caller-code that
+ * cares about reliability + visibility. Transient Pingram blips no
+ * longer lose texts; every attempt + outcome lands in the ops log.
+ *
+ * Returns { ok, attempts, error } so the caller can decide whether a
+ * failure is fatal (e.g. verify SMS) or best-effort (e.g. drop blast).
+ */
+interface SmsCallContext {
+  event_type: string; // e.g. "sms.inquiry" — scoped per call-site
+  entity_type?: string | null;
+  entity_id?: string | null;
+  meta?: Record<string, unknown>;
+}
+
+interface SmsOutcome {
+  ok: boolean;
+  attempts: number;
+  error?: string;
+}
+
+export async function sendSMSWithLog(
+  to: string,
+  body: string,
+  ctx: SmsCallContext
+): Promise<SmsOutcome> {
+  // Lazy-import to avoid a circular dep with @/lib/db at module load.
+  const { logEvent, EVT } = await import("@/lib/system-events");
+
+  const MAX_ATTEMPTS = 3; // initial + 2 retries
+  let lastErr: unknown = null;
+
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    try {
+      await provider.send(to, body);
+      await logEvent({
+        event_type: EVT.SMS_SENT,
+        severity: "info",
+        entity_type: ctx.entity_type ?? null,
+        entity_id: ctx.entity_id ?? null,
+        message: `Sent to ${to} via ${ctx.event_type}`,
+        payload: { to, attempts: attempt, sub_event: ctx.event_type, ...ctx.meta },
+      });
+      return { ok: true, attempts: attempt };
+    } catch (err) {
+      lastErr = err;
+      const errMsg = err instanceof Error ? err.message : String(err);
+
+      // Log the retry attempt (info) if we have more tries left
+      if (attempt < MAX_ATTEMPTS) {
+        await logEvent({
+          event_type: EVT.SMS_RETRIED,
+          severity: "warn",
+          entity_type: ctx.entity_type ?? null,
+          entity_id: ctx.entity_id ?? null,
+          message: `Attempt ${attempt}/${MAX_ATTEMPTS} failed: ${errMsg}`,
+          payload: { to, attempt, error: errMsg, sub_event: ctx.event_type, ...ctx.meta },
+        });
+        // Exponential backoff: 500ms, 1500ms
+        await new Promise((r) => setTimeout(r, 500 * Math.pow(3, attempt - 1)));
+      }
+    }
+  }
+
+  const errMsg = lastErr instanceof Error ? lastErr.message : String(lastErr);
+  await logEvent({
+    event_type: EVT.SMS_FAILED,
+    severity: "error",
+    entity_type: ctx.entity_type ?? null,
+    entity_id: ctx.entity_id ?? null,
+    message: `All ${MAX_ATTEMPTS} attempts failed: ${errMsg}`,
+    payload: { to, attempts: MAX_ATTEMPTS, error: errMsg, sub_event: ctx.event_type, ...ctx.meta },
+  });
+  return { ok: false, attempts: MAX_ATTEMPTS, error: errMsg };
+}
