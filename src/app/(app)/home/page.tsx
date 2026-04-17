@@ -186,7 +186,7 @@ export default function HomePage() {
               <div className="mt-4">
                 {isDealer &&
                   (heroMarket.dealer_preshop_enabled ?? 1) === 1 && (
-                    <div className="px-4 py-2 border-t-2 border-x-2 border-eb-green bg-eb-green/10 flex items-center gap-2">
+                    <div className="px-4 py-2 border-2 border-eb-green bg-eb-green/10 flex items-center gap-2">
                       <span className="inline-block w-2 h-2 rounded-full bg-eb-green" />
                       <span className="text-eb-micro uppercase tracking-widest font-bold text-eb-green">
                         Dealer pre-shopping is live
