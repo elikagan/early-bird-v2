@@ -90,7 +90,7 @@ export default function HomePage() {
         <div className="flex-1 flex items-center justify-center">
           <span className="eb-spinner" />
         </div>
-        <BottomNav active={null} />
+        <BottomNav active="buy" />
       </>
     );
   }
@@ -336,7 +336,7 @@ export default function HomePage() {
         </section>
       </main>
 
-      <BottomNav active={null} />
+      <BottomNav active="buy" />
     </>
   );
 }
