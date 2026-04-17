@@ -19,6 +19,7 @@ interface Market {
   status: string;
   dealer_count: number;
   item_count: number;
+  dealer_preshop_enabled: number;
 }
 
 interface PreviewItem {
@@ -101,9 +102,31 @@ export default function HomePage() {
     ? markets.filter((m) => m.id !== heroMarket.id && m.status !== "closed")
     : [];
 
+  // Show the "Dealer pre-shopping is live" banner only when:
+  //  1. the signed-in user is a dealer, AND
+  //  2. there's at least one upcoming market where pre-shop is turned on.
+  const showPreshopBanner =
+    isDealer &&
+    markets.some(
+      (m) => m.status === "upcoming" && (m.dealer_preshop_enabled ?? 1) === 1
+    );
+
   return (
     <>
       <Masthead href={null} right={null} />
+
+      {/* Dealer pre-shopping status — only for dealers, only when an
+          upcoming market has pre-shop enabled. */}
+      {showPreshopBanner && (
+        <div className="px-5 py-3 border-b-2 border-eb-green bg-eb-green/10">
+          <div className="flex items-center gap-2">
+            <span className="inline-block w-2 h-2 rounded-full bg-eb-green" />
+            <span className="text-eb-micro uppercase tracking-widest font-bold text-eb-green">
+              Dealer pre-shopping is live
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Pending dealer application banner */}
       {pendingApp && (
@@ -127,7 +150,7 @@ export default function HomePage() {
             <p>
               You&apos;re not following any markets yet.
               <br />
-              Follow LA flea markets to see drops and countdowns here.
+              Follow LA flea markets to see upcoming ones here.
             </p>
           </div>
         )}
@@ -136,7 +159,7 @@ export default function HomePage() {
         {heroMarket && (
           <section className="px-5 pt-8 pb-7 border-b-2 border-eb-black">
             <div className="text-eb-micro uppercase tracking-widest font-bold text-eb-pop">
-              {heroMarket.status === "live" ? "Live now" : "Next drop"}
+              {heroMarket.status === "live" ? "Live now" : "Upcoming"}
             </div>
             <h2 className="text-eb-hero text-eb-black leading-tight mt-2">
               {heroMarket.name}
@@ -167,11 +190,11 @@ export default function HomePage() {
               </div>
             )}
 
-            {/* Drop countdown (upcoming only) */}
+            {/* Countdown to when the market opens for shopping */}
             {heroMarket.status === "upcoming" && (
               <div className="eb-drop-box">
                 <div>
-                  <div className="eb-drop-label">Drop opens</div>
+                  <div className="eb-drop-label">Shopping opens</div>
                   <div className="eb-drop-sub">
                     {formatDate(heroMarket.drop_at)}
                   </div>
@@ -201,7 +224,7 @@ export default function HomePage() {
             )}
             {heroMarket.status === "upcoming" && !user && (
               <Link href="/" className="eb-btn mt-6 text-center">
-                Sign up to get texted when items drop {"\u2192"}
+                Sign up to get texted when shopping opens {"\u2192"}
               </Link>
             )}
           </section>
@@ -215,7 +238,7 @@ export default function HomePage() {
                 Coming up
               </div>
               <h3 className="text-eb-title font-bold text-eb-black mt-1.5 mb-4">
-                Next drops
+                Upcoming markets
               </h3>
             </div>
 
