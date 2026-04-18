@@ -49,11 +49,17 @@ export async function POST(request: Request) {
     return error(`Upload failed: ${uploadError.message}`, 500);
   }
 
-  // Generate and upload thumbnail (400px max, JPEG q70)
+  // Generate and upload thumbnail — 400×400 square, cropped from the
+  // top of the image. Previously used fit:"inside" which preserved the
+  // aspect ratio; the grid then had to center-crop via CSS object-cover,
+  // which cut off faces and subjects sitting toward the top of a photo.
+  // Top-crop here ensures the stored thumb already represents what the
+  // viewer sees in a square grid tile.
   let thumbUrl: string | null = null;
   try {
     const thumbBuffer = await sharp(buffer)
-      .resize(THUMB_MAX, THUMB_MAX, { fit: "inside", withoutEnlargement: true })
+      .rotate() // honor EXIF orientation before cropping
+      .resize(THUMB_MAX, THUMB_MAX, { fit: "cover", position: "top" })
       .jpeg({ quality: THUMB_QUALITY })
       .toBuffer();
 

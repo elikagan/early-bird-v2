@@ -230,7 +230,7 @@ export default function LandingPage() {
                           alt={item.title}
                           fill
                           sizes="33vw"
-                          className="object-cover"
+                          className="object-cover object-top"
                         />
                       ) : (
                         <div className="w-full h-full bg-eb-border" />
@@ -375,7 +375,7 @@ export default function LandingPage() {
                       alt=""
                       fill
                       sizes="(max-width: 430px) 50vw, 215px"
-                      className="object-cover"
+                      className="object-cover object-top"
                     />
                   </div>
                 ))}

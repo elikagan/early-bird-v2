@@ -32,7 +32,11 @@ interface PhotoSlot {
 
 const MAX_PHOTOS = 5;
 const MAX_RAW_SIZE = 15 * 1024 * 1024; // 15MB per raw file
-const ACCEPTED_TYPES = "image/jpeg,image/png,image/webp,image/heic,image/heif";
+// image/* instead of an explicit MIME list — iOS Safari's photo
+// picker falls back to single-select when an explicit list is given,
+// which blocks the multi-select UX dealers expect. image/* still
+// covers HEIC/HEIF from iPhone cameras.
+const ACCEPTED_TYPES = "image/*";
 
 function AddItemContent() {
   useRequireAuth();
@@ -198,6 +202,10 @@ function AddItemContent() {
       }
 
       adjustNavCount("sell", +1);
+      // Invalidate any cached /sell data so the new item shows up
+      // immediately on the redirect target, without requiring a
+      // manual page reload.
+      router.refresh();
       router.push(`/sell?market=${marketId}`);
     } catch (err) {
       setFormError(err instanceof Error ? err.message : "Something went wrong");
@@ -239,7 +247,7 @@ function AddItemContent() {
                 <img
                   src={photo.preview}
                   alt="Photo preview"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover object-top"
                 />
               )}
 

@@ -191,6 +191,9 @@
     width: 100%;
     aspect-ratio: 1 / 1;
     object-fit: cover;
+    /* Top-anchored — square thumbs crop from the bottom, preserving
+       the top of the image (where dealers usually frame the subject). */
+    object-position: top;
     display: block;
   }
   .eb-grid-card .eb-body {

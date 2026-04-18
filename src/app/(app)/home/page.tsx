@@ -170,7 +170,7 @@ export default function HomePage() {
                       width={200}
                       height={200}
                       sizes="(max-width: 430px) 33vw, 130px"
-                      className="w-full aspect-square object-cover"
+                      className="w-full aspect-square object-cover object-top"
                     />
                   </Link>
                 ))}

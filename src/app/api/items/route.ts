@@ -61,6 +61,14 @@ export async function GET(request: Request) {
   sql += ` ORDER BY i.created_at DESC LIMIT ${limit} OFFSET ${offset}`;
 
   const result = await db.execute({ sql, args });
+
+  // When a dealer is viewing their own inventory (/sell passes
+  // dealer_id), bypass the CDN cache so a newly-posted item shows up
+  // on the next page load instead of being shadowed by a stale cached
+  // response for up to 60s.
+  if (dealerId) {
+    return json(result.rows);
+  }
   return cachedJson(result.rows);
 }
 
