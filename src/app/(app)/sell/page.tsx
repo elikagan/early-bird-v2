@@ -51,6 +51,8 @@ function SellContent() {
   // coming even though those aren't open for inventory yet.
   const [allMarkets, setAllMarkets] = useState<Market[]>([]);
   const [showSwitcher, setShowSwitcher] = useState(false);
+  const [showBoothEditor, setShowBoothEditor] = useState(false);
+  const [boothEditDraft, setBoothEditDraft] = useState("");
 
   const marketId = searchParams.get("market");
 
@@ -177,56 +179,106 @@ function SellContent() {
         </div>
       </div>
 
-      {/* Header — small eyebrow, market name as a tappable title that
-          truncates on long names, and a secondary booth-number row
-          that doesn't compete with the title.  */}
+      {/* Header — two stacked label/value rows, each with a right-
+          aligned pop-colored action word. No inline inputs, no icons. */}
       {market && (
         <div className="px-5 py-4 border-b border-eb-border">
-          <div className="text-eb-micro uppercase tracking-widest text-eb-muted">
-            Your booth
-          </div>
-          <button
-            type="button"
-            onClick={() => setShowSwitcher(true)}
-            aria-label={`Switch show (current: ${market.name})`}
-            className="group mt-1 flex items-baseline gap-2 w-full text-left"
-          >
-            <span className="text-eb-title font-bold text-eb-black truncate min-w-0">
+          <div>
+            <div className="flex items-baseline justify-between gap-3">
+              <span className="text-eb-micro uppercase tracking-widest text-eb-muted">
+                Your booth at
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowSwitcher(true)}
+                className="text-eb-micro uppercase tracking-widest font-bold text-eb-pop shrink-0"
+              >
+                Switch
+              </button>
+            </div>
+            <div className="text-eb-title font-bold text-eb-black truncate mt-0.5">
               {market.name}
-            </span>
-            <span
-              aria-hidden="true"
-              className="text-eb-caption text-eb-muted shrink-0 group-hover:text-eb-black transition-colors"
-            >
-              {"\u25BE"}
-            </span>
-          </button>
+            </div>
+          </div>
 
-          <div className="mt-3 pt-3 border-t border-eb-border/60 flex items-center gap-3">
-            <label
-              htmlFor="booth-number-input"
-              className="text-eb-micro uppercase tracking-widest text-eb-muted shrink-0"
+          <div className="mt-3 pt-3 border-t border-eb-border/60">
+            <div className="flex items-baseline justify-between gap-3">
+              <span className="text-eb-micro uppercase tracking-widest text-eb-muted">
+                Booth number
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  setBoothEditDraft(boothNumber);
+                  setShowBoothEditor(true);
+                }}
+                className="text-eb-micro uppercase tracking-widest font-bold text-eb-pop shrink-0"
+              >
+                {boothNumber ? "Edit" : "Set"}
+              </button>
+            </div>
+            <div
+              className={`text-eb-title font-bold mt-0.5 tabular-nums ${
+                boothNumber ? "text-eb-black" : "text-eb-light"
+              }`}
             >
-              Booth #
-            </label>
-            <input
-              id="booth-number-input"
-              type="text"
-              className="w-24 shrink-0 text-eb-caption tabular-nums bg-transparent border-0 border-b border-eb-border px-0 py-0.5 focus:outline-none focus:border-eb-black placeholder:text-eb-light"
-              placeholder={"\u2014"}
-              value={boothNumber}
-              onChange={(e) => {
-                const v = e.target.value.replace(/[^a-zA-Z0-9]/g, "").slice(0, 10);
-                setBoothNumber(v);
-              }}
-              onBlur={() => saveBooth(boothNumber)}
-              inputMode="text"
-            />
-            <span className="text-eb-micro text-eb-muted ml-auto shrink-0">
-              {boothSaving ? "Saving\u2026" : boothSaved ? "Saved" : ""}
-            </span>
+              {boothNumber || "Not set"}
+            </div>
           </div>
         </div>
+      )}
+
+      {/* Booth editor drawer — 16px input so iOS doesn't auto-zoom,
+          and focus/dismiss are clean. */}
+      {showBoothEditor && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/40 z-40"
+            onClick={() => setShowBoothEditor(false)}
+          />
+          <div className="fixed bottom-0 left-0 right-0 max-w-[430px] mx-auto bg-white rounded-t-2xl border-t border-eb-border z-50 px-5 pt-3 pb-6">
+            <div className="w-12 h-1 bg-eb-border rounded-full mx-auto mb-4" />
+            <h3 className="text-eb-title font-bold uppercase tracking-widest text-eb-black">
+              Booth number
+            </h3>
+            <p className="text-eb-caption text-eb-muted mt-1 mb-5 leading-relaxed">
+              Buyers see this on your listings so they can find you at{" "}
+              {market?.name}.
+            </p>
+            <input
+              type="text"
+              className="eb-input tabular-nums"
+              style={{ fontSize: "16px" }}
+              value={boothEditDraft}
+              onChange={(e) =>
+                setBoothEditDraft(
+                  e.target.value.replace(/[^a-zA-Z0-9]/g, "").slice(0, 10)
+                )
+              }
+              placeholder="A12"
+              inputMode="text"
+              autoFocus
+            />
+            <div className="flex gap-2 mt-4">
+              <button
+                onClick={() => setShowBoothEditor(false)}
+                className="shrink-0 px-5 py-3 text-eb-caption font-bold uppercase tracking-wider border border-eb-border text-eb-text"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  setBoothNumber(boothEditDraft);
+                  setShowBoothEditor(false);
+                  await saveBooth(boothEditDraft);
+                }}
+                className="flex-1 py-3 text-eb-caption font-bold uppercase tracking-wider bg-eb-black text-white"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </>
       )}
 
       {/* Show-switcher drawer */}
