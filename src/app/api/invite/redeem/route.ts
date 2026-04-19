@@ -1,17 +1,30 @@
+import { NextResponse } from "next/server";
 import db from "@/lib/db";
-import { json, error } from "@/lib/api";
+import { error } from "@/lib/api";
 import { newId } from "@/lib/id";
-import { sendSMSWithLog } from "@/lib/sms";
-import { getBaseUrl } from "@/lib/url";
 import { nanoid } from "nanoid";
+import { SESSION_COOKIE_NAME, SESSION_MAX_AGE } from "@/lib/auth";
+import { logEvent, EVT } from "@/lib/system-events";
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const { code, phone, name, business_name, instagram_handle } = body;
+  const { code, phone: bodyPhone, name, business_name } = body;
 
-  // ── Validate inputs ──
+  // ── Validate code ──
   if (!code) return error("Invalid invite link");
-  if (!phone) return error("Phone number is required");
+
+  const invite = await db.execute({
+    sql: `SELECT id, phone FROM dealer_invites WHERE code = ? AND used_at IS NULL`,
+    args: [code],
+  });
+  if (invite.rows.length === 0) {
+    return error("This invite link has expired or already been used", 410);
+  }
+  const inviteRow = invite.rows[0] as Record<string, unknown>;
+  const inviteId = inviteRow.id as string;
+  const invitePhone = (inviteRow.phone as string) || null;
+
+  // ── Validate name + business_name ──
   if (!name || typeof name !== "string" || name.trim().length < 1 || name.trim().length > 60) {
     return error("Name is required (max 60 characters)");
   }
@@ -24,38 +37,27 @@ export async function POST(request: Request) {
     return error("Business name is required (max 60 characters)");
   }
 
-  const digits = phone.replace(/\D/g, "");
-  if (digits.length < 10 || digits.length > 11) {
-    return error("Enter a valid US phone number");
-  }
-  const normalized =
-    digits.length === 11 && digits[0] === "1"
-      ? `+${digits}`
-      : `+1${digits}`;
-
-  let igClean: string | null = null;
-  if (instagram_handle) {
-    igClean = String(instagram_handle).trim().replace(/^@/, "");
-    if (igClean && !/^[a-zA-Z0-9._]{1,30}$/.test(igClean)) {
-      return error("Invalid Instagram handle");
+  // ── Resolve phone: admin-bound invite uses invite.phone (dealer
+  // can't override); legacy invite without phone uses body.phone. ──
+  let normalizedPhone: string;
+  if (invitePhone) {
+    normalizedPhone = invitePhone;
+  } else {
+    if (!bodyPhone) return error("Phone number is required");
+    const digits = String(bodyPhone).replace(/\D/g, "");
+    if (digits.length < 10 || digits.length > 11) {
+      return error("Enter a valid US phone number");
     }
-    if (!igClean) igClean = null;
+    normalizedPhone =
+      digits.length === 11 && digits[0] === "1"
+        ? `+${digits}`
+        : `+1${digits}`;
   }
-
-  // ── Validate invite code ──
-  const invite = await db.execute({
-    sql: `SELECT id FROM dealer_invites WHERE code = ? AND used_at IS NULL`,
-    args: [code],
-  });
-  if (invite.rows.length === 0) {
-    return error("This invite link has expired or already been used", 410);
-  }
-  const inviteId = invite.rows[0].id as string;
 
   // ── Find or create user ──
   const userResult = await db.execute({
     sql: `SELECT u.id, d.id as dealer_id FROM users u LEFT JOIN dealers d ON d.user_id = u.id WHERE u.phone = ?`,
-    args: [normalized],
+    args: [normalizedPhone],
   });
 
   let userId: string;
@@ -64,7 +66,7 @@ export async function POST(request: Request) {
     userId = newId();
     await db.execute({
       sql: `INSERT INTO users (id, phone, display_name, is_dealer) VALUES (?, ?, ?, 1)`,
-      args: [userId, normalized, name.trim()],
+      args: [userId, normalizedPhone, name.trim()],
     });
   } else {
     const row = userResult.rows[0] as Record<string, unknown>;
@@ -81,8 +83,8 @@ export async function POST(request: Request) {
   // ── Create dealer record ──
   const dealerId = newId();
   await db.execute({
-    sql: `INSERT INTO dealers (id, user_id, business_name, instagram_handle) VALUES (?, ?, ?, ?)`,
-    args: [dealerId, userId, business_name.trim(), igClean],
+    sql: `INSERT INTO dealers (id, user_id, business_name, instagram_handle) VALUES (?, ?, ?, NULL)`,
+    args: [dealerId, userId, business_name.trim()],
   });
 
   // ── Mark invite as used ──
@@ -91,24 +93,36 @@ export async function POST(request: Request) {
     args: [userId, inviteId],
   });
 
-  // ── Send magic link ──
-  const token = nanoid(16);
-  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+  // ── Create session directly — no magic-link SMS step. Invite code
+  //    was the authorization artifact; phone was admin-verified; we
+  //    trust this redemption and log the dealer in immediately. ──
+  const sessionToken = nanoid(32);
+  const expiresAt = new Date(Date.now() + SESSION_MAX_AGE * 1000).toISOString();
   await db.execute({
-    sql: `INSERT INTO auth_tokens (id, phone, token, expires_at) VALUES (?, ?, ?, ?)`,
-    args: [newId(), normalized, token, expiresAt],
+    sql: `INSERT INTO sessions (id, user_id, token, expires_at) VALUES (?, ?, ?, ?)`,
+    args: [newId(), userId, sessionToken, expiresAt],
   });
 
-  const url = `${getBaseUrl(request)}/v/${token}`;
-  await sendSMSWithLog(
-    normalized,
-    `Early Bird: Tap to log in to your new dealer account.\n\n${url}`,
-    {
-      event_type: "sms.invite.redeem",
-      entity_type: "dealer_invite",
-      entity_id: code,
-    }
-  );
+  await logEvent({
+    event_type: EVT.DEALER_APPLICATION_APPROVED,
+    severity: "info",
+    entity_type: "dealer",
+    entity_id: dealerId,
+    message: `Dealer redeemed invite and went live: ${business_name.trim()}`,
+    payload: { user_id: userId, invite_id: inviteId, admin_bound: !!invitePhone },
+  });
 
-  return json({ ok: true });
+  const res = NextResponse.json({
+    ok: true,
+    user_id: userId,
+    dealer_id: dealerId,
+  });
+  res.cookies.set(SESSION_COOKIE_NAME, sessionToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: SESSION_MAX_AGE,
+  });
+  return res;
 }

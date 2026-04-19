@@ -690,6 +690,9 @@ function DealersTab() {
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
   const [inviteGenerating, setInviteGenerating] = useState(false);
   const [inviteCopied, setInviteCopied] = useState(false);
+  const [invitePhone, setInvitePhone] = useState("");
+  const [invitePhoneSent, setInvitePhoneSent] = useState(false);
+  const [inviteError, setInviteError] = useState<string | null>(null);
 
   const loadUsers = async () => {
     setLoading(true);
@@ -788,11 +791,24 @@ function DealersTab() {
     setApproving(null);
   };
 
-  const generateInvite = async () => {
+  const generateInvite = async (phoneInput?: string) => {
     setInviteGenerating(true);
     setInviteCopied(false);
-    const res = await apiFetch("/api/admin/invite-link", { method: "POST" });
-    if (res.ok) { const { url } = await res.json(); setInviteUrl(url); }
+    setInviteError(null);
+    const body: Record<string, unknown> = {};
+    if (phoneInput) body.phone = phoneInput;
+    const res = await apiFetch("/api/admin/invite-link", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+    if (res.ok) {
+      const { url } = await res.json();
+      setInviteUrl(url);
+      setInvitePhoneSent(!!phoneInput);
+    } else {
+      const data = await res.json().catch(() => ({}));
+      setInviteError(data.error || "Couldn't create invite");
+    }
     setInviteGenerating(false);
   };
 
@@ -1070,11 +1086,20 @@ function DealersTab() {
             Invite a Dealer
           </div>
           <p className="text-eb-micro text-eb-muted leading-relaxed mb-3">
-            Generate a one-time link. Send it however you want — text, email, DM.
+            Enter the dealer&apos;s phone number. They get an SMS with the
+            invite link and land directly in their booth after entering
+            their name and business. Leave phone blank to generate a
+            bare link you share manually.
           </p>
+
           {inviteUrl ? (
             <div>
-              <div className="eb-input text-eb-micro break-all mb-2 select-all">{inviteUrl}</div>
+              <div className="text-eb-micro text-eb-green font-bold uppercase tracking-wider mb-2">
+                {invitePhoneSent ? "\u2713 Invite text sent" : "\u2713 Link ready"}
+              </div>
+              <div className="eb-input text-eb-micro break-all mb-2 select-all">
+                {inviteUrl}
+              </div>
               <div className="flex gap-2">
                 <button
                   onClick={() => {
@@ -1087,21 +1112,48 @@ function DealersTab() {
                   {inviteCopied ? "Copied!" : "Copy Link"}
                 </button>
                 <button
-                  onClick={() => { setInviteUrl(null); generateInvite(); }}
+                  onClick={() => {
+                    setInviteUrl(null);
+                    setInvitePhone("");
+                    setInvitePhoneSent(false);
+                  }}
                   className="py-2 px-4 text-eb-caption font-bold border-2 border-eb-border text-eb-muted uppercase tracking-wider"
                 >
-                  New Link
+                  New Invite
                 </button>
               </div>
             </div>
           ) : (
-            <button
-              onClick={generateInvite}
-              disabled={inviteGenerating}
-              className="py-2 px-4 text-eb-caption font-bold bg-eb-black text-white uppercase tracking-wider"
-            >
-              {inviteGenerating ? "Generating\u2026" : "Generate Invite Link"}
-            </button>
+            <div className="space-y-2">
+              <input
+                type="tel"
+                inputMode="tel"
+                className="eb-input"
+                placeholder="(213) 555-0134"
+                value={invitePhone}
+                onChange={(e) =>
+                  setInvitePhone(
+                    e.target.value.replace(/[^\d()\-\s+]/g, "").slice(0, 16)
+                  )
+                }
+              />
+              {inviteError && (
+                <p className="text-eb-meta text-eb-red">{inviteError}</p>
+              )}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => generateInvite(invitePhone || undefined)}
+                  disabled={inviteGenerating}
+                  className="py-2 px-4 text-eb-caption font-bold bg-eb-black text-white uppercase tracking-wider"
+                >
+                  {inviteGenerating
+                    ? "Sending\u2026"
+                    : invitePhone
+                      ? "Send Invite"
+                      : "Generate Link Only"}
+                </button>
+              </div>
+            </div>
           )}
         </div>
       )}

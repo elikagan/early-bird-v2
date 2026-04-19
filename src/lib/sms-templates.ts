@@ -75,6 +75,13 @@ export function composeMagicLink(url: string): string {
 }
 
 /**
+ * SMS sent to a new dealer when an admin invites them to the platform.
+ */
+export function composeDealerInvite(url: string): string {
+  return `Early Bird: You've been invited to sell on Early Bird. Tap to set up your booth:\n\n${url}`;
+}
+
+/**
  * SMS sent to followers when a market drops (goes live).
  */
 export function composeDropAlert(

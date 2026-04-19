@@ -1,30 +1,50 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { NotFoundScreen } from "@/components/not-found-screen";
-import { InstagramInput } from "@/components/instagram-input";
 
-type Step = "loading" | "form" | "sent" | "invalid";
+type Step = "loading" | "form" | "invalid";
+
+function formatPhoneForDisplay(raw: string | null): string {
+  if (!raw) return "";
+  const digits = raw.replace(/\D/g, "");
+  if (digits.length === 11 && digits.startsWith("1")) {
+    return `(${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7)}`;
+  }
+  if (digits.length === 10) {
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+  }
+  return raw;
+}
 
 export default function InvitePage() {
   const params = useParams();
+  const router = useRouter();
   const code = params.code as string;
 
   const [step, setStep] = useState<Step>("loading");
+  // invitePhone is set when the admin bound a phone to the invite.
+  // When present, the dealer sees it read-only and can't edit.
+  const [invitePhone, setInvitePhone] = useState<string | null>(null);
   const [phone, setPhone] = useState("");
   const [name, setName] = useState("");
   const [biz, setBiz] = useState("");
-  const [ig, setIg] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Validate invite code on load
+  // Validate invite code + fetch prefilled phone on load
   useEffect(() => {
     async function check() {
       try {
         const res = await fetch(`/api/invite/check?code=${encodeURIComponent(code)}`);
-        setStep(res.ok ? "form" : "invalid");
+        if (!res.ok) {
+          setStep("invalid");
+          return;
+        }
+        const data = await res.json();
+        setInvitePhone(data.phone || null);
+        setStep("form");
       } catch {
         setStep("invalid");
       }
@@ -33,10 +53,14 @@ export default function InvitePage() {
   }, [code]);
 
   const submit = useCallback(async () => {
-    const digits = phone.replace(/\D/g, "");
-    if (digits.length < 10) {
-      setError("Enter a valid phone number");
-      return;
+    // Phone only validated if the dealer is the one entering it
+    // (legacy invites without pre-bound phone).
+    if (!invitePhone) {
+      const digits = phone.replace(/\D/g, "");
+      if (digits.length < 10) {
+        setError("Enter a valid phone number");
+        return;
+      }
     }
     if (!name.trim()) {
       setError("Name is required");
@@ -53,19 +77,22 @@ export default function InvitePage() {
       const res = await fetch("/api/invite/redeem", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           code,
-          phone: phone.trim(),
+          phone: invitePhone ? undefined : phone.trim(),
           name: name.trim(),
           business_name: biz.trim(),
-          instagram_handle: ig.trim() || null,
         }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Something went wrong");
       }
-      setStep("sent");
+      // Redeem sets the session cookie on response. Head straight to
+      // the booth for the upcoming show — no magic-link round-trip.
+      router.refresh();
+      router.push("/sell");
     } catch (err) {
       if (err instanceof Error && (err.message.includes("expired") || err.message.includes("used"))) {
         setStep("invalid");
@@ -75,7 +102,7 @@ export default function InvitePage() {
     } finally {
       setSubmitting(false);
     }
-  }, [code, phone, name, biz, ig]);
+  }, [code, phone, invitePhone, name, biz, router]);
 
   return (
     <div className="min-h-screen bg-eb-bg flex flex-col">
@@ -96,46 +123,47 @@ export default function InvitePage() {
             message="This invite link has expired, already been used, or doesn\u2019t exist. Contact the person who sent it to get a new one."
             action={{ label: "Go to Early Bird", href: "/" }}
           />
-        ) : step === "sent" ? (
-          <div className="py-12">
-            <div className="border-l-2 border-eb-pop pl-4 py-2">
-              <div className="text-eb-display font-bold uppercase tracking-wider text-eb-black mb-2">
-                Check your phone
-              </div>
-              <p className="text-eb-caption text-eb-muted leading-relaxed">
-                We sent a login link to{" "}
-                <span className="font-bold text-eb-black">{phone}</span>. Tap it
-                to finish setting up your dealer account.
-              </p>
-            </div>
-          </div>
         ) : (
           <>
             <h1 className="text-eb-body font-bold text-eb-black uppercase tracking-wider mb-1">
               You&apos;re Invited
             </h1>
             <p className="text-eb-meta text-eb-muted leading-relaxed mb-6">
-              Set up your seller account on Early Bird — the pre-market preview
-              for LA flea markets.
+              Set up your seller account on Early Bird — the pre-shopping
+              preview for LA flea markets.
             </p>
 
             <div className="space-y-4">
-              <div>
-                <label className="text-eb-micro text-eb-muted uppercase tracking-widest block mb-1">
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  inputMode="tel"
-                  className="eb-input"
-                  value={phone}
-                  onChange={(e) =>
-                    setPhone(e.target.value.replace(/[^\d()\-\s+]/g, "").slice(0, 16))
-                  }
-                  placeholder="(555) 123-4567"
-                  autoFocus
-                />
-              </div>
+              {invitePhone ? (
+                <div>
+                  <label className="text-eb-micro text-eb-muted uppercase tracking-widest block mb-1">
+                    Phone Number
+                  </label>
+                  <div className="eb-input flex items-center bg-eb-border/30 text-eb-text cursor-not-allowed select-none">
+                    {formatPhoneForDisplay(invitePhone)}
+                  </div>
+                  <p className="text-eb-micro text-eb-muted mt-1">
+                    This is the number your admin added for you.
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  <label className="text-eb-micro text-eb-muted uppercase tracking-widest block mb-1">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    inputMode="tel"
+                    className="eb-input"
+                    value={phone}
+                    onChange={(e) =>
+                      setPhone(e.target.value.replace(/[^\d()\-\s+]/g, "").slice(0, 16))
+                    }
+                    placeholder="(555) 123-4567"
+                    autoFocus
+                  />
+                </div>
+              )}
 
               <div>
                 <label className="text-eb-micro text-eb-muted uppercase tracking-widest block mb-1">
@@ -147,6 +175,7 @@ export default function InvitePage() {
                   value={name}
                   onChange={(e) => setName(e.target.value.slice(0, 60))}
                   placeholder="Jane Doe"
+                  autoFocus={!!invitePhone}
                 />
               </div>
 
@@ -163,14 +192,6 @@ export default function InvitePage() {
                 />
               </div>
 
-              <div>
-                <label className="text-eb-micro text-eb-muted uppercase tracking-widest block mb-1">
-                  Instagram
-                  <span className="text-eb-muted ml-1">optional</span>
-                </label>
-                <InstagramInput value={ig} onChange={setIg} />
-              </div>
-
               {error && <p className="text-eb-meta text-eb-red">{error}</p>}
 
               <button
@@ -182,7 +203,7 @@ export default function InvitePage() {
               </button>
 
               <p className="text-eb-micro font-readable text-eb-muted text-center leading-relaxed">
-                We&apos;ll text you a login link to verify your number.
+                You&apos;ll land on your booth for the next show.
               </p>
             </div>
           </>

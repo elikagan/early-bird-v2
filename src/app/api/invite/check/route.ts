@@ -14,7 +14,7 @@ export async function GET(request: Request) {
   if (!code) return error("Missing code", 400);
 
   const result = await db.execute({
-    sql: `SELECT id FROM dealer_invites WHERE code = ? AND used_at IS NULL`,
+    sql: `SELECT id, phone FROM dealer_invites WHERE code = ? AND used_at IS NULL`,
     args: [code],
   });
 
@@ -22,5 +22,9 @@ export async function GET(request: Request) {
     return error("Invalid or expired invite", 404);
   }
 
-  return json({ valid: true });
+  const row = result.rows[0] as Record<string, unknown>;
+  // Phone is returned so the invite page can pre-fill it read-only
+  // (new-style admin-bound invites). Null for legacy invites where the
+  // dealer still enters their own phone.
+  return json({ valid: true, phone: (row.phone as string) || null });
 }

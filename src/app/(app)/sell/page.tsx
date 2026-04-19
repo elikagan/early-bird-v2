@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useRequireAuth } from "@/lib/require-auth";
@@ -28,12 +28,15 @@ interface Market {
   id: string;
   name: string;
   starts_at: string;
+  drop_at: string;
   status: string;
   item_count: number;
+  dealer_preshop_enabled: number;
 }
 
 function SellContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const { user } = useRequireAuth();
   const [items, setItems] = useState<Item[]>([]);
   const [market, setMarket] = useState<Market | null>(null);
@@ -42,6 +45,12 @@ function SellContent() {
   const [boothSaving, setBoothSaving] = useState(false);
   const [boothSaved, setBoothSaved] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+  // All markets the app knows about — powers the show-switcher drawer.
+  // The currently-selected market is `market` above; this list also
+  // includes upcoming / past markets so the dealer can see what's
+  // coming even though those aren't open for inventory yet.
+  const [allMarkets, setAllMarkets] = useState<Market[]>([]);
+  const [showSwitcher, setShowSwitcher] = useState(false);
 
   const marketId = searchParams.get("market");
 
@@ -51,15 +60,18 @@ function SellContent() {
     async function load() {
       let mktId = marketId;
 
-      if (!mktId) {
-        const marketsRes = await apiFetch("/api/markets");
-        if (marketsRes.ok) {
-          const markets = await marketsRes.json();
-          if (markets.length > 0) {
-            const live = markets.find((m: Market) => m.status === "live");
-            mktId = (live || markets[0]).id;
-          }
-        }
+      // Always fetch the markets list — used to pick the default
+      // market AND to populate the show-switcher drawer.
+      const marketsRes = await apiFetch("/api/markets");
+      let markets: Market[] = [];
+      if (marketsRes.ok) {
+        markets = await marketsRes.json();
+        setAllMarkets(markets);
+      }
+
+      if (!mktId && markets.length > 0) {
+        const live = markets.find((m: Market) => m.status === "live");
+        mktId = (live || markets[0]).id;
       }
 
       if (!mktId) {
@@ -165,33 +177,118 @@ function SellContent() {
         </div>
       </div>
 
-      {/* Booth number */}
+      {/* Header — "Your booth at [Market]" with the market name as a
+          clickable link that opens the show-switcher drawer. Booth
+          number input is secondary to not block the flow. */}
       {market && (
         <div className="px-5 py-4 border-b border-eb-border">
-          <div className="flex justify-between items-center mb-1.5">
-            <span className="text-eb-meta uppercase tracking-widest text-eb-muted">
-              Your booth{market ? ` at ${market.name}` : ""}
-            </span>
-            <span className="text-eb-meta text-eb-muted">
+          <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-2">
+            Your booth at{" "}
+            <button
+              type="button"
+              onClick={() => setShowSwitcher(true)}
+              className="text-eb-black font-bold underline decoration-dotted underline-offset-2"
+            >
+              {market.name}
+            </button>
+          </div>
+
+          {/* Booth number — smaller + quieter. Optional, set when known. */}
+          <div className="flex items-center gap-2">
+            <label
+              htmlFor="booth-number-input"
+              className="text-eb-micro uppercase tracking-widest text-eb-muted shrink-0"
+            >
+              Booth #
+            </label>
+            <input
+              id="booth-number-input"
+              type="text"
+              className="flex-1 text-eb-caption tabular-nums bg-transparent border-0 border-b border-eb-border px-0 py-1 focus:outline-none focus:border-eb-black placeholder:text-eb-light"
+              placeholder="Set later"
+              value={boothNumber}
+              onChange={(e) => {
+                const v = e.target.value.replace(/[^a-zA-Z0-9]/g, "").slice(0, 10);
+                setBoothNumber(v);
+              }}
+              onBlur={() => saveBooth(boothNumber)}
+              inputMode="text"
+            />
+            <span className="text-eb-micro text-eb-muted shrink-0">
               {boothSaving ? "Saving\u2026" : boothSaved ? "Saved" : ""}
             </span>
           </div>
-          <input
-            type="text"
-            className="eb-input"
-            placeholder="A12"
-            value={boothNumber}
-            onChange={(e) => {
-              const v = e.target.value.replace(/[^a-zA-Z0-9]/g, "").slice(0, 10);
-              setBoothNumber(v);
-            }}
-            onBlur={() => saveBooth(boothNumber)}
-            inputMode="text"
-          />
-          <p className="text-eb-micro text-eb-muted mt-1">
-            Buyers see this on your listings so they can find you.
-          </p>
         </div>
+      )}
+
+      {/* Show-switcher drawer */}
+      {showSwitcher && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/40 z-40"
+            onClick={() => setShowSwitcher(false)}
+          />
+          <div className="fixed bottom-0 left-0 right-0 max-w-[430px] mx-auto bg-white rounded-t-2xl border-t border-eb-border z-50 px-5 pt-3 pb-6">
+            <div className="w-12 h-1 bg-eb-border rounded-full mx-auto mb-4" />
+            <h3 className="text-eb-title font-bold uppercase tracking-widest text-eb-black">
+              Switch show
+            </h3>
+            <p className="text-eb-caption text-eb-muted mt-1 mb-4 leading-relaxed">
+              You can pre-shop any upcoming show once inventory opens
+              for dealers.
+            </p>
+            <div className="divide-y divide-eb-border border-y border-eb-border">
+              {allMarkets.map((m) => {
+                const isCurrent = m.id === market?.id;
+                const isPreshopOpen =
+                  m.status === "live" ||
+                  (m.status === "upcoming" &&
+                    (m.dealer_preshop_enabled ?? 1) === 1);
+                const canSwitch = isPreshopOpen && !isCurrent;
+                return (
+                  <button
+                    key={m.id}
+                    type="button"
+                    disabled={!canSwitch}
+                    onClick={() => {
+                      if (!canSwitch) return;
+                      setShowSwitcher(false);
+                      router.push(`/sell?market=${m.id}`);
+                    }}
+                    className={`w-full flex items-start justify-between gap-4 px-1 py-3 text-left ${
+                      canSwitch
+                        ? "active:bg-eb-border/40"
+                        : "cursor-not-allowed opacity-50"
+                    }`}
+                  >
+                    <div className="min-w-0">
+                      <div className="text-eb-body font-bold text-eb-black truncate">
+                        {m.name}
+                        {isCurrent && (
+                          <span className="ml-2 text-eb-micro uppercase tracking-widest text-eb-pop font-bold">
+                            Current
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-eb-meta text-eb-muted mt-1">
+                        {m.status === "live"
+                          ? "Open now"
+                          : isPreshopOpen
+                            ? "Pre-shop open"
+                            : `Opens ${new Date(m.drop_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`}
+                      </div>
+                    </div>
+                    {canSwitch && (
+                      <span className="shrink-0 text-eb-caption text-eb-muted mt-0.5">
+                        {"\u2192"}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </>
       )}
 
       {/* Share your booth */}
