@@ -177,24 +177,32 @@ function SellContent() {
         </div>
       </div>
 
-      {/* Header — "Your booth at [Market]" with the market name as a
-          clickable link that opens the show-switcher drawer. Booth
-          number input is secondary to not block the flow. */}
+      {/* Header — small eyebrow, market name as a tappable title that
+          truncates on long names, and a secondary booth-number row
+          that doesn't compete with the title.  */}
       {market && (
         <div className="px-5 py-4 border-b border-eb-border">
-          <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-2">
-            Your booth at{" "}
-            <button
-              type="button"
-              onClick={() => setShowSwitcher(true)}
-              className="text-eb-black font-bold underline decoration-dotted underline-offset-2"
-            >
-              {market.name}
-            </button>
+          <div className="text-eb-micro uppercase tracking-widest text-eb-muted">
+            Your booth
           </div>
+          <button
+            type="button"
+            onClick={() => setShowSwitcher(true)}
+            aria-label={`Switch show (current: ${market.name})`}
+            className="group mt-1 flex items-baseline gap-2 w-full text-left"
+          >
+            <span className="text-eb-title font-bold text-eb-black truncate min-w-0">
+              {market.name}
+            </span>
+            <span
+              aria-hidden="true"
+              className="text-eb-caption text-eb-muted shrink-0 group-hover:text-eb-black transition-colors"
+            >
+              {"\u25BE"}
+            </span>
+          </button>
 
-          {/* Booth number — smaller + quieter. Optional, set when known. */}
-          <div className="flex items-center gap-2">
+          <div className="mt-3 pt-3 border-t border-eb-border/60 flex items-center gap-3">
             <label
               htmlFor="booth-number-input"
               className="text-eb-micro uppercase tracking-widest text-eb-muted shrink-0"
@@ -204,8 +212,8 @@ function SellContent() {
             <input
               id="booth-number-input"
               type="text"
-              className="flex-1 text-eb-caption tabular-nums bg-transparent border-0 border-b border-eb-border px-0 py-1 focus:outline-none focus:border-eb-black placeholder:text-eb-light"
-              placeholder="Set later"
+              className="w-24 shrink-0 text-eb-caption tabular-nums bg-transparent border-0 border-b border-eb-border px-0 py-0.5 focus:outline-none focus:border-eb-black placeholder:text-eb-light"
+              placeholder={"\u2014"}
               value={boothNumber}
               onChange={(e) => {
                 const v = e.target.value.replace(/[^a-zA-Z0-9]/g, "").slice(0, 10);
@@ -214,7 +222,7 @@ function SellContent() {
               onBlur={() => saveBooth(boothNumber)}
               inputMode="text"
             />
-            <span className="text-eb-micro text-eb-muted shrink-0">
+            <span className="text-eb-micro text-eb-muted ml-auto shrink-0">
               {boothSaving ? "Saving\u2026" : boothSaved ? "Saved" : ""}
             </span>
           </div>
