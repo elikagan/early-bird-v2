@@ -191,7 +191,7 @@ function SellContent() {
               <button
                 type="button"
                 onClick={() => setShowSwitcher(true)}
-                className="text-eb-title font-bold text-eb-black truncate max-w-full text-left active:opacity-60 transition-opacity"
+                className="text-eb-title font-bold text-eb-black truncate max-w-full text-left underline decoration-eb-pop decoration-2 underline-offset-4 active:opacity-60 transition-opacity"
               >
                 {market.name}
               </button>
@@ -206,7 +206,7 @@ function SellContent() {
                   setBoothEditDraft(boothNumber);
                   setShowBoothEditor(true);
                 }}
-                className={`text-eb-title font-bold tabular-nums active:opacity-60 transition-opacity ${
+                className={`text-eb-title font-bold tabular-nums underline decoration-eb-pop decoration-2 underline-offset-4 active:opacity-60 transition-opacity ${
                   boothNumber ? "text-eb-black" : "text-eb-pop"
                 }`}
               >
