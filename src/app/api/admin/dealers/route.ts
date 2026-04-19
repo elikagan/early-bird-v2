@@ -4,6 +4,7 @@ import { getSession } from "@/lib/auth";
 import { isAdmin } from "@/lib/admin";
 import { newId } from "@/lib/id";
 import { logAdminAction } from "@/lib/admin-log";
+import { normalizeUSPhone } from "@/lib/phone";
 
 export async function GET(request: Request) {
   const user = await getSession(request);
@@ -53,13 +54,9 @@ export async function POST(request: Request) {
   if (!phone) return error("Phone is required");
 
   // Normalize phone
-  const digits = phone.replace(/\D/g, "");
-  const normalized =
-    digits.length === 10
-      ? `+1${digits}`
-      : digits.length === 11 && digits[0] === "1"
-        ? `+${digits}`
-        : `+${digits}`;
+  const normalizedResult = normalizeUSPhone(phone);
+  if (!normalizedResult.ok) return error(normalizedResult.reason);
+  const normalized = normalizedResult.phone;
 
   // Check if user already exists
   const existing = await db.execute({

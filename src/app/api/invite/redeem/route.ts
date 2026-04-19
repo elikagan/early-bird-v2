@@ -5,6 +5,7 @@ import { newId } from "@/lib/id";
 import { nanoid } from "nanoid";
 import { SESSION_COOKIE_NAME, SESSION_MAX_AGE } from "@/lib/auth";
 import { logEvent, EVT } from "@/lib/system-events";
+import { normalizeUSPhone } from "@/lib/phone";
 
 export async function POST(request: Request) {
   const body = await request.json();
@@ -43,15 +44,9 @@ export async function POST(request: Request) {
   if (invitePhone) {
     normalizedPhone = invitePhone;
   } else {
-    if (!bodyPhone) return error("Phone number is required");
-    const digits = String(bodyPhone).replace(/\D/g, "");
-    if (digits.length < 10 || digits.length > 11) {
-      return error("Enter a valid US phone number");
-    }
-    normalizedPhone =
-      digits.length === 11 && digits[0] === "1"
-        ? `+${digits}`
-        : `+1${digits}`;
+    const result = normalizeUSPhone(bodyPhone);
+    if (!result.ok) return error(result.reason);
+    normalizedPhone = result.phone;
   }
 
   // ── Find or create user ──

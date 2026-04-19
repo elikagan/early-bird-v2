@@ -524,7 +524,7 @@ export default function AccountPage() {
                 className="eb-input mb-2"
                 value={phoneValue}
                 onChange={(e) =>
-                  setPhoneValue(e.target.value.replace(/[^\d()\-\s+]/g, "").slice(0, 16))
+                  setPhoneValue(e.target.value.replace(/[^\d()\-\s+.]/g, "").slice(0, 32))
                 }
                 placeholder="(555) 123-4567"
                 autoFocus

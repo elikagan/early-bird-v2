@@ -1132,8 +1132,11 @@ function DealersTab() {
                 placeholder="(213) 555-0134"
                 value={invitePhone}
                 onChange={(e) =>
+                  // Leave plenty of room for formatted pastes like
+                  // "+1 (323) 508-1158" — 17 chars — plus any extra
+                  // whitespace the contact card might include.
                   setInvitePhone(
-                    e.target.value.replace(/[^\d()\-\s+]/g, "").slice(0, 16)
+                    e.target.value.replace(/[^\d()\-\s+.]/g, "").slice(0, 32)
                   )
                 }
               />

@@ -3,6 +3,7 @@ import { json, error } from "@/lib/api";
 import { getSession } from "@/lib/auth";
 import { newId } from "@/lib/id";
 import { sendSMSWithLog } from "@/lib/sms";
+import { normalizeUSPhone } from "@/lib/phone";
 import { getBaseUrl } from "@/lib/url";
 import { nanoid } from "nanoid";
 
@@ -19,16 +20,9 @@ export async function POST(request: Request) {
   const body = await request.json();
   const { phone } = body;
 
-  if (!phone) return error("phone is required");
-
-  // Normalize to digits only
-  const digits = phone.replace(/\D/g, "");
-  if (digits.length < 10 || digits.length > 11) {
-    return error("Enter a valid US phone number");
-  }
-  const normalized = digits.length === 11 && digits[0] === "1"
-    ? `+${digits}`
-    : `+1${digits}`;
+  const normalizedResult = normalizeUSPhone(phone);
+  if (!normalizedResult.ok) return error(normalizedResult.reason);
+  const normalized = normalizedResult.phone;
 
   // Can't change to your current number
   if (normalized === user.phone) {

@@ -7,6 +7,7 @@ import { getBaseUrl } from "@/lib/url";
 import { nanoid } from "nanoid";
 import { sendSMSWithLog } from "@/lib/sms";
 import { composeDealerInvite } from "@/lib/sms-templates";
+import { normalizeUSPhone } from "@/lib/phone";
 
 export async function POST(request: Request) {
   const user = await getSession(request);
@@ -20,15 +21,10 @@ export async function POST(request: Request) {
   // "bare" invite links to share manually. But when a phone IS
   // provided, we pre-bind it to the invite and SMS the dealer.
   let normalizedPhone: string | null = null;
-  if (rawPhone) {
-    const digits = String(rawPhone).replace(/\D/g, "");
-    if (digits.length < 10 || digits.length > 11) {
-      return error("Enter a valid US phone number");
-    }
-    normalizedPhone =
-      digits.length === 11 && digits[0] === "1"
-        ? `+${digits}`
-        : `+1${digits}`;
+  if (rawPhone && String(rawPhone).trim()) {
+    const result = normalizeUSPhone(rawPhone);
+    if (!result.ok) return error(result.reason);
+    normalizedPhone = result.phone;
   }
 
   const code = nanoid(10);

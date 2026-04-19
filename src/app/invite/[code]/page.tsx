@@ -157,7 +157,7 @@ export default function InvitePage() {
                     className="eb-input"
                     value={phone}
                     onChange={(e) =>
-                      setPhone(e.target.value.replace(/[^\d()\-\s+]/g, "").slice(0, 16))
+                      setPhone(e.target.value.replace(/[^\d()\-\s+.]/g, "").slice(0, 32))
                     }
                     placeholder="(555) 123-4567"
                     autoFocus

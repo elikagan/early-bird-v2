@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
 import { formatDate, heroCountdown, formatPrice } from "@/lib/format";
 import { Masthead } from "@/components/masthead";
+import { normalizeUSPhone } from "@/lib/phone";
 
 interface Market {
   id: string;
@@ -99,16 +100,15 @@ export default function LandingPage() {
     // flow should be discarded — otherwise users get routed to a random
     // item page after signing in instead of landing on /home.
     try { localStorage.removeItem("eb_return_to"); } catch {}
-    const digits = phone.replace(/\D/g, "");
-    const formatted =
-      digits.length === 10
-        ? `+1${digits}`
-        : digits.length === 11 && digits[0] === "1"
-          ? `+${digits}`
-          : `+${digits}`;
+    const result = normalizeUSPhone(phone);
+    if (!result.ok) {
+      setSending(false);
+      alert(result.reason);
+      return;
+    }
     const res = await apiFetch("/api/auth/start", {
       method: "POST",
-      body: JSON.stringify({ phone: formatted, dealer: mode === "dealer", sms_consent: smsConsent }),
+      body: JSON.stringify({ phone: result.phone, dealer: mode === "dealer", sms_consent: smsConsent }),
     });
     setSending(false);
     if (res.ok) setSent(true);

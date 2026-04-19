@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { apiFetch } from "@/lib/api-client";
+import { normalizeUSPhone } from "@/lib/phone";
 
 export function SignupDrawer({
   open,
@@ -26,13 +27,13 @@ export function SignupDrawer({
   const handleSend = async () => {
     if (!phone || sending) return;
     setSending(true);
-    const digits = phone.replace(/\D/g, "");
-    const formatted =
-      digits.length === 10
-        ? `+1${digits}`
-        : digits.length === 11 && digits[0] === "1"
-          ? `+${digits}`
-          : `+${digits}`;
+    const result = normalizeUSPhone(phone);
+    if (!result.ok) {
+      setSending(false);
+      alert(result.reason);
+      return;
+    }
+    const formatted = result.phone;
     const res = await apiFetch("/api/auth/start", {
       method: "POST",
       body: JSON.stringify({ phone: formatted, sms_consent: smsConsent }),
