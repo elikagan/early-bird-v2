@@ -6,10 +6,11 @@ import { nanoid } from "nanoid";
 import { SESSION_COOKIE_NAME, SESSION_MAX_AGE } from "@/lib/auth";
 import { logEvent, EVT } from "@/lib/system-events";
 import { normalizeUSPhone } from "@/lib/phone";
+import { isValidShow } from "@/lib/shows";
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const { code, phone: bodyPhone, name, business_name } = body;
+  const { code, phone: bodyPhone, name, business_name, market_subscriptions } = body;
 
   // ── Validate code ──
   if (!code) return error("Invalid invite link");
@@ -36,6 +37,16 @@ export async function POST(request: Request) {
     business_name.trim().length > 60
   ) {
     return error("Business name is required (max 60 characters)");
+  }
+
+  // ── Validate market_subscriptions: required, min 1, all from the
+  //    canonical show list. Dedupe to be safe. ──
+  if (!Array.isArray(market_subscriptions) || market_subscriptions.length === 0) {
+    return error("Pick at least one show you typically sell at");
+  }
+  const shows = Array.from(new Set(market_subscriptions.filter(isValidShow)));
+  if (shows.length === 0) {
+    return error("Pick at least one show you typically sell at");
   }
 
   // ── Resolve phone: admin-bound invite uses invite.phone (dealer
@@ -82,6 +93,14 @@ export async function POST(request: Request) {
     args: [dealerId, userId, business_name.trim()],
   });
 
+  // ── Insert market subscriptions ──
+  for (const show of shows) {
+    await db.execute({
+      sql: `INSERT INTO dealer_market_subscriptions (id, dealer_id, show_name) VALUES (?, ?, ?)`,
+      args: [newId(), dealerId, show],
+    });
+  }
+
   // ── Mark invite as used ──
   await db.execute({
     sql: `UPDATE dealer_invites SET used_at = now(), used_by = ? WHERE id = ?`,
@@ -104,7 +123,7 @@ export async function POST(request: Request) {
     entity_type: "dealer",
     entity_id: dealerId,
     message: `Dealer redeemed invite and went live: ${business_name.trim()}`,
-    payload: { user_id: userId, invite_id: inviteId, admin_bound: !!invitePhone },
+    payload: { user_id: userId, invite_id: inviteId, admin_bound: !!invitePhone, shows },
   });
 
   const res = NextResponse.json({

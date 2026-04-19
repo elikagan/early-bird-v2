@@ -8,6 +8,7 @@ import { useRequireAuth } from "@/lib/require-auth";
 import { apiFetch } from "@/lib/api-client";
 import { formatPhone, formatDate, formatPrice, heroCountdown, timeAgo } from "@/lib/format";
 import { Masthead } from "@/components/masthead";
+import { SHOWS } from "@/lib/shows";
 
 /* ─── Types ─── */
 
@@ -656,6 +657,7 @@ interface AdminUser {
   business_name: string | null;
   instagram_handle: string | null;
   item_count: number;
+  market_subscriptions?: string[];
 }
 
 function DealersTab() {
@@ -977,6 +979,54 @@ function DealersTab() {
                               {detailData.instagram_handle && <div>IG: @{detailData.instagram_handle}</div>}
                               <div>Joined: {formatDate(detailData.created_at)}</div>
                             </div>
+
+                            {/* Subscriptions (dealers only) */}
+                            {u.is_dealer === 1 && (
+                              <div className="mb-3">
+                                <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-2">
+                                  Shows
+                                </div>
+                                <div className="grid grid-cols-2 gap-1.5">
+                                  {SHOWS.map((show) => {
+                                    const subs: string[] =
+                                      detailData.market_subscriptions || [];
+                                    const on = subs.includes(show);
+                                    return (
+                                      <button
+                                        key={show}
+                                        type="button"
+                                        onClick={async () => {
+                                          const next = on
+                                            ? subs.filter((s) => s !== show)
+                                            : [...subs, show];
+                                          // Optimistic: patch detailData inline
+                                          setDetailData({
+                                            ...detailData,
+                                            market_subscriptions: next,
+                                          });
+                                          await apiFetch(
+                                            `/api/admin/dealers/${u.id}`,
+                                            {
+                                              method: "PATCH",
+                                              body: JSON.stringify({
+                                                market_subscriptions: next,
+                                              }),
+                                            }
+                                          );
+                                        }}
+                                        className={`py-1.5 px-2 text-eb-micro font-bold uppercase tracking-wider text-left border-2 ${
+                                          on
+                                            ? "border-eb-black bg-eb-black text-white"
+                                            : "border-eb-border text-eb-muted"
+                                        }`}
+                                      >
+                                        {show}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            )}
 
                             {/* Items */}
                             {detailData.items && detailData.items.length > 0 && (

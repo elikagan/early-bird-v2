@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { NotFoundScreen } from "@/components/not-found-screen";
+import { SHOWS, type ShowName } from "@/lib/shows";
 
 type Step = "loading" | "form" | "invalid";
 
@@ -29,8 +30,18 @@ export default function InvitePage() {
   const [phone, setPhone] = useState("");
   const [name, setName] = useState("");
   const [biz, setBiz] = useState("");
+  const [selectedShows, setSelectedShows] = useState<Set<ShowName>>(new Set());
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const toggleShow = (show: ShowName) => {
+    setSelectedShows((prev) => {
+      const next = new Set(prev);
+      if (next.has(show)) next.delete(show);
+      else next.add(show);
+      return next;
+    });
+  };
 
   // Validate invite code + fetch prefilled phone on load
   useEffect(() => {
@@ -69,6 +80,10 @@ export default function InvitePage() {
       setError("Business name is required");
       return;
     }
+    if (selectedShows.size === 0) {
+      setError("Pick at least one show you typically sell at");
+      return;
+    }
 
     setSubmitting(true);
     setError(null);
@@ -82,6 +97,7 @@ export default function InvitePage() {
           phone: invitePhone ? undefined : phone.trim(),
           name: name.trim(),
           business_name: biz.trim(),
+          market_subscriptions: Array.from(selectedShows),
         }),
       });
       if (!res.ok) {
@@ -103,7 +119,7 @@ export default function InvitePage() {
     } finally {
       setSubmitting(false);
     }
-  }, [code, phone, invitePhone, name, biz]);
+  }, [code, phone, invitePhone, name, biz, selectedShows]);
 
   return (
     <div className="min-h-screen bg-eb-bg flex flex-col">
@@ -191,6 +207,35 @@ export default function InvitePage() {
                   onChange={(e) => setBiz(e.target.value.slice(0, 60))}
                   placeholder="Vintage Finds LA"
                 />
+              </div>
+
+              {/* Show picker — tappable tiles, multi-select, required */}
+              <div>
+                <label className="text-eb-micro text-eb-muted uppercase tracking-widest block mb-1">
+                  Which Shows Do You Sell At?
+                </label>
+                <p className="text-eb-micro text-eb-muted mb-2 leading-relaxed">
+                  Pick at least one. We{"\u2019"}ll text you when those shows are coming up.
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {SHOWS.map((show) => {
+                    const selected = selectedShows.has(show);
+                    return (
+                      <button
+                        key={show}
+                        type="button"
+                        onClick={() => toggleShow(show)}
+                        className={`py-3 px-3 text-eb-caption font-bold uppercase tracking-wider text-left border-2 transition-colors ${
+                          selected
+                            ? "border-eb-black bg-eb-black text-white"
+                            : "border-eb-border text-eb-text bg-white"
+                        }`}
+                      >
+                        {show}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {error && <p className="text-eb-meta text-eb-red">{error}</p>}

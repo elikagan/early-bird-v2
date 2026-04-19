@@ -45,6 +45,9 @@ function SellContent() {
   const [boothSaving, setBoothSaving] = useState(false);
   const [boothSaved, setBoothSaved] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+  // Dealer's market subscriptions. null = not yet loaded, [] = loaded
+  // and they haven't picked any (backfill case — banner shown).
+  const [subscriptions, setSubscriptions] = useState<string[] | null>(null);
   // All markets the app knows about — powers the show-switcher drawer.
   // The currently-selected market is `market` above; this list also
   // includes upcoming / past markets so the dealer can see what's
@@ -94,6 +97,16 @@ function SellContent() {
       if (boothRes.ok) {
         const boothData = await boothRes.json();
         setBoothNumber(boothData.booth_number || "");
+      }
+
+      // Load subscriptions — used to decide whether to show the
+      // "pick your shows" banner (for pre-subscription dealers).
+      const meRes = await apiFetch("/api/users/me");
+      if (meRes.ok) {
+        const me = await meRes.json();
+        setSubscriptions(
+          Array.isArray(me.market_subscriptions) ? me.market_subscriptions : []
+        );
       }
 
       setLoading(false);
@@ -178,6 +191,31 @@ function SellContent() {
           <div className="eb-stat-label">Inquiries</div>
         </div>
       </div>
+
+      {/* Show-subscription banner — only for pre-subscription dealers
+          (redeemed before we added this feature). New dealers set
+          subscriptions during invite redemption, so they'll never see
+          this. Tap opens /account where the picker lives. */}
+      {subscriptions !== null && subscriptions.length === 0 && (
+        <Link
+          href="/account"
+          className="block px-5 py-3 bg-eb-pop-light border-b border-eb-border active:opacity-70 transition-opacity"
+        >
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <div className="text-eb-micro font-bold uppercase tracking-widest text-eb-pop">
+                Finish setup
+              </div>
+              <div className="text-eb-caption text-eb-black mt-0.5 leading-snug">
+                Tell us which shows you sell at so we only text you about yours.
+              </div>
+            </div>
+            <span className="shrink-0 text-eb-pop text-eb-body font-bold">
+              {"\u2192"}
+            </span>
+          </div>
+        </Link>
+      )}
 
       {/* Header — two columns on one row. Each value IS the button.
           Market on the left, booth on the right.  */}

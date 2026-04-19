@@ -12,6 +12,7 @@ import { BottomNav } from "@/components/bottom-nav";
 import { DealerApplyDrawer } from "@/components/dealer-apply-drawer";
 import { InstagramInput } from "@/components/instagram-input";
 import { Masthead } from "@/components/masthead";
+import { SHOWS, type ShowName } from "@/lib/shows";
 
 interface UserProfile {
   id: string;
@@ -27,6 +28,7 @@ interface UserProfile {
   market_follows: Array<{ market_id: string; market_name: string }>;
   notification_preferences: Array<{ key: string; enabled: number }>;
   payment_methods?: Array<{ method: string; enabled: number }>;
+  market_subscriptions?: string[];
   watching_count: number;
   inquiries_count: number;
   bought_count: number;
@@ -195,6 +197,32 @@ export default function AccountPage() {
           );
           return { ...p, payment_methods: methods };
         });
+      }
+    },
+    [profile]
+  );
+
+  const toggleShow = useCallback(
+    async (show: ShowName) => {
+      if (!profile) return;
+      const current = profile.market_subscriptions || [];
+      const isOn = current.includes(show);
+      const next = isOn ? current.filter((s) => s !== show) : [...current, show];
+
+      // Prevent unchecking all — must leave at least one.
+      if (next.length === 0) return;
+
+      // Optimistic update
+      setProfile((p) => (p ? { ...p, market_subscriptions: next } : p));
+
+      const res = await apiFetch("/api/users/me", {
+        method: "PATCH",
+        body: JSON.stringify({ market_subscriptions: next }),
+      });
+
+      // Revert on failure
+      if (!res.ok) {
+        setProfile((p) => (p ? { ...p, market_subscriptions: current } : p));
       }
     },
     [profile]
@@ -639,6 +667,40 @@ export default function AccountPage() {
       )}
 
       <div className="border-t border-eb-border mx-5" />
+
+      {/* Dealer: Shows you sell at */}
+      {isDealer && (
+        <>
+          <section className="px-5 py-5">
+            <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-1">
+              Shows You Sell At
+            </div>
+            <div className="text-eb-micro text-eb-muted mb-3 leading-relaxed max-w-[22rem]">
+              We{"\u2019"}ll only text you about shows you{"\u2019"}re subscribed to.
+            </div>
+            {SHOWS.map((show, i) => {
+              const on = profile?.market_subscriptions?.includes(show) ?? false;
+              return (
+                <label
+                  key={show}
+                  className={`flex items-center gap-3 py-3 cursor-pointer${i < SHOWS.length - 1 ? " border-b border-eb-border" : ""}`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={on}
+                    onChange={() => toggleShow(show)}
+                    className="eb-check"
+                  />
+                  <div className="text-eb-body font-bold text-eb-black">
+                    {show}
+                  </div>
+                </label>
+              );
+            })}
+          </section>
+          <div className="border-t border-eb-border mx-5" />
+        </>
+      )}
 
       {/* Dealer: Payment methods */}
       {isDealer && (

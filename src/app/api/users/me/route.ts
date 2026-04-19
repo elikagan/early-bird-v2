@@ -2,6 +2,7 @@ import db from "@/lib/db";
 import { json, error } from "@/lib/api";
 import { getSession } from "@/lib/auth";
 import { newId } from "@/lib/id";
+import { isValidShow } from "@/lib/shows";
 
 export async function GET(request: Request) {
   const user = await getSession(request);
@@ -28,13 +29,19 @@ export async function GET(request: Request) {
   });
   result.notification_preferences = prefs.rows;
 
-  // If dealer, include payment methods
+  // If dealer, include payment methods + market subscriptions
   if (user.dealer_id) {
     const methods = await db.execute({
       sql: `SELECT method, enabled FROM dealer_payment_methods WHERE dealer_id = ?`,
       args: [user.dealer_id],
     });
     result.payment_methods = methods.rows;
+
+    const subs = await db.execute({
+      sql: `SELECT show_name FROM dealer_market_subscriptions WHERE dealer_id = ? ORDER BY show_name`,
+      args: [user.dealer_id],
+    });
+    result.market_subscriptions = subs.rows.map((r) => r.show_name as string);
   }
 
   // Buyer stats
@@ -137,6 +144,28 @@ export async function PATCH(request: Request) {
                 VALUES (?, ?, ?, ?)
                 ON CONFLICT(dealer_id, method) DO UPDATE SET enabled = excluded.enabled`,
           args: [newId(), user.dealer_id, pm.method, pm.enabled ? 1 : 0],
+        });
+      }
+    }
+
+    // Market subscriptions — full replace. Pass an array of show names
+    // (strings from the SHOWS constant); we wipe existing rows and
+    // insert the new set. Must leave at least one — enforced here.
+    if (Array.isArray(body.market_subscriptions)) {
+      const shows = Array.from(
+        new Set(body.market_subscriptions.filter(isValidShow))
+      );
+      if (shows.length === 0) {
+        return error("Pick at least one show you sell at");
+      }
+      await db.execute({
+        sql: `DELETE FROM dealer_market_subscriptions WHERE dealer_id = ?`,
+        args: [user.dealer_id],
+      });
+      for (const show of shows) {
+        await db.execute({
+          sql: `INSERT INTO dealer_market_subscriptions (id, dealer_id, show_name) VALUES (?, ?, ?)`,
+          args: [newId(), user.dealer_id, show],
         });
       }
     }
