@@ -179,50 +179,39 @@ function SellContent() {
         </div>
       </div>
 
-      {/* Header — two stacked label/value rows, each with a right-
-          aligned pop-colored action word. No inline inputs, no icons. */}
+      {/* Header — two columns on one row. Each value IS the button.
+          Market on the left, booth on the right.  */}
       {market && (
         <div className="px-5 py-4 border-b border-eb-border">
-          <div>
-            <div className="flex items-baseline justify-between gap-3">
-              <span className="text-eb-micro uppercase tracking-widest text-eb-muted">
+          <div className="flex items-start justify-between gap-5">
+            <div className="flex-1 min-w-0">
+              <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-0.5">
                 Your booth at
-              </span>
+              </div>
               <button
                 type="button"
                 onClick={() => setShowSwitcher(true)}
-                className="text-eb-micro uppercase tracking-widest font-bold text-eb-pop shrink-0"
+                className="text-eb-title font-bold text-eb-black truncate max-w-full text-left active:opacity-60 transition-opacity"
               >
-                Switch
+                {market.name}
               </button>
             </div>
-            <div className="text-eb-title font-bold text-eb-black truncate mt-0.5">
-              {market.name}
-            </div>
-          </div>
-
-          <div className="mt-3 pt-3 border-t border-eb-border/60">
-            <div className="flex items-baseline justify-between gap-3">
-              <span className="text-eb-micro uppercase tracking-widest text-eb-muted">
-                Booth number
-              </span>
+            <div className="shrink-0 text-right">
+              <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-0.5">
+                Booth
+              </div>
               <button
                 type="button"
                 onClick={() => {
                   setBoothEditDraft(boothNumber);
                   setShowBoothEditor(true);
                 }}
-                className="text-eb-micro uppercase tracking-widest font-bold text-eb-pop shrink-0"
+                className={`text-eb-title font-bold tabular-nums active:opacity-60 transition-opacity ${
+                  boothNumber ? "text-eb-black" : "text-eb-pop"
+                }`}
               >
-                {boothNumber ? "Edit" : "Set"}
+                {boothNumber || "Set"}
               </button>
-            </div>
-            <div
-              className={`text-eb-title font-bold mt-0.5 tabular-nums ${
-                boothNumber ? "text-eb-black" : "text-eb-light"
-              }`}
-            >
-              {boothNumber || "Not set"}
             </div>
           </div>
         </div>
