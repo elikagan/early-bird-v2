@@ -39,6 +39,12 @@ function VerifyContent() {
         let dest = "/home";
         if (data.phone_changed) {
           dest = "/account";
+        } else if (data.pending_invite_code) {
+          // Admin invited this phone as a dealer but they signed in
+          // via the front door instead of tapping the invite SMS.
+          // Route them to the invite page to finish dealer setup so
+          // they don't land as a plain buyer.
+          dest = `/invite/${data.pending_invite_code}`;
         } else if (data.user.needs_onboarding) {
           dest = isDealerSignup ? "/onboarding?dealer=1" : "/onboarding";
         } else {

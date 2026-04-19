@@ -159,8 +159,29 @@ export async function POST(request: Request) {
     args: [newId(), userRow.id as string, sessionToken, expiresAt],
   });
 
+  // Pending-invite check: if an admin created a dealer invite bound to
+  // this phone but the dealer hasn't redeemed yet, surface the code so
+  // the client can route them to /invite/[code] to finish setup
+  // instead of landing on /home as a plain buyer. Prevents the
+  // "admin invited me but I somehow signed in the front door"
+  // customer-service footgun.
+  let pendingInviteCode: string | null = null;
+  if (!userRow.dealer_id) {
+    const pending = await db.execute({
+      sql: `SELECT code FROM dealer_invites
+            WHERE phone = ? AND used_at IS NULL
+            ORDER BY created_at DESC LIMIT 1`,
+      args: [authToken.phone as string],
+    });
+    if (pending.rows.length > 0) {
+      pendingInviteCode = (pending.rows[0] as Record<string, unknown>)
+        .code as string;
+    }
+  }
+
   return jsonWithCookie({
     session_token: sessionToken,
+    pending_invite_code: pendingInviteCode,
     user: {
       id: userRow.id,
       phone: userRow.phone,
