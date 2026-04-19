@@ -22,6 +22,22 @@ export function formatDate(iso: string): string {
   });
 }
 
+// Short numeric "M.D" (e.g. "4.26"), pinned to LA time since these
+// are LA flea markets and we never want a traveling user to see a
+// different day than what's on the event.
+export function formatShortDate(iso: string): string {
+  const d = new Date(iso);
+  const month = d.toLocaleString("en-US", {
+    month: "numeric",
+    timeZone: "America/Los_Angeles",
+  });
+  const day = d.toLocaleString("en-US", {
+    day: "numeric",
+    timeZone: "America/Los_Angeles",
+  });
+  return `${month}.${day}`;
+}
+
 export function formatPhone(phone: string): string {
   const digits = phone.replace(/\D/g, "");
   if (digits.length === 11 && digits[0] === "1") {

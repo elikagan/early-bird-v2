@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRequireAuth } from "@/lib/require-auth";
 import { apiFetch } from "@/lib/api-client";
-import { formatPrice, formatDate } from "@/lib/format";
+import { formatPrice, formatDate, formatShortDate } from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
 import { Masthead } from "@/components/masthead";
 
@@ -232,6 +232,9 @@ function SellContent() {
                 className="text-eb-title font-bold text-eb-black truncate max-w-full text-left underline decoration-eb-pop decoration-2 underline-offset-4 active:opacity-60 transition-opacity"
               >
                 {market.name}
+                <span className="text-eb-meta font-normal text-eb-muted ml-2 tabular-nums no-underline">
+                  {formatShortDate(market.starts_at)}
+                </span>
               </button>
             </div>
             <div className="shrink-0 text-right">
