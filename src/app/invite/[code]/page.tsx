@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { NotFoundScreen } from "@/components/not-found-screen";
 
 type Step = "loading" | "form" | "invalid";
@@ -20,7 +20,6 @@ function formatPhoneForDisplay(raw: string | null): string {
 
 export default function InvitePage() {
   const params = useParams();
-  const router = useRouter();
   const code = params.code as string;
 
   const [step, setStep] = useState<Step>("loading");
@@ -89,10 +88,12 @@ export default function InvitePage() {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Something went wrong");
       }
-      // Redeem sets the session cookie on response. Head straight to
-      // the booth for the upcoming show — no magic-link round-trip.
-      router.refresh();
-      router.push("/sell");
+      // Redeem sets the session cookie on response. Use a full-page
+      // navigation (not router.push) so AuthProvider remounts and
+      // refreshUser() picks up the new cookie — otherwise /sell's
+      // useRequireAuth sees the old (logged-out) context and bounces
+      // us back to the landing page.
+      window.location.href = "/sell";
     } catch (err) {
       if (err instanceof Error && (err.message.includes("expired") || err.message.includes("used"))) {
         setStep("invalid");
@@ -102,7 +103,7 @@ export default function InvitePage() {
     } finally {
       setSubmitting(false);
     }
-  }, [code, phone, invitePhone, name, biz, router]);
+  }, [code, phone, invitePhone, name, biz]);
 
   return (
     <div className="min-h-screen bg-eb-bg flex flex-col">
