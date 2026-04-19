@@ -185,8 +185,8 @@ function SellContent() {
         <div className="px-5 py-4 border-b border-eb-border">
           <div className="flex items-start justify-between gap-5">
             <div className="flex-1 min-w-0">
-              <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-0.5">
-                Your booth at
+              <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-0.5 truncate">
+                {user?.business_name ? `${user.business_name} booth at` : "Your booth at"}
               </div>
               <button
                 type="button"
@@ -198,7 +198,7 @@ function SellContent() {
             </div>
             <div className="shrink-0 text-right">
               <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-0.5">
-                Booth
+                Booth #
               </div>
               <button
                 type="button"
