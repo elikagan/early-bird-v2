@@ -3,7 +3,7 @@ import db from "@/lib/db";
 import { error } from "@/lib/api";
 import { newId } from "@/lib/id";
 import { nanoid } from "nanoid";
-import { SESSION_COOKIE_NAME, SESSION_MAX_AGE } from "@/lib/auth";
+import { SESSION_COOKIE_NAME, SESSION_MAX_AGE, sessionCookieDomain } from "@/lib/auth";
 import { logEvent, EVT } from "@/lib/system-events";
 import { normalizeUSPhone } from "@/lib/phone";
 import { isValidShow } from "@/lib/shows";
@@ -137,6 +137,7 @@ export async function POST(request: Request) {
     sameSite: "lax",
     path: "/",
     maxAge: SESSION_MAX_AGE,
+    domain: sessionCookieDomain(request),
   });
   return res;
 }

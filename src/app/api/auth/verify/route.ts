@@ -3,10 +3,14 @@ import db from "@/lib/db";
 import { error } from "@/lib/api";
 import { newId } from "@/lib/id";
 import { nanoid } from "nanoid";
-import { SESSION_COOKIE_NAME, SESSION_MAX_AGE } from "@/lib/auth";
+import { SESSION_COOKIE_NAME, SESSION_MAX_AGE, sessionCookieDomain } from "@/lib/auth";
 
 /** Create a JSON response with the session cookie set */
-function jsonWithCookie(data: Record<string, unknown>, sessionToken: string) {
+function jsonWithCookie(
+  data: Record<string, unknown>,
+  sessionToken: string,
+  request: Request
+) {
   const res = NextResponse.json(data);
   res.cookies.set(SESSION_COOKIE_NAME, sessionToken, {
     httpOnly: true,
@@ -14,6 +18,7 @@ function jsonWithCookie(data: Record<string, unknown>, sessionToken: string) {
     sameSite: "lax",
     path: "/",
     maxAge: SESSION_MAX_AGE,
+    domain: sessionCookieDomain(request),
   });
   return res;
 }
@@ -90,7 +95,7 @@ export async function POST(request: Request) {
         is_dealer: userRow.is_dealer,
         needs_onboarding: false,
       },
-    }, sessionToken);
+    }, sessionToken, request);
   }
 
   // ── Early-access flow: buyer tapped a pre-shop share link and
@@ -143,7 +148,7 @@ export async function POST(request: Request) {
         is_dealer: userRow.is_dealer,
         needs_onboarding: false,
       },
-    }, sessionToken);
+    }, sessionToken, request);
   }
 
   // ── Dealer invite flow ──
@@ -183,7 +188,7 @@ export async function POST(request: Request) {
         is_dealer: userRow.is_dealer,
         needs_onboarding: false,
       },
-    }, sessionToken);
+    }, sessionToken, request);
   }
 
   // ── Normal login flow ──
@@ -244,5 +249,5 @@ export async function POST(request: Request) {
       is_dealer: userRow.is_dealer,
       needs_onboarding: !userRow.display_name,
     },
-  }, sessionToken);
+  }, sessionToken, request);
 }

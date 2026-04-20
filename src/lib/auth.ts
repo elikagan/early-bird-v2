@@ -18,6 +18,26 @@ export const SESSION_COOKIE_NAME = "eb_session";
 export const SESSION_MAX_AGE = 10 * 365 * 24 * 60 * 60; // 10 years in seconds
 
 /**
+ * Cookie domain to use for the session cookie. We pin to ".earlybird.la"
+ * in production so the cookie is shared between earlybird.la and
+ * www.earlybird.la — without this, a session set on the apex isn't
+ * sent to www (and vice versa), so users get silently logged out
+ * whenever their browser autocompletes the "wrong" hostname.
+ *
+ * Returns undefined for localhost / Vercel preview deployments so
+ * the cookie scopes to the exact host (which is what we want for
+ * dev — localhost, *.vercel.app — since they don't share a parent).
+ */
+export function sessionCookieDomain(request: Request): string | undefined {
+  if (process.env.NODE_ENV !== "production") return undefined;
+  const host = (request.headers.get("host") || "").toLowerCase();
+  if (host === "earlybird.la" || host.endsWith(".earlybird.la")) {
+    return ".earlybird.la";
+  }
+  return undefined;
+}
+
+/**
  * Read the session token from cookie first, then Authorization header.
  * Returns null if no valid session found.
  */

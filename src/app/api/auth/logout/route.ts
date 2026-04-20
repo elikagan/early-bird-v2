@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import db from "@/lib/db";
-import { SESSION_COOKIE_NAME } from "@/lib/auth";
+import { SESSION_COOKIE_NAME, sessionCookieDomain } from "@/lib/auth";
 
 export async function POST(request: Request) {
   // Read the session token from cookie or Authorization header so we can
@@ -35,6 +35,7 @@ export async function POST(request: Request) {
     sameSite: "lax",
     path: "/",
     maxAge: 0, // expire immediately
+    domain: sessionCookieDomain(request),
   });
   return res;
 }
