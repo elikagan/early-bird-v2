@@ -294,15 +294,7 @@ export default function EarlyAccessPage() {
                 How does it work?
               </h3>
               <p className="text-eb-meta text-eb-muted leading-relaxed">
-                Browse what dealers are bringing. Tap {"\u201C"}I{"\u2019"}m interested{"\u201D"} on anything you want and the dealer texts you directly. Payment and pickup happen in person at their booth on show day.
-              </p>
-            </div>
-            <div>
-              <h3 className="text-eb-caption font-bold text-eb-black uppercase tracking-wider mb-1">
-                Do I still need to go to the show?
-              </h3>
-              <p className="text-eb-meta text-eb-muted leading-relaxed">
-                Yes {"\u2014"} the deal closes at the booth. Pre-shopping just means you don{"\u2019"}t miss the best pieces in the morning rush.
+                Browse what dealers are bringing. Tap {"\u201C"}I{"\u2019"}m interested{"\u201D"} on anything you want. The dealer gets your name, number, and a short note, and takes it from there.
               </p>
             </div>
           </div>
