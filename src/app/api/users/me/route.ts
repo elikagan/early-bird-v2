@@ -63,6 +63,14 @@ export async function GET(request: Request) {
   });
   result.bought_count = Number(boughtRes.rows[0]?.count ?? 0);
 
+  // Early-access grants — let the client bypass the pre-drop countdown
+  // for markets this buyer has already unlocked.
+  const grants = await db.execute({
+    sql: `SELECT market_id FROM buyer_market_early_access WHERE user_id = ?`,
+    args: [user.id],
+  });
+  result.early_access_market_ids = grants.rows.map((r) => r.market_id as string);
+
   return json(result);
 }
 

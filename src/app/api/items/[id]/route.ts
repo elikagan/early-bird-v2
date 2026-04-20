@@ -60,7 +60,21 @@ export async function GET(
       if (mkt.status === "upcoming") {
         const isDealer = !!user?.dealer_id;
         const preshopOn = Number(mkt.dealer_preshop_enabled ?? 1) === 1;
-        if (!isDealer || !preshopOn) {
+
+        // Three ways through the gate: dealer+preshop, or buyer with
+        // an early-access grant for this market. See /api/items GET
+        // for the same logic.
+        let hasEarlyAccess = false;
+        if (user && !isDealer) {
+          const grant = await db.execute({
+            sql: `SELECT 1 FROM buyer_market_early_access WHERE user_id = ? AND market_id = ? LIMIT 1`,
+            args: [user.id, item.market_id as string],
+          });
+          hasEarlyAccess = grant.rows.length > 0;
+        }
+
+        const allowed = (isDealer && preshopOn) || hasEarlyAccess;
+        if (!allowed) {
           return error("Market is pre-drop", 403);
         }
       }

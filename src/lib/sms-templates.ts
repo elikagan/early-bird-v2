@@ -82,6 +82,14 @@ export function composeDealerInvite(url: string): string {
 }
 
 /**
+ * SMS sent to a buyer who requested early access to pre-shop a market.
+ * Contains the magic link that signs them in and grants access.
+ */
+export function composeEarlyAccess(marketName: string, url: string): string {
+  return `Early Bird: Here's your link to pre-shop ${marketName}:\n\n${url}`;
+}
+
+/**
  * SMS sent to followers when a market drops (goes live).
  */
 export function composeDropAlert(

@@ -39,6 +39,10 @@ function VerifyContent() {
         let dest = "/home";
         if (data.phone_changed) {
           dest = "/account";
+        } else if (data.early_access_market_id) {
+          // Early-access flow: grant was written server-side, drop the
+          // buyer straight into the market they asked to pre-shop.
+          dest = `/buy?market=${data.early_access_market_id}`;
         } else if (data.pending_invite_code) {
           // Admin invited this phone as a dealer but they signed in
           // via the front door instead of tapping the invite SMS.

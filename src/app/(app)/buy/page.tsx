@@ -154,8 +154,14 @@ function BuyFeedContent() {
     isDealer &&
     (market.dealer_preshop_enabled ?? 1) === 1;
 
+  // Buyer early-access — granted via the /early/[market-id] share
+  // flow. Same grid access as dealer pre-shop, no countdown.
+  const buyerEarlyAccess =
+    market.status === "upcoming" &&
+    !!user?.early_access_market_ids?.includes(market.id);
+
   // Pre-drop view — non-dealers, or dealers without pre-shop access
-  if (market.status !== "live" && !dealerPreshop) {
+  if (market.status !== "live" && !dealerPreshop && !buyerEarlyAccess) {
     const dropTime = new Date(market.drop_at).getTime();
     const diff = Math.max(0, dropTime - now);
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));

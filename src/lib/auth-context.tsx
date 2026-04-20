@@ -20,6 +20,10 @@ export interface User {
   dealer_id: string | null;
   business_name: string | null;
   instagram_handle: string | null;
+  // Markets this buyer has been granted pre-drop access to via the
+  // /early/[market-id] flow. Lets /buy and item pages skip the
+  // pre-drop countdown for these markets.
+  early_access_market_ids?: string[];
 }
 
 interface AuthContextType {
