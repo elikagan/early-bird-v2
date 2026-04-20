@@ -159,7 +159,7 @@ export default function EarlyAccessPage() {
     <div className="min-h-screen bg-eb-bg flex flex-col">
       <header className="py-6 text-center">
         <div className="text-eb-title tracking-widest text-eb-black">
-          EARLY BIRD
+          earlybird.la
         </div>
       </header>
 
@@ -167,7 +167,7 @@ export default function EarlyAccessPage() {
       <main className="px-5 flex-1 max-w-md mx-auto w-full">
         <div className="py-6 border-y border-eb-border text-center">
           <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-1">
-            Pre-shop
+            Pre-shop online via Early Bird
           </div>
           <h1 className="text-eb-display font-bold text-eb-black uppercase tracking-wider leading-tight">
             {market.name}
@@ -195,7 +195,7 @@ export default function EarlyAccessPage() {
               <p className="text-eb-caption text-eb-muted leading-relaxed">
                 We sent a link to{" "}
                 <span className="font-bold text-eb-black">{phone}</span>. Tap
-                it to open your early-access pass to {market.name}.
+                it to pre-shop {market.name} online.
               </p>
               <button
                 onClick={() => {
@@ -210,10 +210,10 @@ export default function EarlyAccessPage() {
           ) : (
             <>
               <h2 className="text-eb-body font-bold text-eb-black uppercase tracking-wider mb-1">
-                Get early access
+                Get your link
               </h2>
               <p className="text-eb-meta text-eb-muted leading-relaxed mb-5">
-                Drop your number and we{"\u2019"}ll text you a link to shop {market.name} before it opens to everyone.
+                A group of dealers going to {market.name} put their best pieces on Early Bird so you can browse and claim them before the show opens.
               </p>
 
               <div className="space-y-4">
@@ -264,6 +264,49 @@ export default function EarlyAccessPage() {
             </>
           )}
         </div>
+
+        {/* FAQ — always visible so buyers can read while waiting for the
+            SMS. Keeps the page self-explanatory for cold traffic landing
+            from an Instagram share. */}
+        <section className="border-t border-eb-border pt-6 pb-10">
+          <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-4">
+            FAQ
+          </div>
+          <div className="space-y-5">
+            <div>
+              <h3 className="text-eb-caption font-bold text-eb-black uppercase tracking-wider mb-1">
+                What is Early Bird?
+              </h3>
+              <p className="text-eb-meta text-eb-muted leading-relaxed">
+                A tool a group of LA flea market dealers built together so buyers could pre-shop their booths online before the event opens.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-eb-caption font-bold text-eb-black uppercase tracking-wider mb-1">
+                Is this affiliated with {market.name}?
+              </h3>
+              <p className="text-eb-meta text-eb-muted leading-relaxed">
+                No. Early Bird is owned and operated by the dealers themselves. We{"\u2019"}re not affiliated with the show or its organizers {"\u2014"} we just connect buyers to the sellers going.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-eb-caption font-bold text-eb-black uppercase tracking-wider mb-1">
+                How does it work?
+              </h3>
+              <p className="text-eb-meta text-eb-muted leading-relaxed">
+                Browse what dealers are bringing. Tap {"\u201C"}I{"\u2019"}m interested{"\u201D"} on anything you want and the dealer texts you directly. Payment and pickup happen in person at their booth on show day.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-eb-caption font-bold text-eb-black uppercase tracking-wider mb-1">
+                Do I still need to go to the show?
+              </h3>
+              <p className="text-eb-meta text-eb-muted leading-relaxed">
+                Yes {"\u2014"} the deal closes at the booth. Pre-shopping just means you don{"\u2019"}t miss the best pieces in the morning rush.
+              </p>
+            </div>
+          </div>
+        </section>
       </main>
     </div>
   );
