@@ -12,5 +12,15 @@
       "path": "/api/cron/prune-events",
       "schedule": "0 4 * * 0"
     }
+  ],
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        { "type": "host", "value": "www.earlybird.la" }
+      ],
+      "destination": "https://earlybird.la/:path*",
+      "permanent": true
+    }
   ]
 }
