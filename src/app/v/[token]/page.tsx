@@ -37,7 +37,14 @@ function VerifyContent() {
         try { localStorage.setItem("eb_token", data.session_token); } catch {}
 
         let dest = "/home";
-        if (data.phone_changed) {
+        // Highest priority: explicit `?to=` query param. Used by the
+        // inquiry confirmation SMS so the buyer lands back on the item
+        // they were looking at. Must start with "/" to prevent an
+        // open-redirect from a doctored SMS link.
+        const explicitTo = searchParams.get("to");
+        if (explicitTo && explicitTo.startsWith("/")) {
+          dest = explicitTo;
+        } else if (data.phone_changed) {
           dest = "/account";
         } else if (data.early_access_market_id) {
           // Early-access flow: grant was written server-side, drop the

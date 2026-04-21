@@ -1,141 +1,178 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState, useCallback } from "react";
+import { useParams } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
 import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
-import { normalizeUSPhone } from "@/lib/phone";
-import { formatShortDate } from "@/lib/format";
+import { formatPrice, formatShortDate } from "@/lib/format";
+import { BottomNav, adjustNavCount } from "@/components/bottom-nav";
+import { Masthead } from "@/components/masthead";
 import { NotFoundScreen } from "@/components/not-found-screen";
+
+interface Item {
+  id: string;
+  title: string;
+  price: number;
+  status: string;
+  photo_url: string | null;
+  thumb_url: string | null;
+  dealer_ref: string;
+  dealer_name: string;
+}
 
 interface Market {
   id: string;
   name: string;
   location: string | null;
   starts_at: string;
-  drop_at: string;
   status: string;
+  archived?: number;
   dealer_count: number;
   item_count: number;
 }
 
-type Step =
-  | "loading"
-  | "invalid"
-  | "form"       // anonymous user: show signup form
-  | "granting"   // signed-in user: API call in flight
-  | "sent";      // SMS sent, waiting on buyer to tap link
+/**
+ * Seeded PRNG (mulberry32). Stable shuffle per visitor-session —
+ * the same seed yields the same order, so if the visitor refreshes
+ * they see the same grid instead of a jarring re-shuffle. Seed is
+ * cached in sessionStorage keyed to market id.
+ */
+function mulberry32(seed: number) {
+  return function () {
+    seed |= 0;
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function shuffleWithSeed<T>(arr: T[], seed: number): T[] {
+  const rand = mulberry32(seed);
+  const out = arr.slice();
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
+function getSessionSeed(marketId: string): number {
+  const key = `eb_shuffle_seed_${marketId}`;
+  try {
+    const cached = sessionStorage.getItem(key);
+    if (cached) return Number(cached);
+    const seed = Math.floor(Math.random() * 2 ** 31);
+    sessionStorage.setItem(key, String(seed));
+    return seed;
+  } catch {
+    // sessionStorage blocked — fall back to fresh each render
+    return Math.floor(Math.random() * 2 ** 31);
+  }
+}
 
 export default function EarlyAccessPage() {
   const params = useParams();
-  const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
+  const { user } = useAuth();
   const marketId = params.marketId as string;
 
-  const [step, setStep] = useState<Step>("loading");
   const [market, setMarket] = useState<Market | null>(null);
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [items, setItems] = useState<Item[]>([]);
+  const [favMap, setFavMap] = useState<Map<string, string>>(new Map());
+  const [loading, setLoading] = useState(true);
+  const [invalid, setInvalid] = useState(false);
 
-  // Fetch market info. If the market is already live (past drop),
-  // there's nothing to "early access" — just punt them into /buy.
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch(`/api/markets/${marketId}`);
-        if (!res.ok) {
-          setStep("invalid");
+        const marketRes = await apiFetch(`/api/markets/${marketId}`);
+        if (!marketRes.ok) {
+          setInvalid(true);
+          setLoading(false);
           return;
         }
-        const data: Market = await res.json();
-        setMarket(data);
+        const marketData: Market = await marketRes.json();
+        setMarket(marketData);
 
-        if (data.status === "live") {
-          router.replace(`/buy?market=${data.id}`);
-          return;
+        const fetches: Promise<Response>[] = [
+          apiFetch(`/api/items?market_id=${marketId}`),
+        ];
+        if (user) fetches.push(apiFetch("/api/favorites"));
+        const [itemsRes, favsRes] = await Promise.all(fetches);
+
+        if (itemsRes.ok) {
+          const raw: Item[] = await itemsRes.json();
+          const visible = raw.filter((i) => i.status !== "deleted");
+          const seed = getSessionSeed(marketId);
+          setItems(shuffleWithSeed(visible, seed));
         }
 
-        // Wait for auth state to settle before deciding next step.
-        // authLoading flip below handles the rest.
-        setStep("form");
+        if (favsRes?.ok) {
+          const favs: { id: string; favorite_id: string }[] = await favsRes.json();
+          setFavMap(new Map(favs.map((f) => [f.id, f.favorite_id])));
+        }
       } catch {
-        setStep("invalid");
+        setInvalid(true);
+      } finally {
+        setLoading(false);
       }
     }
-    load();
-  }, [marketId, router]);
+    if (marketId) load();
+  }, [marketId, user]);
 
-  // Signed-in user: grant access immediately on mount (skip the SMS
-  // round-trip) and drop them into the market.
-  useEffect(() => {
-    if (authLoading || !market || !user) return;
-    if (market.status === "live") return;
-
-    let cancelled = false;
-    async function grant() {
-      setStep("granting");
-      try {
-        const res = await apiFetch("/api/early-access/grant", {
-          method: "POST",
-          body: JSON.stringify({ market_id: marketId, source: "share" }),
+  const toggleFav = useCallback(
+    async (e: React.MouseEvent, itemId: string) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (!user) {
+        try {
+          localStorage.setItem("eb_return_to", `/early/${marketId}`);
+        } catch {}
+        return;
+      }
+      const existingFavId = favMap.get(itemId);
+      if (existingFavId) {
+        setFavMap((prev) => {
+          const next = new Map(prev);
+          next.delete(itemId);
+          return next;
         });
-        if (cancelled) return;
+        adjustNavCount("watching", -1);
+        await apiFetch(`/api/favorites/${existingFavId}`, { method: "DELETE" });
+      } else {
+        setFavMap((prev) => new Map([...prev, [itemId, "_pending"]]));
+        adjustNavCount("watching", +1);
+        const res = await apiFetch("/api/favorites", {
+          method: "POST",
+          body: JSON.stringify({ item_id: itemId }),
+        });
         if (res.ok) {
-          router.replace(`/buy?market=${marketId}`);
+          const fav = await res.json();
+          setFavMap((prev) => new Map([...prev, [itemId, fav.id]]));
         } else {
-          const data = await res.json().catch(() => ({}));
-          setError(data.error || "Couldn't grant access");
-          setStep("form");
-        }
-      } catch {
-        if (!cancelled) {
-          setError("Something went wrong");
-          setStep("form");
+          setFavMap((prev) => {
+            const next = new Map(prev);
+            next.delete(itemId);
+            return next;
+          });
+          adjustNavCount("watching", -1);
         }
       }
-    }
-    grant();
-    return () => { cancelled = true; };
-  }, [authLoading, user, market, marketId, router]);
+    },
+    [favMap, user, marketId]
+  );
 
-  const submit = async () => {
-    if (submitting) return;
-    setError(null);
-    const result = normalizeUSPhone(phone);
-    if (!result.ok) {
-      setError(result.reason);
-      return;
-    }
-    if (!name.trim()) {
-      setError("Name is required");
-      return;
-    }
-    setSubmitting(true);
-    try {
-      const res = await fetch("/api/early-access/start", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          phone: result.phone,
-          name: name.trim(),
-          market_id: marketId,
-        }),
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Couldn't send link");
-      }
-      setStep("sent");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't send link");
-    } finally {
-      setSubmitting(false);
-    }
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-eb-bg flex items-center justify-center">
+        <span className="eb-spinner" />
+      </div>
+    );
+  }
 
-  if (step === "invalid") {
+  if (invalid || !market) {
     return (
       <div className="min-h-screen bg-eb-bg">
         <NotFoundScreen
@@ -147,159 +184,98 @@ export default function EarlyAccessPage() {
     );
   }
 
-  if (step === "loading" || step === "granting" || !market) {
-    return (
-      <div className="min-h-screen bg-eb-bg flex items-center justify-center">
-        <span className="eb-spinner" />
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-eb-bg flex flex-col">
-      <header className="py-6 text-center">
-        <div className="text-eb-title tracking-widest text-eb-black">
-          earlybird.la
-        </div>
-      </header>
+    <>
+      <Masthead />
 
       {/* Market hero */}
-      <main className="px-5 flex-1 max-w-md mx-auto w-full">
-        <div className="py-6 border-y border-eb-border text-center">
-          <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-1">
-            Pre-shop online via Early Bird
-          </div>
-          <h1 className="text-eb-display font-bold text-eb-black uppercase tracking-wider leading-tight">
-            {market.name}
-          </h1>
-          <div className="text-eb-body text-eb-black mt-2 tabular-nums">
-            {formatShortDate(market.starts_at)}
-            {market.location ? (
-              <span className="text-eb-muted"> · {market.location}</span>
-            ) : null}
-          </div>
-          {(market.dealer_count > 0 || market.item_count > 0) && (
-            <div className="text-eb-meta text-eb-muted mt-2">
-              {market.item_count} items · {market.dealer_count} dealers
-            </div>
-          )}
+      <section className="px-5 pt-5 pb-5 border-b border-eb-border">
+        <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-1">
+          Pre-shop online via Early Bird
         </div>
+        <h1 className="text-eb-display font-bold text-eb-black uppercase tracking-wider leading-tight">
+          {market.name}
+        </h1>
+        <div className="text-eb-body text-eb-black mt-2 tabular-nums">
+          {formatShortDate(market.starts_at)}
+          {market.location ? (
+            <span className="text-eb-muted"> {"\u00b7"} {market.location}</span>
+          ) : null}
+        </div>
+        {(market.dealer_count > 0 || market.item_count > 0) && (
+          <div className="text-eb-meta text-eb-muted mt-1">
+            {market.item_count} items {"\u00b7"} {market.dealer_count} dealers
+          </div>
+        )}
+      </section>
 
-        {/* Form or confirmation */}
-        <div className="py-6">
-          {step === "sent" ? (
-            <div className="border-l-2 border-eb-pop pl-4 py-2">
-              <h3 className="text-eb-display font-bold uppercase tracking-wider text-eb-black mb-2">
-                Check your texts
-              </h3>
-              <p className="text-eb-caption text-eb-muted leading-relaxed">
-                We sent a link to{" "}
-                <span className="font-bold text-eb-black">{phone}</span>. Tap
-                it to pre-shop {market.name} online.
-              </p>
-              <button
-                onClick={() => {
-                  setStep("form");
-                  setPhone("");
-                }}
-                className="text-eb-meta text-eb-muted mt-3 underline"
-              >
-                Use a different number
-              </button>
-            </div>
-          ) : (
-            <>
-              <h2 className="text-eb-body font-bold text-eb-black uppercase tracking-wider mb-1">
-                Get your link
-              </h2>
-              <p className="text-eb-meta text-eb-muted leading-relaxed mb-5">
-                A group of dealers going to {market.name} put their best pieces on Early Bird so you can browse and claim them before the show opens.
-              </p>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="text-eb-micro text-eb-muted uppercase tracking-widest block mb-1">
-                    Your Name
-                  </label>
-                  <input
-                    type="text"
-                    className="eb-input"
-                    value={name}
-                    onChange={(e) => setName(e.target.value.slice(0, 60))}
-                    placeholder="Jane Doe"
-                    autoFocus
-                  />
-                </div>
-
-                <div>
-                  <label className="text-eb-micro text-eb-muted uppercase tracking-widest block mb-1">
-                    Phone Number
-                  </label>
-                  <input
-                    type="tel"
-                    inputMode="tel"
-                    className="eb-input"
-                    value={phone}
-                    onChange={(e) =>
-                      setPhone(e.target.value.replace(/[^\d()\-\s+.]/g, "").slice(0, 32))
-                    }
-                    placeholder="(555) 123-4567"
-                  />
-                </div>
-
-                {error && <p className="text-eb-meta text-eb-red">{error}</p>}
-
-                <button
-                  onClick={submit}
-                  disabled={submitting}
-                  className="eb-btn w-full"
+      <main className="pb-24">
+        {items.length > 0 ? (
+          <div className="eb-grid">
+            {items.map((item) => {
+              const isSold = item.status === "sold";
+              const isHeld = item.status === "hold";
+              const isFav = favMap.has(item.id);
+              return (
+                <Link
+                  key={item.id}
+                  href={`/item/${item.id}`}
+                  className={`eb-grid-card${isSold ? " eb-sold" : ""}`}
                 >
-                  {submitting ? "Sending\u2026" : "Text Me The Link"}
-                </button>
-
-                <p className="text-eb-micro font-readable text-eb-muted text-center leading-relaxed">
-                  Msg &amp; data rates may apply. Reply STOP to opt out.
-                </p>
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* FAQ — always visible so buyers can read while waiting for the
-            SMS. Keeps the page self-explanatory for cold traffic landing
-            from an Instagram share. */}
-        <section className="border-t border-eb-border pt-6 pb-10">
-          <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-4">
-            FAQ
+                  {user && (
+                    <button
+                      type="button"
+                      className="eb-fav"
+                      onClick={(e) => toggleFav(e, item.id)}
+                      aria-label={isFav ? "Remove favorite" : "Add favorite"}
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        className={isFav ? "eb-fav-filled" : "eb-fav-outline"}
+                      >
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                      </svg>
+                    </button>
+                  )}
+                  {item.photo_url ? (
+                    <Image
+                      src={item.thumb_url || item.photo_url}
+                      alt={item.title}
+                      width={400}
+                      height={400}
+                      sizes="(max-width: 430px) 50vw, 215px"
+                      className="eb-photo"
+                    />
+                  ) : (
+                    <div className="eb-photo bg-eb-border" />
+                  )}
+                  <div className="eb-body">
+                    <div className="eb-title">{item.title}</div>
+                    <div className="flex items-center gap-2">
+                      <div className="eb-price">{formatPrice(item.price)}</div>
+                      {isHeld && <span className="eb-tag-hold">HELD</span>}
+                    </div>
+                    <div className="text-eb-micro uppercase tracking-widest text-eb-muted mt-1 truncate">
+                      {item.dealer_name}
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
-          <div className="space-y-5">
-            <div>
-              <h3 className="text-eb-caption font-bold text-eb-black uppercase tracking-wider mb-1">
-                What is Early Bird?
-              </h3>
-              <p className="text-eb-meta text-eb-muted leading-relaxed">
-                A tool a group of LA flea market dealers built together so buyers could pre-shop their booths online before the event opens.
-              </p>
-            </div>
-            <div>
-              <h3 className="text-eb-caption font-bold text-eb-black uppercase tracking-wider mb-1">
-                Is this affiliated with {market.name}?
-              </h3>
-              <p className="text-eb-meta text-eb-muted leading-relaxed">
-                No. Early Bird is owned and operated by the dealers themselves. We{"\u2019"}re not affiliated with the show or its organizers {"\u2014"} we just connect buyers to the sellers going.
-              </p>
-            </div>
-            <div>
-              <h3 className="text-eb-caption font-bold text-eb-black uppercase tracking-wider mb-1">
-                How does it work?
-              </h3>
-              <p className="text-eb-meta text-eb-muted leading-relaxed">
-                Browse what dealers are bringing. Tap {"\u201C"}I{"\u2019"}m interested{"\u201D"} on anything you want. The dealer gets your name, number, and a short note, and takes it from there.
-              </p>
-            </div>
+        ) : (
+          <div className="eb-empty">
+            <div className="eb-icon">{"\u25cb"}</div>
+            <p>
+              Nothing posted to {market.name} yet.
+              <br />
+              Check back soon.
+            </p>
           </div>
-        </section>
+        )}
       </main>
-    </div>
+
+      <BottomNav active="buy" />
+    </>
   );
 }

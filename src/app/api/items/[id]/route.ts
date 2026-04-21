@@ -47,39 +47,13 @@ export async function GET(
 
   const item = result.rows[0] as Record<string, unknown>;
 
-  // Dealer pre-shop gate: non-dealers can't see items from markets that
-  // haven't dropped. Owners can always see their own items.
+  // No pre-drop gate here — items are publicly browsable regardless of
+  // market status. The inquiry step is where we collect phone+name,
+  // not the view step.
+
+  // isOwner is still used below to skip view-count increments on the
+  // dealer's own views.
   const isOwner = user?.id === item.dealer_user_id;
-  if (!isOwner) {
-    const marketCheck = await db.execute({
-      sql: `SELECT status, dealer_preshop_enabled FROM markets WHERE id = ?`,
-      args: [item.market_id as string],
-    });
-    if (marketCheck.rows.length > 0) {
-      const mkt = marketCheck.rows[0] as Record<string, unknown>;
-      if (mkt.status === "upcoming") {
-        const isDealer = !!user?.dealer_id;
-        const preshopOn = Number(mkt.dealer_preshop_enabled ?? 1) === 1;
-
-        // Three ways through the gate: dealer+preshop, or buyer with
-        // an early-access grant for this market. See /api/items GET
-        // for the same logic.
-        let hasEarlyAccess = false;
-        if (user && !isDealer) {
-          const grant = await db.execute({
-            sql: `SELECT 1 FROM buyer_market_early_access WHERE user_id = ? AND market_id = ? LIMIT 1`,
-            args: [user.id, item.market_id as string],
-          });
-          hasEarlyAccess = grant.rows.length > 0;
-        }
-
-        const allowed = (isDealer && preshopOn) || hasEarlyAccess;
-        if (!allowed) {
-          return error("Market is pre-drop", 403);
-        }
-      }
-    }
-  }
 
   // Photos
   const photos = await db.execute({

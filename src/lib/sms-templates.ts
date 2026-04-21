@@ -90,6 +90,19 @@ export function composeEarlyAccess(marketName: string, url: string): string {
 }
 
 /**
+ * SMS sent to a buyer right after they submit an anonymous inquiry.
+ * Confirms the dealer got their message + gives them a magic link that
+ * signs them in and returns them to the item they just inquired on.
+ */
+export function composeInquiryBuyerConfirmation(
+  dealerName: string,
+  itemTitle: string,
+  url: string
+): string {
+  return `Early Bird: ${dealerName} got your message about "${itemTitle}". Your sign-in link to keep browsing:\n\n${url}`;
+}
+
+/**
  * SMS sent to followers when a market drops (goes live).
  */
 export function composeDropAlert(
