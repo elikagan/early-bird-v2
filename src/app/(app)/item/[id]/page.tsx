@@ -100,7 +100,7 @@ export default function ItemDetailPage() {
   const [transition, setTransition] = useState(false);
   const carouselRef = useRef<HTMLDivElement>(null);
   const drawerRef = useRef<HTMLDivElement>(null);
-  const dragStartYRef = useRef<number | null>(null);
+  const handleRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<{ sx: number; sy: number; dx: number; swiping: boolean } | null>(null);
 
   // Favorites
@@ -110,17 +110,21 @@ export default function ItemDetailPage() {
   // Inquiry drawer (buyer)
   const [showInquiry, setShowInquiry] = useState(false);
 
-  // When the drawer is open: (1) lock body scroll so the page behind
-  // can't be dragged, (2) track iOS virtual keyboard height via
-  // visualViewport and write --eb-kb-offset on :root so the drawer
-  // CSS can lift itself above the keyboard.
+  // When the drawer is open: (1) lock body scroll, (2) track the iOS
+  // virtual keyboard height via visualViewport and write --eb-kb-offset
+  // on :root so the drawer CSS can lift itself above the keyboard,
+  // (3) attach NATIVE (non-passive) touch listeners to the drag
+  // handle so we can preventDefault and stop iOS from interpreting
+  // the drag as a scroll of the drawer's content.
   useEffect(() => {
     if (!showInquiry) return;
 
+    // 1. Lock body scroll
     document.body.classList.add("eb-scroll-lock");
 
+    // 2. Keyboard offset
     const vv = window.visualViewport;
-    const update = () => {
+    const updateKb = () => {
       if (!vv) return;
       const occluded = Math.max(
         0,
@@ -132,18 +136,85 @@ export default function ItemDetailPage() {
       );
     };
     if (vv) {
-      vv.addEventListener("resize", update);
-      vv.addEventListener("scroll", update);
-      update();
+      vv.addEventListener("resize", updateKb);
+      vv.addEventListener("scroll", updateKb);
+      updateKb();
+    }
+
+    // 3. Drag-to-resize handle. Native listeners with passive:false
+    //    so preventDefault works. The drawer is resized in real time
+    //    by writing inline height on the ref (DOM mutation, not
+    //    JSX inline style).
+    const handle = handleRef.current;
+    const drawer = drawerRef.current;
+    let startY: number | null = null;
+    let startHeight = 0;
+
+    const onTouchStart = (ev: TouchEvent) => {
+      if (!drawer) return;
+      ev.preventDefault();
+      startY = ev.touches[0].clientY;
+      startHeight = drawer.getBoundingClientRect().height;
+      // Disable transition during active drag for direct feel.
+      drawer.style.transition = "none";
+    };
+    const onTouchMove = (ev: TouchEvent) => {
+      if (startY == null || !drawer) return;
+      ev.preventDefault();
+      const dy = ev.touches[0].clientY - startY;
+      // Drag DOWN (positive dy) = shrink. Drag UP (negative dy) = grow.
+      const next = startHeight - dy;
+      // Clamp to a minimum of 120 so the drawer never disappears while
+      // the user is still interacting. Max is handled by CSS
+      // max-height: 100svh - kb-offset.
+      drawer.style.height = `${Math.max(120, next)}px`;
+    };
+    const onTouchEnd = (ev: TouchEvent) => {
+      if (startY == null || !drawer) return;
+      const dy = ev.changedTouches[0].clientY - startY;
+      const finalHeight = startHeight - dy;
+      startY = null;
+      // Restore transition
+      drawer.style.transition = "";
+      // Closed-threshold: if the user dragged it small, dismiss.
+      if (finalHeight < 200) {
+        drawer.style.height = "";
+        setShowInquiry(false);
+        setAnonSent(false);
+        setAnonError(null);
+      }
+      // Otherwise keep the new height (no snap points — user owns it).
+    };
+    const onTouchCancel = () => {
+      startY = null;
+      if (drawer) drawer.style.transition = "";
+    };
+
+    if (handle) {
+      handle.addEventListener("touchstart", onTouchStart, { passive: false });
+      handle.addEventListener("touchmove", onTouchMove, { passive: false });
+      handle.addEventListener("touchend", onTouchEnd);
+      handle.addEventListener("touchcancel", onTouchCancel);
     }
 
     return () => {
       document.body.classList.remove("eb-scroll-lock");
       if (vv) {
-        vv.removeEventListener("resize", update);
-        vv.removeEventListener("scroll", update);
+        vv.removeEventListener("resize", updateKb);
+        vv.removeEventListener("scroll", updateKb);
       }
       document.documentElement.style.removeProperty("--eb-kb-offset");
+      if (handle) {
+        handle.removeEventListener("touchstart", onTouchStart);
+        handle.removeEventListener("touchmove", onTouchMove);
+        handle.removeEventListener("touchend", onTouchEnd);
+        handle.removeEventListener("touchcancel", onTouchCancel);
+      }
+      // Clear any inline height on the drawer so next open is default.
+      if (drawerRef.current) {
+        drawerRef.current.style.height = "";
+        drawerRef.current.style.transition = "";
+      }
     };
   }, [showInquiry]);
   const [inquiryMsg, setInquiryMsg] = useState("");
@@ -1301,40 +1372,14 @@ export default function ItemDetailPage() {
             className="eb-drawer-kb-aware fixed left-0 right-0 max-w-[430px] mx-auto bg-white rounded-t-2xl border-t border-eb-border z-50 px-5 pt-3 pb-6 overflow-y-auto"
           >
             {/* Drag handle. Whole top band is the touch target (tiny
-                pill alone is too small). Pointer events + touch-none
-                so iOS doesn't hand the gesture to the drawer's own
-                overflow-y scroll before we see it. Drag > 80px and
-                release to close. */}
+                pill alone is too small). Native touch listeners are
+                attached in the drawer's useEffect so we can
+                preventDefault and stop iOS from hijacking the gesture
+                for scrolling the drawer's content. Drag up = grow,
+                drag down = shrink, drag very small = close. */}
             <div
+              ref={handleRef}
               className="eb-drawer-handle -mx-5 -mt-3 px-5 pt-3 pb-2 flex justify-center touch-none cursor-grab active:cursor-grabbing"
-              onPointerDown={(e) => {
-                (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-                dragStartYRef.current = e.clientY;
-              }}
-              onPointerMove={(e) => {
-                if (dragStartYRef.current == null || !drawerRef.current) return;
-                const dy = e.clientY - dragStartYRef.current;
-                if (dy < 0) {
-                  drawerRef.current.style.transform = "";
-                  return;
-                }
-                drawerRef.current.style.transform = `translateY(${dy}px)`;
-              }}
-              onPointerUp={(e) => {
-                if (dragStartYRef.current == null || !drawerRef.current) return;
-                const dy = e.clientY - dragStartYRef.current;
-                dragStartYRef.current = null;
-                drawerRef.current.style.transform = "";
-                if (dy > 80) {
-                  setShowInquiry(false);
-                  setAnonSent(false);
-                  setAnonError(null);
-                }
-              }}
-              onPointerCancel={() => {
-                if (drawerRef.current) drawerRef.current.style.transform = "";
-                dragStartYRef.current = null;
-              }}
             >
               <div className="w-12 h-1 bg-eb-border rounded-full" />
             </div>
