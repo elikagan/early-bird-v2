@@ -41,6 +41,15 @@
 }
 
 @layer components {
+  /* ---- Drawer that floats above iOS virtual keyboard ----
+     Works with a useEffect hook that writes --eb-kb-offset on :root
+     whenever the visual viewport shrinks (keyboard opens). Without
+     this rule, position:fixed drawers stay anchored to the layout
+     viewport's bottom — which is hidden under the keyboard. */
+  .eb-drawer-kb-aware {
+    bottom: var(--eb-kb-offset, 0px);
+  }
+
   /* ---- Masthead ---- */
   .eb-masthead {
     padding: 14px 20px;

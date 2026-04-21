@@ -15,7 +15,6 @@ import {
   timeAgo,
 } from "@/lib/format";
 import { BottomNav, adjustNavCount } from "@/components/bottom-nav";
-import { SignupDrawer } from "@/components/signup-drawer";
 import { NotFoundScreen } from "@/components/not-found-screen";
 
 interface Photo {
@@ -157,9 +156,6 @@ export default function ItemDetailPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  // Signup drawer (logged-out users)
-  const [showSignup, setShowSignup] = useState(false);
-
   // ── Edit mode state ──
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState("");
@@ -190,8 +186,15 @@ export default function ItemDetailPage() {
       }
       const data: ItemDetail = await res.json();
       setItem(data);
-      setIsFav(data.is_favorited || false);
-      setFavId(data.favorite_id || null);
+      // Authed users: heart state comes from the /api/items/[id]
+      // payload. Anons: check localStorage.
+      if (user) {
+        setIsFav(data.is_favorited || false);
+        setFavId(data.favorite_id || null);
+      } else {
+        const { hasAnonFavorite } = await import("@/lib/anon-favorites");
+        setIsFav(hasAnonFavorite(data.id));
+      }
 
       // Dealer-own: fetch inquiries
       if (user && data.dealer_user_id === user.id) {
@@ -379,6 +382,21 @@ export default function ItemDetailPage() {
 
   const toggleFavorite = useCallback(async () => {
     if (!item) return;
+    // Anonymous path: toggle in localStorage. On their first login
+    // the AuthProvider drains this list into real /api/favorites rows.
+    if (!user) {
+      const { hasAnonFavorite, addAnonFavorite, removeAnonFavorite } =
+        await import("@/lib/anon-favorites");
+      if (hasAnonFavorite(item.id)) {
+        removeAnonFavorite(item.id);
+        setIsFav(false);
+      } else {
+        addAnonFavorite(item.id);
+        setIsFav(true);
+      }
+      return;
+    }
+    // Authenticated path: hit the API
     if (isFav && favId) {
       await apiFetch(`/api/favorites/${favId}`, { method: "DELETE" });
       setIsFav(false);
@@ -396,28 +414,24 @@ export default function ItemDetailPage() {
         adjustNavCount("watching", +1);
       }
     }
-  }, [item, isFav, favId]);
+  }, [item, isFav, favId, user]);
 
   const sendInquiry = useCallback(async () => {
     if (!item || sending) return;
 
-    // Build message + body based on auth state. Signed-in users keep
-    // the original 4-option preset UI; anons get a single textarea
-    // plus name + phone.
+    // Unified message resolution — both auth states use the same
+    // preset options. Anons add name + phone on top.
+    if (!inquiryOption) return;
     let message = "";
-    let body: Record<string, unknown> = {};
+    if (inquiryOption === "buy") message = "I'm interested and ready to buy.";
+    else if (inquiryOption === "discuss") message = "I'm interested — I'd like to discuss.";
+    else if (inquiryOption === "price") message = "What's your best price?";
+    else if (inquiryOption === "custom") message = inquiryMsg.trim();
+    if (!message) return;
 
-    if (user) {
-      if (!inquiryOption) return;
-      if (inquiryOption === "buy") message = "I'm interested and ready to buy.";
-      else if (inquiryOption === "discuss") message = "I'm interested — I'd like to discuss.";
-      else if (inquiryOption === "price") message = "What's your best price?";
-      else if (inquiryOption === "custom") message = inquiryMsg.trim();
-      if (!message) return;
-      body = { item_id: item.id, message };
-    } else {
+    let body: Record<string, unknown> = { item_id: item.id, message };
+    if (!user) {
       const trimmedName = anonName.trim();
-      const trimmedMsg = inquiryMsg.trim() || `Interested in the ${item.title}.`;
       if (!trimmedName) {
         setAnonError("Name is required");
         return;
@@ -426,13 +440,7 @@ export default function ItemDetailPage() {
         setAnonError("Phone is required");
         return;
       }
-      message = trimmedMsg;
-      body = {
-        item_id: item.id,
-        message: trimmedMsg,
-        name: trimmedName,
-        phone: anonPhone,
-      };
+      body = { ...body, name: trimmedName, phone: anonPhone };
       setAnonError(null);
     }
 
@@ -559,13 +567,10 @@ export default function ItemDetailPage() {
           </button>
         ) : !isOwner && !user ? (
           <button
-            onClick={() => {
-              localStorage.setItem("eb_return_to", `/item/${id}`);
-              setShowSignup(true);
-            }}
+            onClick={toggleFavorite}
             className="eb-fav-btn"
           >
-            <svg viewBox="0 0 24 24" className="eb-fav-outline">
+            <svg viewBox="0 0 24 24" className={isFav ? "eb-fav-filled" : "eb-fav-outline"}>
               <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
             </svg>
           </button>
@@ -1281,7 +1286,7 @@ export default function ItemDetailPage() {
               setAnonError(null);
             }}
           />
-          <div className="fixed bottom-[var(--eb-kb-offset,0px)] left-0 right-0 max-w-[430px] mx-auto bg-white rounded-t-2xl border-t border-eb-border z-50 px-5 pt-3 pb-6 max-h-[90vh] overflow-y-auto">
+          <div className="eb-drawer-kb-aware fixed left-0 right-0 max-w-[430px] mx-auto bg-white rounded-t-2xl border-t border-eb-border z-50 px-5 pt-3 pb-6 max-h-[90vh] overflow-y-auto">
             <div className="w-12 h-1 bg-eb-border rounded-full mx-auto mb-4" />
 
             {/* Anon confirmation state — after the text has been sent */}
@@ -1326,93 +1331,11 @@ export default function ItemDetailPage() {
                   from there.
                 </p>
 
-                {user ? (
-                  <>
-                    {/* Preset options + custom (signed-in) */}
-                    <div className="space-y-2">
-                      {[
-                        { key: "buy" as const,     label: "Ready to buy",            text: "I'm interested and ready to buy." },
-                        { key: "discuss" as const, label: "Let's discuss",           text: "I'm interested \u2014 I'd like to discuss." },
-                        { key: "price" as const,   label: "What's your best price?", text: "What's your best price?" },
-                        { key: "custom" as const,  label: "Write your own",          text: "" },
-                      ].map((opt) => {
-                        const isSelected = inquiryOption === opt.key;
-                        return (
-                          <button
-                            key={opt.key}
-                            type="button"
-                            onClick={() => setInquiryOption(opt.key)}
-                            className={
-                              "w-full text-left px-4 py-3 border-2 transition-colors " +
-                              (isSelected
-                                ? "border-eb-pop bg-eb-pop-bg"
-                                : "border-eb-border bg-white active:bg-eb-border/30")
-                            }
-                          >
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="min-w-0">
-                                <div className="text-eb-caption font-bold uppercase tracking-wider text-eb-black">
-                                  {opt.label}
-                                </div>
-                                {opt.key !== "custom" && (
-                                  <div className="text-eb-meta text-eb-muted mt-1 leading-relaxed">
-                                    &ldquo;{opt.text}&rdquo;
-                                  </div>
-                                )}
-                              </div>
-                              <div
-                                className={
-                                  "shrink-0 w-5 h-5 rounded-full border-2 mt-0.5 flex items-center justify-center " +
-                                  (isSelected ? "border-eb-pop" : "border-eb-border")
-                                }
-                              >
-                                {isSelected && (
-                                  <div className="w-2.5 h-2.5 rounded-full bg-eb-pop" />
-                                )}
-                              </div>
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    {/* Custom textarea — reveals when "Write your own" is selected */}
-                    {inquiryOption === "custom" && (
-                      <div className="mt-4">
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="text-eb-meta uppercase tracking-wider text-eb-muted">
-                            Your Message
-                          </span>
-                          <span className="text-eb-meta text-eb-muted tabular-nums">
-                            {inquiryMsg.length} / 240
-                          </span>
-                        </div>
-                        <textarea
-                          className="eb-input h-24 resize-none"
-                          placeholder={`Love the ${item.title.toLowerCase()} \u2014 any details?`}
-                          value={inquiryMsg}
-                          onChange={(e) => setInquiryMsg(e.target.value.slice(0, 240))}
-                          autoFocus
-                        />
-                      </div>
-                    )}
-
-                    <button
-                      className="eb-btn mt-5"
-                      onClick={sendInquiry}
-                      disabled={
-                        sending ||
-                        !inquiryOption ||
-                        (inquiryOption === "custom" && inquiryMsg.trim().length === 0)
-                      }
-                    >
-                      {sending ? "Sending..." : "Send Inquiry"}
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    {/* Anon fields — name, phone, optional message */}
-                    <div className="space-y-4">
+                {/* Anon-only: name + phone collected above the preset
+                    choices. Signed-in users skip these — we already
+                    have their account. */}
+                  {!user && (
+                    <div className="space-y-4 mb-5">
                       <div>
                         <label className="text-eb-micro text-eb-muted uppercase tracking-widest block mb-1">
                           Your Name
@@ -1423,7 +1346,6 @@ export default function ItemDetailPage() {
                           value={anonName}
                           onChange={(e) => setAnonName(e.target.value.slice(0, 60))}
                           placeholder="Jane Doe"
-                          autoFocus
                         />
                       </div>
                       <div>
@@ -1437,46 +1359,105 @@ export default function ItemDetailPage() {
                           value={anonPhone}
                           onChange={(e) =>
                             setAnonPhone(
-                              e.target.value.replace(/[^\d()\-\s+.]/g, "").slice(0, 32)
+                              e.target.value
+                                .replace(/[^\d()\-\s+.]/g, "")
+                                .slice(0, 32)
                             )
                           }
                           placeholder="(555) 123-4567"
                         />
                       </div>
-                      <div>
-                        <div className="flex justify-between items-center mb-1">
-                          <label className="text-eb-micro text-eb-muted uppercase tracking-widest">
-                            Message {"\u00b7"} optional
-                          </label>
-                          <span className="text-eb-meta text-eb-muted tabular-nums">
-                            {inquiryMsg.length} / 240
-                          </span>
-                        </div>
-                        <textarea
-                          className="eb-input h-20 resize-none"
-                          placeholder={`Interested in the ${item.title.toLowerCase()}.`}
-                          value={inquiryMsg}
-                          onChange={(e) => setInquiryMsg(e.target.value.slice(0, 240))}
-                        />
-                      </div>
-
-                      {anonError && (
-                        <p className="text-eb-meta text-eb-red">{anonError}</p>
-                      )}
-
-                      <button
-                        className="eb-btn"
-                        onClick={sendInquiry}
-                        disabled={sending}
-                      >
-                        {sending ? "Sending\u2026" : "Text the dealer"}
-                      </button>
-
-                      <p className="text-eb-micro font-readable text-eb-muted text-center leading-relaxed">
-                        Msg &amp; data rates may apply. Reply STOP to opt out.
-                      </p>
                     </div>
-                  </>
+                  )}
+
+                  {/* Preset options — same UI for both auth states. */}
+                  <div className="space-y-2">
+                    {[
+                      { key: "buy" as const,     label: "Ready to buy",            text: "I'm interested and ready to buy." },
+                      { key: "discuss" as const, label: "Let's discuss",           text: "I'm interested \u2014 I'd like to discuss." },
+                      { key: "price" as const,   label: "What's your best price?", text: "What's your best price?" },
+                      { key: "custom" as const,  label: "Write your own",          text: "" },
+                    ].map((opt) => {
+                      const isSelected = inquiryOption === opt.key;
+                      return (
+                        <button
+                          key={opt.key}
+                          type="button"
+                          onClick={() => setInquiryOption(opt.key)}
+                          className={
+                            "w-full text-left px-4 py-3 border-2 transition-colors " +
+                            (isSelected
+                              ? "border-eb-pop bg-eb-pop-bg"
+                              : "border-eb-border bg-white active:bg-eb-border/30")
+                          }
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <div className="text-eb-caption font-bold uppercase tracking-wider text-eb-black">
+                                {opt.label}
+                              </div>
+                              {opt.key !== "custom" && (
+                                <div className="text-eb-meta text-eb-muted mt-1 leading-relaxed">
+                                  &ldquo;{opt.text}&rdquo;
+                                </div>
+                              )}
+                            </div>
+                            <div
+                              className={
+                                "shrink-0 w-5 h-5 rounded-full border-2 mt-0.5 flex items-center justify-center " +
+                                (isSelected ? "border-eb-pop" : "border-eb-border")
+                              }
+                            >
+                              {isSelected && (
+                                <div className="w-2.5 h-2.5 rounded-full bg-eb-pop" />
+                              )}
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Custom textarea — reveals when "Write your own" is selected */}
+                  {inquiryOption === "custom" && (
+                    <div className="mt-4">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-eb-meta uppercase tracking-wider text-eb-muted">
+                          Your Message
+                        </span>
+                        <span className="text-eb-meta text-eb-muted tabular-nums">
+                          {inquiryMsg.length} / 240
+                        </span>
+                      </div>
+                      <textarea
+                        className="eb-input h-24 resize-none"
+                        placeholder={`Love the ${item.title.toLowerCase()} \u2014 any details?`}
+                        value={inquiryMsg}
+                        onChange={(e) => setInquiryMsg(e.target.value.slice(0, 240))}
+                      />
+                    </div>
+                  )}
+
+                  {!user && anonError && (
+                    <p className="text-eb-meta text-eb-red mt-3">{anonError}</p>
+                  )}
+
+                  <button
+                    className="eb-btn mt-5"
+                    onClick={sendInquiry}
+                    disabled={
+                      sending ||
+                      !inquiryOption ||
+                      (inquiryOption === "custom" && inquiryMsg.trim().length === 0)
+                    }
+                  >
+                    {sending ? "Sending\u2026" : user ? "Send Inquiry" : "Text the dealer"}
+                  </button>
+
+                {!user && (
+                  <p className="text-eb-micro font-readable text-eb-muted text-center leading-relaxed mt-2">
+                    Msg &amp; data rates may apply. Reply STOP to opt out.
+                  </p>
                 )}
               </>
             )}
@@ -1622,14 +1603,6 @@ export default function ItemDetailPage() {
           </div>
         </>
       )}
-
-      {/* Signup drawer (logged-out users) */}
-      <SignupDrawer
-        open={showSignup}
-        onClose={() => setShowSignup(false)}
-        headline="Don't lose this one"
-        subtext="Sign up to save it, message the dealer, or watch for a price drop."
-      />
     </>
   );
 }

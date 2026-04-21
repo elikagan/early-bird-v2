@@ -7,6 +7,11 @@ import Image from "next/image";
 import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
 import { formatPrice, formatShortDate, getInitials } from "@/lib/format";
+import {
+  getAnonFavorites,
+  addAnonFavorite,
+  removeAnonFavorite,
+} from "@/lib/anon-favorites";
 import { BottomNav, adjustNavCount } from "@/components/bottom-nav";
 import { Masthead } from "@/components/masthead";
 import { NotFoundScreen } from "@/components/not-found-screen";
@@ -81,6 +86,7 @@ export default function EarlyAccessPage() {
   const [market, setMarket] = useState<Market | null>(null);
   const [items, setItems] = useState<Item[]>([]);
   const [favMap, setFavMap] = useState<Map<string, string>>(new Map());
+  const [anonFavs, setAnonFavs] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [invalid, setInvalid] = useState(false);
 
@@ -113,6 +119,7 @@ export default function EarlyAccessPage() {
           const favs: { id: string; favorite_id: string }[] = await favsRes.json();
           setFavMap(new Map(favs.map((f) => [f.id, f.favorite_id])));
         }
+        if (!user) setAnonFavs(getAnonFavorites());
       } catch {
         setInvalid(true);
       } finally {
@@ -127,9 +134,17 @@ export default function EarlyAccessPage() {
       e.preventDefault();
       e.stopPropagation();
       if (!user) {
-        try {
-          localStorage.setItem("eb_return_to", `/early/${marketId}`);
-        } catch {}
+        setAnonFavs((prev) => {
+          const next = new Set(prev);
+          if (next.has(itemId)) {
+            next.delete(itemId);
+            removeAnonFavorite(itemId);
+          } else {
+            next.add(itemId);
+            addAnonFavorite(itemId);
+          }
+          return next;
+        });
         return;
       }
       const existingFavId = favMap.get(itemId);
@@ -215,28 +230,26 @@ export default function EarlyAccessPage() {
             {items.map((item) => {
               const isSold = item.status === "sold";
               const isHeld = item.status === "hold";
-              const isFav = favMap.has(item.id);
+              const isFav = user ? favMap.has(item.id) : anonFavs.has(item.id);
               return (
                 <Link
                   key={item.id}
                   href={`/item/${item.id}`}
                   className={`eb-grid-card${isSold ? " eb-sold" : ""}`}
                 >
-                  {user && (
-                    <button
-                      type="button"
-                      className="eb-fav"
-                      onClick={(e) => toggleFav(e, item.id)}
-                      aria-label={isFav ? "Remove favorite" : "Add favorite"}
+                  <button
+                    type="button"
+                    className="eb-fav"
+                    onClick={(e) => toggleFav(e, item.id)}
+                    aria-label={isFav ? "Remove favorite" : "Add favorite"}
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      className={isFav ? "eb-fav-filled" : "eb-fav-outline"}
                     >
-                      <svg
-                        viewBox="0 0 24 24"
-                        className={isFav ? "eb-fav-filled" : "eb-fav-outline"}
-                      >
-                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                      </svg>
-                    </button>
-                  )}
+                      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                    </svg>
+                  </button>
                   {item.photo_url ? (
                     <Image
                       src={item.thumb_url || item.photo_url}
