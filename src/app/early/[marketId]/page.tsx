@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
-import { formatPrice, formatShortDate } from "@/lib/format";
+import { formatPrice, formatShortDate, getInitials } from "@/lib/format";
 import { BottomNav, adjustNavCount } from "@/components/bottom-nav";
 import { Masthead } from "@/components/masthead";
 import { NotFoundScreen } from "@/components/not-found-screen";
@@ -255,8 +255,11 @@ export default function EarlyAccessPage() {
                       <div className="eb-price">{formatPrice(item.price)}</div>
                       {isHeld && <span className="eb-tag-hold">HELD</span>}
                     </div>
-                    <div className="text-eb-micro uppercase tracking-widest text-eb-muted mt-1 truncate">
-                      {item.dealer_name}
+                    <div className="eb-dealer">
+                      <span className="eb-avatar eb-avatar-sm">
+                        {getInitials(item.dealer_name)}
+                      </span>
+                      <span className="eb-dealer-name">{item.dealer_name}</span>
                     </div>
                   </div>
                 </Link>

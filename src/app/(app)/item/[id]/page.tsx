@@ -108,6 +108,35 @@ export default function ItemDetailPage() {
 
   // Inquiry drawer (buyer)
   const [showInquiry, setShowInquiry] = useState(false);
+  // iOS Safari doesn't reposition position:fixed elements when the
+  // virtual keyboard opens — the drawer stays anchored to the layout
+  // viewport's bottom, which is now hidden behind the keyboard. Track
+  // keyboard height via visualViewport and push it into a CSS variable
+  // on :root so the drawer's `bottom-[var(--eb-kb-offset,0px)]` rule
+  // lifts it above the keyboard without any inline-style attribute.
+  useEffect(() => {
+    if (!showInquiry) return;
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const update = () => {
+      const occluded = Math.max(
+        0,
+        window.innerHeight - vv.height - vv.offsetTop
+      );
+      document.documentElement.style.setProperty(
+        "--eb-kb-offset",
+        `${occluded}px`
+      );
+    };
+    vv.addEventListener("resize", update);
+    vv.addEventListener("scroll", update);
+    update();
+    return () => {
+      vv.removeEventListener("resize", update);
+      vv.removeEventListener("scroll", update);
+      document.documentElement.style.removeProperty("--eb-kb-offset");
+    };
+  }, [showInquiry]);
   const [inquiryMsg, setInquiryMsg] = useState("");
   const [inquiryOption, setInquiryOption] = useState<
     "buy" | "discuss" | "price" | "custom" | null
@@ -1252,7 +1281,7 @@ export default function ItemDetailPage() {
               setAnonError(null);
             }}
           />
-          <div className="fixed bottom-0 left-0 right-0 max-w-[430px] mx-auto bg-white rounded-t-2xl border-t border-eb-border z-50 px-5 pt-3 pb-6">
+          <div className="fixed bottom-[var(--eb-kb-offset,0px)] left-0 right-0 max-w-[430px] mx-auto bg-white rounded-t-2xl border-t border-eb-border z-50 px-5 pt-3 pb-6 max-h-[90vh] overflow-y-auto">
             <div className="w-12 h-1 bg-eb-border rounded-full mx-auto mb-4" />
 
             {/* Anon confirmation state — after the text has been sent */}
