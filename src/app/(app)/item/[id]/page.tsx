@@ -99,6 +99,8 @@ export default function ItemDetailPage() {
   const [dragging, setDragging] = useState(false);
   const [transition, setTransition] = useState(false);
   const carouselRef = useRef<HTMLDivElement>(null);
+  const drawerRef = useRef<HTMLDivElement>(null);
+  const dragStartYRef = useRef<number | null>(null);
   const dragRef = useRef<{ sx: number; sy: number; dx: number; swiping: boolean } | null>(null);
 
   // Favorites
@@ -1294,8 +1296,38 @@ export default function ItemDetailPage() {
               setAnonError(null);
             }}
           />
-          <div className="eb-drawer-kb-aware fixed left-0 right-0 max-w-[430px] mx-auto bg-white rounded-t-2xl border-t border-eb-border z-50 px-5 pt-3 pb-6 overflow-y-auto">
-            <div className="w-12 h-1 bg-eb-border rounded-full mx-auto mb-4" />
+          <div
+            ref={drawerRef}
+            className="eb-drawer-kb-aware fixed left-0 right-0 max-w-[430px] mx-auto bg-white rounded-t-2xl border-t border-eb-border z-50 px-5 pt-3 pb-6 overflow-y-auto"
+          >
+            {/* Drag handle. The whole top band is a touch target so the
+                tiny visible pill isn't the only hit area. Drag down > 80px
+                and release to close the drawer. */}
+            <div
+              className="eb-drawer-handle -mx-5 -mt-3 px-5 pt-3 pb-2 flex justify-center"
+              onTouchStart={(e) => {
+                dragStartYRef.current = e.touches[0].clientY;
+              }}
+              onTouchMove={(e) => {
+                if (dragStartYRef.current == null || !drawerRef.current) return;
+                const dy = e.touches[0].clientY - dragStartYRef.current;
+                if (dy < 0) return; // only track downward drag
+                drawerRef.current.style.transform = `translateY(${dy}px)`;
+              }}
+              onTouchEnd={(e) => {
+                if (dragStartYRef.current == null || !drawerRef.current) return;
+                const dy = e.changedTouches[0].clientY - dragStartYRef.current;
+                dragStartYRef.current = null;
+                drawerRef.current.style.transform = "";
+                if (dy > 80) {
+                  setShowInquiry(false);
+                  setAnonSent(false);
+                  setAnonError(null);
+                }
+              }}
+            >
+              <div className="w-12 h-1 bg-eb-border rounded-full" />
+            </div>
 
             {/* Anon confirmation state — after the text has been sent */}
             {!user && anonSent ? (
@@ -1442,6 +1474,19 @@ export default function ItemDetailPage() {
                         placeholder={`Love the ${item.title.toLowerCase()} \u2014 any details?`}
                         value={inquiryMsg}
                         onChange={(e) => setInquiryMsg(e.target.value.slice(0, 240))}
+                        onFocus={(e) => {
+                          // Wait for the keyboard + visualViewport listener
+                          // to settle, then pull the textarea into the
+                          // visible portion of the drawer. iOS won't do
+                          // this automatically inside a fixed container.
+                          const el = e.currentTarget;
+                          setTimeout(() => {
+                            el?.scrollIntoView({
+                              block: "center",
+                              behavior: "smooth",
+                            });
+                          }, 300);
+                        }}
                       />
                     </div>
                   )}
