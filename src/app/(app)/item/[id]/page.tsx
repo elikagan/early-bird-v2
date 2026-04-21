@@ -1369,21 +1369,22 @@ export default function ItemDetailPage() {
           />
           <div
             ref={drawerRef}
-            className="eb-drawer-kb-aware fixed left-0 right-0 max-w-[430px] mx-auto bg-white rounded-t-2xl border-t border-eb-border z-50 px-5 pt-3 pb-6 overflow-y-auto"
+            className="eb-drawer-kb-aware fixed left-0 right-0 max-w-[430px] mx-auto bg-white rounded-t-2xl border-t border-eb-border z-50 flex flex-col"
           >
-            {/* Drag handle. Whole top band is the touch target (tiny
-                pill alone is too small). Native touch listeners are
-                attached in the drawer's useEffect so we can
-                preventDefault and stop iOS from hijacking the gesture
-                for scrolling the drawer's content. Drag up = grow,
-                drag down = shrink, drag very small = close. */}
+            {/* Drag handle — pinned to the top of the drawer, above
+                everything. Content below scrolls under it. Native
+                touch listeners are attached in the drawer's useEffect
+                so we can preventDefault and own the gesture. Drag up =
+                grow, drag down = shrink, drag too small = close. */}
             <div
               ref={handleRef}
-              className="eb-drawer-handle -mx-5 -mt-3 px-5 pt-3 pb-2 flex justify-center touch-none cursor-grab active:cursor-grabbing"
+              className="eb-drawer-handle shrink-0 px-5 pt-3 pb-2 flex justify-center touch-none cursor-grab active:cursor-grabbing"
             >
               <div className="w-12 h-1 bg-eb-border rounded-full" />
             </div>
 
+            {/* Scrollable content area — takes remaining drawer height. */}
+            <div className="flex-1 overflow-y-auto overscroll-contain px-5 pb-6">
             {/* Anon confirmation state — after the text has been sent */}
             {!user && anonSent ? (
               <>
@@ -1569,6 +1570,7 @@ export default function ItemDetailPage() {
                 )}
               </>
             )}
+            </div>
           </div>
         </>
       )}
