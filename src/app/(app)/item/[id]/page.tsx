@@ -107,17 +107,19 @@ export default function ItemDetailPage() {
 
   // Inquiry drawer (buyer)
   const [showInquiry, setShowInquiry] = useState(false);
-  // iOS Safari doesn't reposition position:fixed elements when the
-  // virtual keyboard opens — the drawer stays anchored to the layout
-  // viewport's bottom, which is now hidden behind the keyboard. Track
-  // keyboard height via visualViewport and push it into a CSS variable
-  // on :root so the drawer's `bottom-[var(--eb-kb-offset,0px)]` rule
-  // lifts it above the keyboard without any inline-style attribute.
+
+  // When the drawer is open: (1) lock body scroll so the page behind
+  // can't be dragged, (2) track iOS virtual keyboard height via
+  // visualViewport and write --eb-kb-offset on :root so the drawer
+  // CSS can lift itself above the keyboard.
   useEffect(() => {
     if (!showInquiry) return;
+
+    document.body.classList.add("eb-scroll-lock");
+
     const vv = window.visualViewport;
-    if (!vv) return;
     const update = () => {
+      if (!vv) return;
       const occluded = Math.max(
         0,
         window.innerHeight - vv.height - vv.offsetTop
@@ -127,12 +129,18 @@ export default function ItemDetailPage() {
         `${occluded}px`
       );
     };
-    vv.addEventListener("resize", update);
-    vv.addEventListener("scroll", update);
-    update();
+    if (vv) {
+      vv.addEventListener("resize", update);
+      vv.addEventListener("scroll", update);
+      update();
+    }
+
     return () => {
-      vv.removeEventListener("resize", update);
-      vv.removeEventListener("scroll", update);
+      document.body.classList.remove("eb-scroll-lock");
+      if (vv) {
+        vv.removeEventListener("resize", update);
+        vv.removeEventListener("scroll", update);
+      }
       document.documentElement.style.removeProperty("--eb-kb-offset");
     };
   }, [showInquiry]);
@@ -1286,7 +1294,7 @@ export default function ItemDetailPage() {
               setAnonError(null);
             }}
           />
-          <div className="eb-drawer-kb-aware fixed left-0 right-0 max-w-[430px] mx-auto bg-white rounded-t-2xl border-t border-eb-border z-50 px-5 pt-3 pb-6 max-h-[90vh] overflow-y-auto">
+          <div className="eb-drawer-kb-aware fixed left-0 right-0 max-w-[430px] mx-auto bg-white rounded-t-2xl border-t border-eb-border z-50 px-5 pt-3 pb-6 overflow-y-auto">
             <div className="w-12 h-1 bg-eb-border rounded-full mx-auto mb-4" />
 
             {/* Anon confirmation state — after the text has been sent */}

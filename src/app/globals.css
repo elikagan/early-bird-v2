@@ -37,6 +37,17 @@
     padding-bottom: 56px;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
+    /* Kills iOS pull-to-refresh and the "jerks down to show header"
+       bounce on the listing page. We control navigation ourselves;
+       the platform's built-in refresh gesture adds noise. */
+    overscroll-behavior-y: none;
+  }
+
+  /* When a drawer is open we lock body scroll so the page behind
+     can't scroll. Toggled via <body class="eb-scroll-lock"> from
+     the drawer component's useEffect. */
+  body.eb-scroll-lock {
+    overflow: hidden;
   }
 }
 
@@ -45,9 +56,15 @@
      Works with a useEffect hook that writes --eb-kb-offset on :root
      whenever the visual viewport shrinks (keyboard opens). Without
      this rule, position:fixed drawers stay anchored to the layout
-     viewport's bottom — which is hidden under the keyboard. */
+     viewport's bottom — which is hidden under the keyboard.
+     overscroll-behavior: contain stops pull-to-refresh from firing
+     when the user scrolls inside the drawer on iOS. max-height uses
+     svh so the drawer never extends above the visible viewport even
+     if the keyboard is open. */
   .eb-drawer-kb-aware {
     bottom: var(--eb-kb-offset, 0px);
+    max-height: calc(100svh - var(--eb-kb-offset, 0px));
+    overscroll-behavior: contain;
   }
 
   /* ---- Masthead ---- */
