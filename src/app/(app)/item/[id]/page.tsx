@@ -1300,23 +1300,29 @@ export default function ItemDetailPage() {
             ref={drawerRef}
             className="eb-drawer-kb-aware fixed left-0 right-0 max-w-[430px] mx-auto bg-white rounded-t-2xl border-t border-eb-border z-50 px-5 pt-3 pb-6 overflow-y-auto"
           >
-            {/* Drag handle. The whole top band is a touch target so the
-                tiny visible pill isn't the only hit area. Drag down > 80px
-                and release to close the drawer. */}
+            {/* Drag handle. Whole top band is the touch target (tiny
+                pill alone is too small). Pointer events + touch-none
+                so iOS doesn't hand the gesture to the drawer's own
+                overflow-y scroll before we see it. Drag > 80px and
+                release to close. */}
             <div
-              className="eb-drawer-handle -mx-5 -mt-3 px-5 pt-3 pb-2 flex justify-center"
-              onTouchStart={(e) => {
-                dragStartYRef.current = e.touches[0].clientY;
+              className="eb-drawer-handle -mx-5 -mt-3 px-5 pt-3 pb-2 flex justify-center touch-none cursor-grab active:cursor-grabbing"
+              onPointerDown={(e) => {
+                (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+                dragStartYRef.current = e.clientY;
               }}
-              onTouchMove={(e) => {
+              onPointerMove={(e) => {
                 if (dragStartYRef.current == null || !drawerRef.current) return;
-                const dy = e.touches[0].clientY - dragStartYRef.current;
-                if (dy < 0) return; // only track downward drag
+                const dy = e.clientY - dragStartYRef.current;
+                if (dy < 0) {
+                  drawerRef.current.style.transform = "";
+                  return;
+                }
                 drawerRef.current.style.transform = `translateY(${dy}px)`;
               }}
-              onTouchEnd={(e) => {
+              onPointerUp={(e) => {
                 if (dragStartYRef.current == null || !drawerRef.current) return;
-                const dy = e.changedTouches[0].clientY - dragStartYRef.current;
+                const dy = e.clientY - dragStartYRef.current;
                 dragStartYRef.current = null;
                 drawerRef.current.style.transform = "";
                 if (dy > 80) {
@@ -1324,6 +1330,10 @@ export default function ItemDetailPage() {
                   setAnonSent(false);
                   setAnonError(null);
                 }
+              }}
+              onPointerCancel={() => {
+                if (drawerRef.current) drawerRef.current.style.transform = "";
+                dragStartYRef.current = null;
               }}
             >
               <div className="w-12 h-1 bg-eb-border rounded-full" />
