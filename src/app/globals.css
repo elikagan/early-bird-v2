@@ -29,15 +29,6 @@
      globally, since that class is used for badges, labels, and
      brand-identity UI throughout the site. */
 
-  /* Kills iOS pull-to-refresh at top AND rubber-band bounce at
-     bottom. Must be set on html (the actual scroll container on iOS)
-     as well as body — setting only body leaves the bottom bounce
-     alive. `none` on all axes because horizontal also bounces. */
-  html,
-  body {
-    overscroll-behavior: none;
-  }
-
   body {
     background: var(--eb-bg);
     color: var(--eb-text);
