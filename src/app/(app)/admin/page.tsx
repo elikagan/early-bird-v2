@@ -2066,7 +2066,7 @@ interface BlastPreview {
   dealers: number;
   sample: {
     kind: "dealer" | "invite";
-    phone_masked: string;
+    phone: string;
     name: string;
   }[];
 }
@@ -2243,7 +2243,7 @@ function BlastTab() {
               <ul className="mt-1 space-y-0.5 ml-4">
                 {preview.sample.map((s, i) => (
                   <li key={i}>
-                    {s.kind === "dealer" ? "Dealer" : "Invite"} · {s.phone_masked} · {s.name}
+                    {s.kind === "dealer" ? "Dealer" : "Invite"} · {s.phone} · {s.name}
                   </li>
                 ))}
               </ul>

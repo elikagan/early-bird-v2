@@ -12,6 +12,20 @@ export interface DealerBlastRecipient {
 }
 
 /**
+ * Admins authorize blasts — they should never be recipients of their
+ * own blast. Pulls ADMIN_PHONES from env at call time so adding/
+ * removing an admin takes effect without redeploying.
+ */
+function adminPhoneSet(): Set<string> {
+  return new Set(
+    (process.env.ADMIN_PHONES || "")
+      .split(",")
+      .map((p) => p.trim())
+      .filter(Boolean)
+  );
+}
+
+/**
  * Recipient list for a dealer blast: UNION of unredeemed dealer_invites
  * with a phone and signed-up dealers. Deduped by phone, preferring the
  * signed-up dealer (auto-signin is a better UX than the invite flow).
@@ -35,9 +49,11 @@ export async function getDealerBlastRecipients(): Promise<
     args: [],
   });
 
+  const admins = adminPhoneSet();
   const byPhone = new Map<string, DealerBlastRecipient>();
   for (const row of dealerRes.rows) {
     const phone = row.phone as string;
+    if (admins.has(phone)) continue;  // admins never receive their own blast
     byPhone.set(phone, {
       kind: "dealer",
       phone,
@@ -48,6 +64,7 @@ export async function getDealerBlastRecipients(): Promise<
   }
   for (const row of inviteRes.rows) {
     const phone = row.phone as string;
+    if (admins.has(phone)) continue;  // same rule for invite rows
     if (byPhone.has(phone)) continue;
     byPhone.set(phone, {
       kind: "invite",

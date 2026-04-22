@@ -2,6 +2,7 @@ import { json, error } from "@/lib/api";
 import { getSession } from "@/lib/auth";
 import { isAdmin } from "@/lib/admin";
 import { getDealerBlastRecipients } from "@/lib/dealer-blast";
+import { formatPhone } from "@/lib/format";
 
 export async function GET(request: Request) {
   const user = await getSession(request);
@@ -16,12 +17,12 @@ export async function GET(request: Request) {
     total: recipients.length,
     invites,
     dealers,
+    // Admin's own sanity check before sending — show the real phone so
+    // Eli can eyeball it, not a masked string. This endpoint is already
+    // gated to admins.
     sample: recipients.slice(0, 3).map((r) => ({
       kind: r.kind,
-      phone_masked:
-        r.phone.length > 6
-          ? r.phone.slice(0, 2) + "*****" + r.phone.slice(-4)
-          : r.phone,
+      phone: formatPhone(r.phone),
       name:
         r.kind === "dealer"
           ? r.business_name || r.display_name || "(no name on file)"
