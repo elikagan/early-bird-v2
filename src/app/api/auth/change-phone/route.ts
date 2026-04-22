@@ -3,6 +3,7 @@ import { json, error } from "@/lib/api";
 import { getSession } from "@/lib/auth";
 import { newId } from "@/lib/id";
 import { sendSMSWithLog } from "@/lib/sms";
+import { composePhoneChangeVerification } from "@/lib/sms-templates";
 import { normalizeUSPhone } from "@/lib/phone";
 import { getBaseUrl } from "@/lib/url";
 import { nanoid } from "nanoid";
@@ -49,15 +50,11 @@ export async function POST(request: Request) {
   });
 
   const url = `${getBaseUrl(request)}/v/${token}`;
-  await sendSMSWithLog(
-    normalized,
-    `Early Bird: Tap to confirm your new number.\n\n${url}`,
-    {
-      event_type: "sms.auth.phone_change",
-      entity_type: "user",
-      entity_id: user.id,
-    }
-  );
+  await sendSMSWithLog(normalized, composePhoneChangeVerification(url), {
+    event_type: "sms.auth.phone_change",
+    entity_type: "user",
+    entity_id: user.id,
+  });
 
   return json({ ok: true });
 }

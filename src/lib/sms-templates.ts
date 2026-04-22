@@ -42,6 +42,27 @@ export function composeMagicLink(url: string): string {
 }
 
 /**
+ * SMS sent to a user's NEW phone number when they're changing it.
+ * Tapping the link confirms ownership and swaps the phone on their
+ * account. Falls under the "magic link" umbrella in EB_DESIGN.md.
+ */
+export function composePhoneChangeVerification(url: string): string {
+  return `Early Bird: tap to confirm your new number.\n\n${url}`;
+}
+
+/**
+ * Internal admin notification. Fires when a buyer submits a dealer
+ * application. Goes only to ADMIN_PHONES — never to a regular user.
+ */
+export function composeAdminNewApplication(
+  applicantName: string,
+  businessName: string,
+  adminUrl: string
+): string {
+  return `Early Bird: New dealer application from ${applicantName} (${businessName}). Review: ${adminUrl}`;
+}
+
+/**
  * SMS sent to a new dealer when an admin invites them to the platform (cold
  * invite, not an approval of an existing application).
  */

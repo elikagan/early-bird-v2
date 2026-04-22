@@ -4,6 +4,7 @@ import { json, error } from "@/lib/api";
 import { getSession } from "@/lib/auth";
 import { newId } from "@/lib/id";
 import { sendSMSWithLog } from "@/lib/sms";
+import { composeAdminNewApplication } from "@/lib/sms-templates";
 import { getBaseUrl } from "@/lib/url";
 
 export async function POST(request: Request) {
@@ -58,7 +59,11 @@ export async function POST(request: Request) {
       if (adminPhones.length === 0) return;
 
       const url = `${getBaseUrl(request)}/admin`;
-      const body = `Early Bird: New dealer application from ${name.trim()} (${business_name.trim()}). Review: ${url}`;
+      const body = composeAdminNewApplication(
+        name.trim(),
+        business_name.trim(),
+        url
+      );
       await Promise.allSettled(
         adminPhones.map((p) =>
           sendSMSWithLog(p, body, {
