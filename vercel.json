@@ -7,6 +7,10 @@
     {
       "path": "/api/cron/prune-events",
       "schedule": "0 4 * * 0"
+    },
+    {
+      "path": "/api/cron/schedule-blasts",
+      "schedule": "0 18 * * *"
     }
   ],
   "redirects": [

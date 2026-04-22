@@ -63,6 +63,21 @@ export function composeAdminNewApplication(
 }
 
 /**
+ * Internal admin notification. Fires when a scheduled blast (dealer
+ * Monday / dealer Thursday / buyer Thursday) queues. Eli taps the link,
+ * reviews the proposed copy + recipient count, edits if he wants, and
+ * presses Send. Goes only to ADMIN_PHONES.
+ */
+export function composeScheduledBlastReady(
+  blastLabel: string,
+  marketName: string,
+  recipientCount: number,
+  reviewUrl: string
+): string {
+  return `Early Bird: ${blastLabel} for ${marketName} is ready to send to ${recipientCount} people. Review + approve: ${reviewUrl}`;
+}
+
+/**
  * SMS sent to a new dealer when an admin invites them to the platform (cold
  * invite, not an approval of an existing application).
  */

@@ -66,6 +66,11 @@ export const EVT = {
   // Cron runs
   CRON_DROP_MARKETS_RAN: "cron.drop_markets.ran",
   CRON_OPS_CHECK_RAN: "cron.ops_check.ran",
+  CRON_SCHEDULE_BLASTS_RAN: "cron.schedule_blasts.ran",
+
+  // Scheduled blast lifecycle
+  SCHEDULED_BLAST_QUEUED: "scheduled_blast.queued",
+  SCHEDULED_BLAST_SENT: "scheduled_blast.sent",
 
   // Drop lifecycle
   DROP_FIRED: "drop.fired",
