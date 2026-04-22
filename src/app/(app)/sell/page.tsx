@@ -408,6 +408,18 @@ function SellContent() {
         </div>
       )}
 
+      {/* Add listing — big obvious button above the grid so it's
+          the first thing a dealer sees after their booth header.
+          Pairs with the FAB for scroll-away reachability. */}
+      <div className="px-5 py-4 border-b border-eb-border">
+        <Link
+          href={`/sell/add${market ? `?market=${market.id}` : ""}`}
+          className="eb-btn block text-center"
+        >
+          + Add a new item
+        </Link>
+      </div>
+
       {/* Items grid */}
       <main className="pb-32">
         {items.length > 0 ? (
@@ -495,10 +507,14 @@ function SellContent() {
         )}
       </main>
 
-      {/* FAB */}
+      {/* FAB — sits above the bottom nav (which is z-10 per globals
+          .eb-bnav). bottom-24 clears the nav + iOS safe-area even on
+          notched phones. */}
       <Link
         href={`/sell/add${market ? `?market=${market.id}` : ""}`}
-        className="fixed bottom-20 right-4 w-14 h-14 rounded-full bg-eb-black text-white flex items-center justify-center text-2xl font-bold shadow-lg z-10"
+        aria-label="Add a new item"
+        className="fixed bottom-24 right-4 w-14 h-14 rounded-full bg-eb-black text-white flex items-center justify-center text-2xl font-bold shadow-lg z-20"
+        style={{ bottom: "calc(5rem + env(safe-area-inset-bottom, 0px))" }}
       >
         +
       </Link>
