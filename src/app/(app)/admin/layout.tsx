@@ -16,5 +16,18 @@ export default async function AdminLayout({
   if (!user || !isAdmin(user.phone)) {
     notFound();
   }
-  return <>{children}</>;
+  return (
+    <>
+      {/* Break out of the site-wide 430px body cap so admin can use
+          the full desktop viewport. Mobile is unaffected (body cap
+          never binds below 430px). */}
+      <style>{`
+        body {
+          max-width: none !important;
+          padding-bottom: 0 !important;
+        }
+      `}</style>
+      {children}
+    </>
+  );
 }
