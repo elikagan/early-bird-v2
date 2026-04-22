@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { apiFetch } from "@/lib/api-client";
 import { useRequireAuth } from "@/lib/require-auth";
 import { processImage, createThumbnail } from "@/lib/image-processing";
@@ -222,12 +223,12 @@ function AddItemContent() {
     <>
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-3 border-b border-eb-border">
-        <button
-          onClick={() => router.back()}
+        <Link
+          href={`/sell${marketId ? `?market=${marketId}` : ""}`}
           className="text-eb-caption text-eb-muted"
         >
           {"\u2190"} Back to my booth
-        </button>
+        </Link>
       </div>
 
       {/* Photos */}

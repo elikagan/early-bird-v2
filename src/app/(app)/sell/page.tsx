@@ -225,7 +225,7 @@ function SellContent() {
           <div className="flex items-start justify-between gap-5">
             <div className="flex-1 min-w-0">
               <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-0.5 truncate">
-                {user?.business_name ? `${user.business_name} booth at` : "Your booth at"}
+                Your booth
               </div>
               <button
                 type="button"
@@ -408,16 +408,6 @@ function SellContent() {
           </div>
         </div>
       )}
-
-      {/* Add listing */}
-      <div className="px-3 py-3 border-b border-eb-border">
-        <Link
-          href={`/sell/add${market ? `?market=${market.id}` : ""}`}
-          className="inline-block text-eb-caption font-bold bg-eb-black text-white px-4 py-2 tracking-wider uppercase"
-        >
-          + Add Listing
-        </Link>
-      </div>
 
       {/* Items grid */}
       <main className="pb-32">
