@@ -22,6 +22,7 @@ import {
 } from "@/lib/shows";
 import { BottomNav, adjustNavCount } from "@/components/bottom-nav";
 import { NotFoundScreen } from "@/components/not-found-screen";
+import { useBodyScrollLock } from "@/lib/use-body-scroll-lock";
 
 interface Photo {
   id: string;
@@ -333,6 +334,11 @@ export default function ItemDetailPage() {
   // Delete
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  // Body-scroll-lock: any open drawer on this page freezes background scroll.
+  useBodyScrollLock(
+    showInquiry || !!confirmInquiry || confirmWalkupSold || showDeleteConfirm
+  );
 
   // ── Edit mode state ──
   const [editing, setEditing] = useState(false);

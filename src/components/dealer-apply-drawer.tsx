@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
 import { formatPhone } from "@/lib/format";
 import { InstagramInput } from "@/components/instagram-input";
+import { useBodyScrollLock } from "@/lib/use-body-scroll-lock";
 
 interface Props {
   open: boolean;
@@ -44,6 +45,8 @@ export function DealerApplyDrawer({ open, onClose, onSubmitted }: Props) {
       setSubmitting(false);
     }
   }, [name, biz, ig, onSubmitted]);
+
+  useBodyScrollLock(open && !!user);
 
   if (!open || !user) return null;
 

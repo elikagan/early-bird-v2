@@ -4,6 +4,7 @@ import { useState } from "react";
 import { apiFetch } from "@/lib/api-client";
 import { normalizeUSPhone } from "@/lib/phone";
 import { formatPhone } from "@/lib/format";
+import { useBodyScrollLock } from "@/lib/use-body-scroll-lock";
 
 /**
  * Phone-entry drawer that mints a magic-link SMS via /api/auth/start.
@@ -38,6 +39,8 @@ export function SignupDrawer({
   const [sent, setSent] = useState(false);
   const [sentPhone, setSentPhone] = useState("");
   const [error, setError] = useState<string | null>(null);
+
+  useBodyScrollLock(open);
 
   if (!open) return null;
 

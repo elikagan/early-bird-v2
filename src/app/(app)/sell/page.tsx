@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRequireAuth } from "@/lib/require-auth";
 import { apiFetch } from "@/lib/api-client";
+import { useBodyScrollLock } from "@/lib/use-body-scroll-lock";
 import { formatPrice, formatDate, formatShortDate } from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
 import { Masthead } from "@/components/masthead";
@@ -55,6 +56,8 @@ function SellContent() {
   const [allMarkets, setAllMarkets] = useState<Market[]>([]);
   const [showSwitcher, setShowSwitcher] = useState(false);
   const [showBoothEditor, setShowBoothEditor] = useState(false);
+
+  useBodyScrollLock(showSwitcher || showBoothEditor);
   const [boothEditDraft, setBoothEditDraft] = useState("");
 
   const marketId = searchParams.get("market");
