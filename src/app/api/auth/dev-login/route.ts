@@ -7,11 +7,17 @@
  * HARD-GATED to non-production. Returns 404 in production.
  */
 
+import { NextResponse } from "next/server";
 import db from "@/lib/db";
-import { json, error } from "@/lib/api";
+import { error } from "@/lib/api";
 import { newId } from "@/lib/id";
 import { nanoid } from "nanoid";
 import { TEST_ADMIN_PHONE } from "@/lib/admin";
+import {
+  SESSION_COOKIE_NAME,
+  SESSION_MAX_AGE,
+  sessionCookieDomain,
+} from "@/lib/auth";
 
 const TEST_BUYER_PHONE = "+15550000001";
 const TEST_DEALER_PHONE = "+15550000002";
@@ -188,7 +194,11 @@ export async function POST(request: Request) {
     args: [newId(), userId, sessionToken, expiresAt],
   });
 
-  return json({
+  // Set the session cookie too — otherwise server-side gates (admin
+  // layout, getSession in API routes) can't see the session. The QA
+  // tool uses this endpoint to actually interact with the app, not
+  // just mint a token string.
+  const res = NextResponse.json({
     token: sessionToken,
     user: {
       id: userId,
@@ -198,4 +208,15 @@ export async function POST(request: Request) {
       role,
     },
   });
+  // Endpoint is hard-gated to non-prod above, so secure:false is
+  // correct here (http localhost + preview deploys).
+  res.cookies.set(SESSION_COOKIE_NAME, sessionToken, {
+    httpOnly: true,
+    secure: false,
+    sameSite: "lax",
+    path: "/",
+    maxAge: SESSION_MAX_AGE,
+    domain: sessionCookieDomain(request),
+  });
+  return res;
 }
