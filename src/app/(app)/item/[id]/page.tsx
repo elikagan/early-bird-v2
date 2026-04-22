@@ -651,7 +651,16 @@ export default function ItemDetailPage() {
         <button
           onClick={() => {
             if (editing) { cancelEdit(); return; }
-            router.back();
+            // router.back() doesn't work when the user arrived via the
+            // SMS inquiry-confirmation flow (the /v/[token] page was
+            // replaced out of history). Route explicitly to the market
+            // grid the item belongs to.
+            const marketId = item?.market?.id;
+            if (marketId) {
+              router.push(user ? `/buy?market=${marketId}` : `/early/${marketId}`);
+            } else {
+              router.push("/");
+            }
           }}
           className="text-eb-caption text-eb-muted"
         >

@@ -130,25 +130,19 @@ export default function HomePage() {
         </div>
       ) : featured ? (
         <>
-          {/* Featured (next upcoming) market */}
-          <section className="px-5 pt-6 pb-5 border-b border-eb-border">
-            <div className="text-eb-micro uppercase tracking-widest text-eb-pop font-bold mb-1">
-              Open now
+          {/* Featured (next upcoming) market — matches /buy and /d/[id]
+              header pattern: muted eyebrow (date · location) then big
+              display name then stats. */}
+          <section className="px-5 pt-5 pb-5 border-b border-eb-border">
+            <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-1">
+              Open now {"\u00b7"} {formatShortDate(featured.starts_at)}
+              {featured.location ? <> {"\u00b7"} {featured.location}</> : null}
             </div>
             <h1 className="text-eb-display font-bold text-eb-black uppercase tracking-wider leading-tight">
               {featured.name}
             </h1>
-            <div className="text-eb-body text-eb-black mt-2 tabular-nums">
-              {formatShortDate(featured.starts_at)}
-              {featured.location ? (
-                <span className="text-eb-muted">
-                  {" "}
-                  {"\u00b7"} {featured.location}
-                </span>
-              ) : null}
-            </div>
             {(featured.dealer_count > 0 || featured.item_count > 0) && (
-              <div className="text-eb-meta text-eb-muted mt-1">
+              <div className="text-eb-meta text-eb-muted mt-2">
                 {featured.item_count} items {"\u00b7"} {featured.dealer_count}{" "}
                 dealers
               </div>
@@ -210,33 +204,33 @@ export default function HomePage() {
             </Link>
           </div>
 
-          {/* Coming up */}
+          {/* Coming up — editorial list (single-border rows, not boxed
+              cards), matches the divider pattern used elsewhere. */}
           {comingUp.length > 0 && (
-            <section className="px-5 pt-6 pb-2 border-b border-eb-border">
-              <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-3">
+            <section className="pt-6 pb-2 border-b border-eb-border">
+              <div className="px-5 text-eb-micro uppercase tracking-widest text-eb-muted mb-2">
                 Coming up
               </div>
-              <div className="space-y-3 pb-4">
+              <div className="divide-y divide-eb-border border-y border-eb-border">
                 {comingUp.map((m) => (
                   <Link
                     key={m.id}
                     href={`/early/${m.id}`}
-                    className="block border-2 border-eb-border p-4 active:bg-eb-border/20"
+                    className="flex items-start justify-between gap-4 px-5 py-4 active:bg-eb-border/20"
                   >
-                    <div className="text-eb-body font-bold text-eb-black uppercase tracking-wider">
-                      {m.name}
+                    <div className="min-w-0">
+                      <div className="text-eb-body font-bold text-eb-black truncate">
+                        {m.name}
+                      </div>
+                      <div className="text-eb-meta text-eb-muted mt-1 tabular-nums">
+                        {formatShortDate(m.starts_at)}
+                        {m.location ? <> {"\u00b7"} {m.location}</> : null}
+                      </div>
                     </div>
-                    <div className="text-eb-meta text-eb-black mt-1 tabular-nums">
-                      {formatShortDate(m.starts_at)}
-                      {m.location ? (
-                        <span className="text-eb-muted">
-                          {" "}
-                          {"\u00b7"} {m.location}
-                        </span>
-                      ) : null}
-                    </div>
-                    <div className="text-eb-micro uppercase tracking-widest text-eb-muted mt-2">
-                      {daysUntilLabel(m.starts_at)}
+                    <div className="shrink-0 text-right">
+                      <div className="text-eb-micro uppercase tracking-widest text-eb-muted">
+                        {daysUntilLabel(m.starts_at)}
+                      </div>
                     </div>
                   </Link>
                 ))}

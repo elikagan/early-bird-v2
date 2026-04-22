@@ -6,13 +6,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
-import { getInitials, formatPrice, formatDate } from "@/lib/format";
+import { getInitials, formatPrice, formatShortDate } from "@/lib/format";
 import { BottomNav, adjustNavCount } from "@/components/bottom-nav";
 import { Masthead } from "@/components/masthead";
 import { NotFoundScreen } from "@/components/not-found-screen";
-
-const PROMO_IMAGES = ["/promo/hero.webp", "/promo/2.webp", "/promo/3.webp"];
-const CYCLE_INTERVAL = 5000; // 5s per image
 
 interface Item {
   id: string;
@@ -28,12 +25,12 @@ interface Item {
 interface Market {
   id: string;
   name: string;
+  location: string | null;
   drop_at: string;
   starts_at: string;
   status: string;
   dealer_count: number;
   item_count: number;
-  dealer_preshop_enabled: number;
 }
 
 function BuyFeedContent() {
@@ -58,7 +55,6 @@ function BuyFeedContent() {
         apiFetch(`/api/items?market_id=${marketId}`),
         apiFetch(`/api/markets/${marketId}`),
       ];
-      // Only fetch favorites if logged in
       if (user) fetches.push(apiFetch("/api/favorites"));
 
       const [itemsRes, marketRes, favsRes] = await Promise.all(fetches);
@@ -77,49 +73,42 @@ function BuyFeedContent() {
     load();
   }, [marketId, router, user]);
 
-  const toggleFav = useCallback(async (e: React.MouseEvent, itemId: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const existingFavId = favMap.get(itemId);
-    if (existingFavId) {
-      setFavMap((prev) => { const next = new Map(prev); next.delete(itemId); return next; });
-      adjustNavCount("watching", -1);
-      await apiFetch(`/api/favorites/${existingFavId}`, { method: "DELETE" });
-    } else {
-      setFavMap((prev) => new Map([...prev, [itemId, "_pending"]]));
-      adjustNavCount("watching", +1);
-      const res = await apiFetch("/api/favorites", {
-        method: "POST",
-        body: JSON.stringify({ item_id: itemId }),
-      });
-      if (res.ok) {
-        const fav = await res.json();
-        setFavMap((prev) => new Map([...prev, [itemId, fav.id]]));
+  const toggleFav = useCallback(
+    async (e: React.MouseEvent, itemId: string) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (!user) return;
+      const existingFavId = favMap.get(itemId);
+      if (existingFavId) {
+        setFavMap((prev) => {
+          const next = new Map(prev);
+          next.delete(itemId);
+          return next;
+        });
+        adjustNavCount("watching", -1);
+        await apiFetch(`/api/favorites/${existingFavId}`, { method: "DELETE" });
       } else {
-        setFavMap((prev) => { const next = new Map(prev); next.delete(itemId); return next; });
-        adjustNavCount("watching", -1); // revert optimistic bump
+        setFavMap((prev) => new Map([...prev, [itemId, "_pending"]]));
+        adjustNavCount("watching", +1);
+        const res = await apiFetch("/api/favorites", {
+          method: "POST",
+          body: JSON.stringify({ item_id: itemId }),
+        });
+        if (res.ok) {
+          const fav = await res.json();
+          setFavMap((prev) => new Map([...prev, [itemId, fav.id]]));
+        } else {
+          setFavMap((prev) => {
+            const next = new Map(prev);
+            next.delete(itemId);
+            return next;
+          });
+          adjustNavCount("watching", -1);
+        }
       }
-    }
-  }, [favMap]);
-
-  // Countdown timer (ticks every second for pre-drop)
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    if (!market || market.status === "live") return;
-    const interval = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(interval);
-  }, [market]);
-
-  // Image slideshow
-  const [promoIndex, setPromoIndex] = useState(0);
-  useEffect(() => {
-    if (!market || market.status === "live") return;
-    const interval = setInterval(
-      () => setPromoIndex((i) => (i + 1) % PROMO_IMAGES.length),
-      CYCLE_INTERVAL
-    );
-    return () => clearInterval(interval);
-  }, [market]);
+    },
+    [favMap, user]
+  );
 
   if (loading) {
     return (
@@ -138,111 +127,8 @@ function BuyFeedContent() {
         <Masthead />
         <NotFoundScreen
           message="We couldn\u2019t find this market. It may have been removed or the link might be wrong."
-          action={{ label: "Browse markets", href: "/home" }}
+          action={{ label: "Browse markets", href: "/" }}
         />
-        <BottomNav active="buy" />
-      </>
-    );
-  }
-
-  // Dealer pre-shop access — dealers see the full grid even while the
-  // market is upcoming, as long as the admin has left pre-shop enabled
-  // for that market. Banner above the grid flags the early-access view.
-  const isDealer = user?.is_dealer === 1;
-  const dealerPreshop =
-    market.status === "upcoming" &&
-    isDealer &&
-    (market.dealer_preshop_enabled ?? 1) === 1;
-
-  // Buyer early-access — granted via the /early/[market-id] share
-  // flow. Same grid access as dealer pre-shop, no countdown.
-  const buyerEarlyAccess =
-    market.status === "upcoming" &&
-    !!user?.early_access_market_ids?.includes(market.id);
-
-  // Pre-drop view — non-dealers, or dealers without pre-shop access
-  if (market.status !== "live" && !dealerPreshop && !buyerEarlyAccess) {
-    const dropTime = new Date(market.drop_at).getTime();
-    const diff = Math.max(0, dropTime - now);
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-    const pad = (n: number) => n.toString().padStart(2, "0");
-
-    return (
-      <>
-        <Masthead />
-
-        <main className="pb-24">
-          {/* Countdown */}
-          <section className="px-5 pt-10 pb-8 text-center">
-            <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-5">
-              Dropping in
-            </div>
-            <div className="flex justify-center items-start gap-3">
-              <div className="text-center">
-                <div className="text-eb-hero text-eb-black tabular-nums">
-                  {pad(days)}
-                </div>
-                <div className="text-eb-micro text-eb-muted uppercase tracking-widest mt-1">
-                  Days
-                </div>
-              </div>
-              <div className="text-eb-hero text-eb-light leading-none">:</div>
-              <div className="text-center">
-                <div className="text-eb-hero text-eb-black tabular-nums">
-                  {pad(hours)}
-                </div>
-                <div className="text-eb-micro text-eb-muted uppercase tracking-widest mt-1">
-                  Hrs
-                </div>
-              </div>
-              <div className="text-eb-hero text-eb-light leading-none">:</div>
-              <div className="text-center">
-                <div className="text-eb-hero text-eb-black tabular-nums">
-                  {pad(minutes)}
-                </div>
-                <div className="text-eb-micro text-eb-muted uppercase tracking-widest mt-1">
-                  Min
-                </div>
-              </div>
-              <div className="text-eb-hero text-eb-light leading-none">:</div>
-              <div className="text-center">
-                <div className="text-eb-hero text-eb-black tabular-nums">
-                  {pad(seconds)}
-                </div>
-                <div className="text-eb-micro text-eb-muted uppercase tracking-widest mt-1">
-                  Sec
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Promo slideshow */}
-          <div className="eb-promo">
-            {PROMO_IMAGES.map((src, i) => (
-              <img
-                key={src}
-                src={src}
-                alt=""
-                className={i === promoIndex ? "eb-promo-active" : ""}
-              />
-            ))}
-          </div>
-
-          {/* Teaser (only show counts when substantial) */}
-          {items.length >= 50 && market.dealer_count >= 10 && (
-            <div className="text-center py-6 text-eb-caption text-eb-muted">
-              {items.length} items · {market.dealer_count} dealers
-              <br />
-              <span className="text-eb-meta">
-                {formatDate(market.starts_at)}
-              </span>
-            </div>
-          )}
-        </main>
-
         <BottomNav active="buy" />
       </>
     );
@@ -252,61 +138,46 @@ function BuyFeedContent() {
     <>
       <Masthead />
 
-      {/* Countdown / drop-time banner — dealers only, before the drop.
-          The black eb-drop-bar below already signals "Pre-shop OPEN", so
-          a separate green status banner here would just duplicate it. */}
-      {dealerPreshop && (
-        <div className="px-5 py-3 border-b-2 border-eb-pop bg-eb-pop-bg">
-          <div className="text-eb-micro uppercase tracking-widest font-bold text-eb-pop">
-            Buyers see this at
+      {/* Market header — matches /d/[id] and /early/[id] patterns:
+          muted eyebrow + big display name + date/location + stats. */}
+      <section className="px-5 pt-5 pb-5 border-b border-eb-border">
+        <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-1">
+          {formatShortDate(market.starts_at)}
+          {market.location ? <> {"\u00b7"} {market.location}</> : null}
+        </div>
+        <h1 className="text-eb-display font-bold text-eb-black uppercase tracking-wider leading-tight">
+          {market.name}
+        </h1>
+        {(market.dealer_count > 0 || market.item_count > 0) && (
+          <div className="text-eb-meta text-eb-muted mt-2">
+            {market.item_count} items {"\u00b7"} {market.dealer_count} dealers
           </div>
-          <p className="text-eb-caption text-eb-black mt-1 leading-relaxed">
-            <span className="font-bold">
-              {new Date(market.drop_at).toLocaleString("en-US", {
-                timeZone: "America/Los_Angeles",
-                weekday: "short",
-                month: "short",
-                day: "numeric",
-                hour: "numeric",
-                minute: "2-digit",
-              })}
-            </span>
-            . Favorite and inquire as usual — buyers can&apos;t see any of
-            this until then.
-          </p>
-        </div>
-      )}
+        )}
+      </section>
 
-      {/* Drop bar */}
-      <div className="eb-drop-bar">
-        <div>
-          {dealerPreshop ? (
-            <>
-              Pre-shop <span className="eb-live">OPEN</span>
-            </>
-          ) : (
-            <>
-              Drop is <span className="eb-live">LIVE</span>
-            </>
-          )}
-        </div>
-        <span className="eb-cd">{items.length} items</span>
-      </div>
-
-      {/* Grid */}
       <main className="pb-24">
         {items.length > 0 ? (
           <div className="eb-grid">
             {items.map((item) => {
               const isSold = item.status === "sold";
               const isHeld = item.status === "hold";
-
               const isFav = favMap.has(item.id);
-              const cardContent = (
-                <>
+              return (
+                <Link
+                  key={item.id}
+                  href={`/item/${item.id}`}
+                  className={`eb-grid-card${isSold ? " eb-sold" : ""}`}
+                >
                   {user && (
-                    <button className="eb-fav" onClick={(e) => toggleFav(e, item.id)}>
-                      <svg viewBox="0 0 24 24" className={isFav ? "eb-fav-filled" : "eb-fav-outline"}>
+                    <button
+                      className="eb-fav"
+                      onClick={(e) => toggleFav(e, item.id)}
+                      aria-label={isFav ? "Remove favorite" : "Add favorite"}
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        className={isFav ? "eb-fav-filled" : "eb-fav-outline"}
+                      >
                         <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
                       </svg>
                     </button>
@@ -329,45 +200,30 @@ function BuyFeedContent() {
                       <div className="eb-price">{formatPrice(item.price)}</div>
                       {isHeld && <span className="eb-tag-hold">HELD</span>}
                     </div>
-                    {user && (
-                      <div className="eb-dealer">
-                        <span className="eb-avatar eb-avatar-sm">
-                          {getInitials(item.dealer_name)}
-                        </span>
-                        <span className="eb-dealer-name">
-                          {item.dealer_name}
-                        </span>
-                      </div>
-                    )}
+                    <div className="eb-dealer">
+                      <span className="eb-avatar eb-avatar-sm">
+                        {getInitials(item.dealer_name)}
+                      </span>
+                      <span className="eb-dealer-name">{item.dealer_name}</span>
+                    </div>
                   </div>
-                </>
-              );
-
-              return (
-                <Link
-                  key={item.id}
-                  href={`/item/${item.id}`}
-                  className={`eb-grid-card${isSold ? " eb-sold" : ""}`}
-                >
-                  {cardContent}
                 </Link>
               );
             })}
           </div>
         ) : (
           <div className="eb-empty">
-            <div className="eb-icon">○</div>
+            <div className="eb-icon">{"\u25cb"}</div>
             <p>
-              No items in this market yet.
+              Nothing posted to this market yet.
               <br />
-              Dealers usually post the night before each drop.
+              Check back soon.
             </p>
           </div>
         )}
       </main>
 
       <BottomNav active="buy" />
-
     </>
   );
 }
