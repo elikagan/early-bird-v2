@@ -165,6 +165,23 @@ export async function POST(request: Request) {
     }
   }
 
+  // Dedup: if this buyer already has an open inquiry on this item, don't
+  // mint another confirmation token + burn another SMS. Return the same
+  // "check your texts" shape so the client flow is unchanged, but skip
+  // the send.
+  const existingInquiry = await db.execute({
+    sql: `SELECT id FROM inquiries
+          WHERE buyer_id = ? AND item_id = ? AND status != 'lost'
+          LIMIT 1`,
+    args: [buyerId, item_id],
+  });
+  if (existingInquiry.rows.length > 0) {
+    return json(
+      { ok: true, phone: buyerPhone, magic_link_sent: false, already_inquired: true },
+      200
+    );
+  }
+
   // Mint a token that carries the inquiry payload. The dealer SMS
   // fires + inquiry row is created only when this token is redeemed
   // (i.e. the buyer tapped the verification link — proving phone
