@@ -10,6 +10,7 @@ import { processImage } from "@/lib/image-processing";
 import { formatPhone, getInitials } from "@/lib/format";
 import { InstagramInput } from "@/components/instagram-input";
 import { Masthead } from "@/components/masthead";
+import { SHOWS, marketReminderKey } from "@/lib/shows";
 
 interface Market {
   id: string;
@@ -26,10 +27,12 @@ function OnboardingContent() {
   const [followedMarkets, setFollowedMarkets] = useState<Set<string>>(
     new Set()
   );
+  // Notification preferences captured during onboarding. `price_drops`
+  // is default-on (watched-item alert — non-marketing, high value).
+  // Market-reminder opt-ins are per-show (keys like
+  // `market_reminder_rose_bowl`) and default-off — explicit consent.
   const [notifPrefs, setNotifPrefs] = useState<Record<string, boolean>>({
-    drop_alerts: true,
     price_drops: true,
-    new_markets: false,
   });
   const [saving, setSaving] = useState(false);
   const [isDealerSignup, setIsDealerSignup] = useState(false);
@@ -437,45 +440,60 @@ function OnboardingContent() {
           </span>
         </div>
         <div className="space-y-2">
-          {[
-            {
-              key: "drop_alerts",
-              label: "Drop alerts",
-              desc: "Text me when a market\u2019s drop goes live.",
-            },
-            {
-              key: "price_drops",
-              label: "Price drops",
-              desc: "Text me when something I\u2019m watching gets cheaper.",
-            },
-            {
-              key: "new_markets",
-              label: "New markets",
-              desc: "Text me when a new market is added.",
-            },
-          ].map((n) => (
-            <label
-              key={n.key}
-              className={`flex items-start gap-3 p-3 border-2 cursor-pointer ${
-                notifPrefs[n.key]
-                  ? "border-eb-black bg-eb-white"
-                  : "border-eb-border"
-              }`}
-            >
-              <input
-                type="checkbox"
-                checked={notifPrefs[n.key]}
-                onChange={() => toggleNotif(n.key)}
-                className="eb-check mt-0.5"
-              />
-              <div className="flex-1">
-                <div className="text-eb-body font-bold">{n.label}</div>
-                <div className="text-eb-meta text-eb-muted mt-0.5">
-                  {n.desc}
-                </div>
+          <label
+            className={`flex items-start gap-3 p-3 border-2 cursor-pointer ${
+              notifPrefs.price_drops
+                ? "border-eb-black bg-eb-white"
+                : "border-eb-border"
+            }`}
+          >
+            <input
+              type="checkbox"
+              checked={!!notifPrefs.price_drops}
+              onChange={() => toggleNotif("price_drops")}
+              className="eb-check mt-0.5"
+            />
+            <div className="flex-1">
+              <div className="text-eb-body font-bold">Price drops</div>
+              <div className="text-eb-meta text-eb-muted mt-0.5">
+                Text me when something I{"\u2019"}m watching gets cheaper.
               </div>
-            </label>
-          ))}
+            </div>
+          </label>
+        </div>
+
+        {/* Market reminders — per-show explicit opt-in. Default off;
+            user picks only the shows they actually want a pre-show
+            text for. */}
+        <div className="mt-6">
+          <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-1">
+            Market Reminders
+          </div>
+          <p className="text-eb-meta text-eb-muted leading-relaxed mb-3">
+            Text me before each show to see what top dealers are bringing.
+          </p>
+          <div className="space-y-2">
+            {SHOWS.map((show) => {
+              const key = marketReminderKey(show);
+              const on = !!notifPrefs[key];
+              return (
+                <label
+                  key={show}
+                  className={`flex items-center gap-3 p-3 border-2 cursor-pointer ${
+                    on ? "border-eb-black bg-eb-white" : "border-eb-border"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={on}
+                    onChange={() => toggleNotif(key)}
+                    className="eb-check"
+                  />
+                  <div className="text-eb-body font-bold flex-1">{show}</div>
+                </label>
+              );
+            })}
+          </div>
         </div>
       </section>
 

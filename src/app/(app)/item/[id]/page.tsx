@@ -14,6 +14,12 @@ import {
   formatPhone,
   timeAgo,
 } from "@/lib/format";
+import {
+  SHOWS,
+  type ShowName,
+  marketReminderKey,
+  showForMarket,
+} from "@/lib/shows";
 import { BottomNav, adjustNavCount } from "@/components/bottom-nav";
 import { NotFoundScreen } from "@/components/not-found-screen";
 
@@ -238,6 +244,15 @@ export default function ItemDetailPage() {
     false
   );
 
+  // Shows the buyer has opted into pre-market reminder SMS for.
+  // Seeded when the drawer enters "confirmed" state — we auto-sub
+  // them to the show they just inquired on (that's the consent
+  // signal). Extra shows are explicit-opt-in via checkbox.
+  const [subscribedShows, setSubscribedShows] = useState<Set<ShowName>>(
+    new Set()
+  );
+  const autoSubscribedRef = useRef(false);
+
   // When verify redirects us here with ?sent=1, open the drawer in
   // "confirmed" state. Then strip the query param via replaceState so
   // browser Back from this page goes to the user's previous page
@@ -253,6 +268,63 @@ export default function ItemDetailPage() {
       window.history.replaceState({}, "", url.pathname + url.search);
     }
   }, [searchParams]);
+
+  // When the drawer enters "confirmed" state with an item loaded,
+  // auto-subscribe the buyer to pre-market reminders for the show
+  // they just inquired on. The inquiry itself is the consent signal;
+  // the UI lets them uncheck or add other shows from there.
+  // autoSubscribedRef guards against double-running when the user
+  // toggles back into the drawer.
+  useEffect(() => {
+    if (anonSent !== "confirmed") return;
+    if (!item?.market?.name) return;
+    if (autoSubscribedRef.current) return;
+    const show = showForMarket(item.market.name);
+    if (!show) return;
+
+    autoSubscribedRef.current = true;
+    setSubscribedShows((prev) => {
+      const next = new Set(prev);
+      next.add(show);
+      return next;
+    });
+    // Fire-and-forget PATCH to persist. If this fails, the local
+    // state still reflects the intent; the user can toggle to retry.
+    fetch("/api/users/me", {
+      method: "PATCH",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        notification_preferences: [
+          { key: marketReminderKey(show), enabled: true },
+        ],
+      }),
+    }).catch(() => {});
+  }, [anonSent, item]);
+
+  const toggleShowSubscription = useCallback(async (show: ShowName) => {
+    const key = marketReminderKey(show);
+    let nextEnabled = false;
+    setSubscribedShows((prev) => {
+      const next = new Set(prev);
+      if (next.has(show)) {
+        next.delete(show);
+        nextEnabled = false;
+      } else {
+        next.add(show);
+        nextEnabled = true;
+      }
+      return next;
+    });
+    await fetch("/api/users/me", {
+      method: "PATCH",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        notification_preferences: [{ key, enabled: nextEnabled }],
+      }),
+    }).catch(() => {});
+  }, []);
 
   // Confirm drawer (dealer-own)
   const [confirmInquiry, setConfirmInquiry] = useState<Inquiry | null>(null);
@@ -1435,6 +1507,45 @@ export default function ItemDetailPage() {
                   {item.dealer_name} has your name and number. They
                   {"\u2019"}ll text you directly.
                 </p>
+
+                {/* Market reminders — show they just inquired on is
+                    auto-checked (inquiry = consent for that show).
+                    They can uncheck or add others. */}
+                <div className="mt-6 pt-5 border-t border-eb-border">
+                  <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-1">
+                    Market Reminders
+                  </div>
+                  <p className="text-eb-meta text-eb-muted leading-relaxed mb-3">
+                    Text me before each show to see what top dealers are
+                    bringing.
+                  </p>
+                  <div className="space-y-2">
+                    {SHOWS.map((show) => {
+                      const on = subscribedShows.has(show);
+                      return (
+                        <label
+                          key={show}
+                          className={`flex items-center gap-3 p-3 border-2 cursor-pointer ${
+                            on
+                              ? "border-eb-black bg-eb-white"
+                              : "border-eb-border"
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={on}
+                            onChange={() => toggleShowSubscription(show)}
+                            className="eb-check"
+                          />
+                          <div className="text-eb-body font-bold flex-1">
+                            {show}
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 <button
                   className="eb-btn mt-5"
                   onClick={() => {
@@ -1443,6 +1554,9 @@ export default function ItemDetailPage() {
                     setAnonName("");
                     setAnonPhone("");
                     setInquiryMsg("");
+                    // Reset the auto-subscribe guard so a fresh
+                    // inquiry next time can auto-subscribe again.
+                    autoSubscribedRef.current = false;
                   }}
                 >
                   Keep browsing
