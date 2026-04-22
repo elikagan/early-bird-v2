@@ -1412,10 +1412,36 @@ export default function ItemDetailPage() {
 
             {/* Scrollable content area — takes remaining drawer height. */}
             <div className="flex-1 overflow-y-auto overscroll-contain px-5 pb-6">
-            {/* Anon — pending verification state.
-                Form has been submitted. Dealer has NOT been texted yet.
-                Buyer needs to tap the verify link we just sent. */}
-            {!user && anonSent === "pending" ? (
+            {/* Confirmed state. Buyer tapped the verify link, dealer
+                has been notified, session is now active. Show regardless
+                of auth state — after verify the user IS signed in, but
+                we still want them to see "inquiry sent" not the form
+                with "Ready to buy" options. */}
+            {anonSent === "confirmed" ? (
+              <>
+                <h3 className="text-eb-title font-bold uppercase tracking-widest text-eb-black mb-2">
+                  Inquiry sent
+                </h3>
+                <p className="text-eb-caption text-eb-muted leading-relaxed">
+                  {item.dealer_name} has your name and number. They
+                  {"\u2019"}ll text you directly.
+                </p>
+                <button
+                  className="eb-btn mt-5"
+                  onClick={() => {
+                    setShowInquiry(false);
+                    setAnonSent(false);
+                    setAnonName("");
+                    setAnonPhone("");
+                    setInquiryMsg("");
+                  }}
+                >
+                  Keep browsing
+                </button>
+              </>
+            ) : !user && anonSent === "pending" ? (
+              /* Pending verification. Form was submitted; dealer has
+                 NOT been texted yet. Buyer needs to tap the verify link. */
               <>
                 <h3 className="text-eb-title font-bold uppercase tracking-widest text-eb-black mb-2">
                   Confirm it{"\u2019"}s you
@@ -1439,31 +1465,6 @@ export default function ItemDetailPage() {
                   </button>
                   .
                 </p>
-              </>
-            ) : !user && anonSent === "confirmed" ? (
-              /* Anon — confirmed state. Buyer tapped the verify link,
-                 we're back on this page with a session, dealer has
-                 been notified. */
-              <>
-                <h3 className="text-eb-title font-bold uppercase tracking-widest text-eb-black mb-2">
-                  Inquiry sent
-                </h3>
-                <p className="text-eb-caption text-eb-muted leading-relaxed">
-                  {item.dealer_name} has your name and number. They
-                  {"\u2019"}ll text you directly.
-                </p>
-                <button
-                  className="eb-btn mt-5"
-                  onClick={() => {
-                    setShowInquiry(false);
-                    setAnonSent(false);
-                    setAnonName("");
-                    setAnonPhone("");
-                    setInquiryMsg("");
-                  }}
-                >
-                  Keep browsing
-                </button>
               </>
             ) : (
               <>
