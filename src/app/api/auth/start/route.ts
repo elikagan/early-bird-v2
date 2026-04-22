@@ -4,6 +4,7 @@ import { newId } from "@/lib/id";
 import { sendSMSWithLog } from "@/lib/sms";
 import { composeMagicLink } from "@/lib/sms-templates";
 import { getBaseUrl } from "@/lib/url";
+import { normalizeUSPhone } from "@/lib/phone";
 import { nanoid } from "nanoid";
 
 // Max magic-link SMS per phone per rolling hour. Generous enough to cover
@@ -13,9 +14,15 @@ const MAX_LINKS_PER_HOUR = 5;
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const { phone, dealer, sms_consent } = body;
+  const { phone: rawPhone, dealer, sms_consent } = body;
 
-  if (!phone) return error("phone is required");
+  if (!rawPhone) return error("phone is required");
+
+  // Normalize server-side so bypassing the client doesn't create
+  // duplicate user rows or split rate-limit counters.
+  const phoneResult = normalizeUSPhone(rawPhone);
+  if (!phoneResult.ok) return error(phoneResult.reason, 400);
+  const phone = phoneResult.phone;
 
   // Rate-limit: count recent auth_tokens for this phone.
   const recent = await db.execute({
