@@ -93,10 +93,19 @@ function actionLabel(a: AdminAction): string {
     edit_item: "Edited item",
     delete_item: "Deleted item",
     send_blast: "Sent SMS blast",
+    send_dealer_blast: "Sent dealer blast",
+    approve_application: "Approved dealer application",
   };
   const detail = a.details as Record<string, unknown> | null;
   const name = detail?.name as string | undefined;
-  return (labels[a.action] || a.action) + (name ? `: ${name}` : "");
+  const sent = detail?.sent as number | undefined;
+  const total = detail?.total as number | undefined;
+  let suffix = "";
+  if (name) suffix = `: ${name}`;
+  else if (typeof sent === "number" && typeof total === "number") {
+    suffix = ` — ${sent}/${total} sent`;
+  }
+  return (labels[a.action] || a.action) + suffix;
 }
 
 function marketStatus(m: Market): { label: string; color: string } {
@@ -144,7 +153,13 @@ function AdminPage() {
 
   return (
     <>
-      <Masthead right={null} />
+      <Masthead
+        right={
+          <span className="text-eb-micro uppercase tracking-widest font-bold bg-eb-pop text-white px-2 py-1">
+            Admin
+          </span>
+        }
+      />
 
       {/* Tab bar — shrink-0 per tab so labels keep their full width
           and the container scrolls horizontally on mobile. Previously
@@ -1388,14 +1403,6 @@ function ItemsTab() {
     setDetailLoading(false);
   };
 
-  const quickStatus = async (id: string, status: string) => {
-    await apiFetch(`/api/admin/items/${id}`, {
-      method: "PATCH",
-      body: JSON.stringify({ status }),
-    });
-    loadItems();
-  };
-
   const [pendingDeleteItem, setPendingDeleteItem] = useState<string | null>(null);
 
   const confirmDeleteItem = async () => {
@@ -1482,22 +1489,6 @@ function ItemsTab() {
                     </div>
                   </div>
                 </button>
-
-                {/* Quick status buttons */}
-                <div className="flex border-t border-eb-border">
-                  {["live", "hold", "sold"].map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => quickStatus(item.id, s)}
-                      disabled={item.status === s}
-                      className={`flex-1 py-2 text-eb-micro font-bold uppercase tracking-wider ${
-                        item.status === s ? "text-eb-black bg-eb-cream" : "text-eb-muted"
-                      }`}
-                    >
-                      {s}
-                    </button>
-                  ))}
-                </div>
 
                 {/* Expanded detail */}
                 {expandedId === item.id && (
