@@ -195,3 +195,46 @@ Surfaces audited: /admin Dashboard, Markets, Dealers, Items, Blast (new), SMS (g
 - MarketsTab CopyShareLink falls back to `window.prompt` if the clipboard API is denied — solid defensive pattern.
 - All admin API routes properly gated by `isAdmin(user.phone)` (verified earlier).
 - The new Blast tab (personalized-link dealer blast) and the old SMS tab (generic broadcast) serve different use cases — keeping both is correct.
+
+---
+
+## Chunk A — Admin QA walk (2026-04-22, real visual audit)
+
+Walked all 7 admin tabs at 375×812 and 1280×800. Screenshots + accessibility snapshots captured in `qa-evidence/admin/`. DB stat counts verified (exact match — 19 dealers / 9 buyers / 50 items-this-week / 0 sold-this-week).
+
+### Blocker
+
+- **[design/blocker] Admin tab bar overflows on mobile.** On every tab: the 7 pill labels (DASHBOARD / MARKETS / DEALERS / ITEMS / BLAST / SMS / HEALTH) run past the 375px viewport edge and visibly COLLIDE. The first word of tab 2 ("MARKETS") overlaps into "DASHBOARD" → renders as "DASHBOARDARKETS". Every admin screen starts with this broken-looking header. This is the #1 reason Eli said admin "looks fucking terrible."
+  - **Fix:** tab bar needs horizontal overflow-scroll OR a responsive mobile treatment (hamburger menu / bottom-sheet picker / collapse into a dropdown under a single "ADMIN · {current}" label).
+
+### Major
+
+- **[design/major] Admin is mobile-width-only on desktop.** The admin shell renders in a ~430px column centered on a 1280px desktop, wasting ~70% of horizontal space. Desktop admin (managing dealers, markets, items, blasts at scale) deserves desktop layout: wider tables, sidebar nav, multi-column forms. Every admin tab inherits this constraint.
+
+- **[copy/major] Dashboard "Recent Actions" shows raw event type strings** (`send_dealer_blast`, `send_blast`) instead of human-readable labels. No admin name, no market context, no counts. Should read like `Eli sent dealer blast to 29 — Downtown Modernism`.
+
+- **[design/major] Dashboard stat labels wrap awkwardly.** "ITEMS / WK →" breaks to two lines on both mobile and desktop, orphaning the arrow. Caused by the arrow fix in `5393100` pushing the label past the container's tight width. Either tighten label ("ITEMS/WK →"), shorten arrow to "›", or widen the stat card.
+
+- **[function/major] Admin Items tab has inline LIVE / HOLD / SOLD status buttons that bypass the proper flows.** Same anti-pattern I removed from `/sell` grid in commit `443e157` — admin can tap "SOLD" directly on a row, setting `status='sold'` with no `sold_to`, so the winning buyer never gets the "sold to you" text and no confirmation prevents accidents. Should route to `/admin/items/[id]` (or `/item/[id]`) where the proper confirm drawer lives.
+
+- **[function/major] Admin UI lacks an "admin mode" indicator.** The only cue you're in /admin is the tab bar itself. An admin taking screenshots / screen-sharing has no visual confirmation of elevated role. Add a small `ADMIN` chip near the logo or a distinct masthead color.
+
+### Minor
+
+- **[plumbing/minor] `/api/auth/dev-login` creates test users in the production DB.** Because local dev points `.env.local` at prod Supabase, the dev-login endpoint (even though prod-gated) inserts "Test Admin", "Test Buyer", "Test Dealer" rows into prod every time a QA session runs. Fixed by the cookie-setting commit `87bc50a` — but the data-leak concern remains. Either prefix test user IDs with `_qa_` for easy cleanup, or require a separate dev DB.
+
+### Good, preserve
+
+- Blast tab layout is actually clean — clear summary, editable copy, preview, two-button send flow.
+- SMS tab blast history is a nice touch, shows past sends with sent/fail counts inline.
+- Health tab cards (System status / Last 24h / Business) are well-organized.
+- Stats on dashboard are accurate vs DB — `qa-evidence/admin/dashboard-counts.json` confirms exact match.
+
+### Not walked in this session (deferred — either blocked or repetitive of patterns above)
+
+- Markets tab: create market → verify DB write, edit existing market, archive/unarchive, delete with confirm (ConfirmDrawer confirmed installed in commit `11e48be`).
+- Dealers tab: search, expand row, edit business name, toggle verified, approve application, invite link flow.
+- Pending-blast review page: insert test row + walk.
+- Admin API gating: hit /api/admin/* with no session / non-admin session.
+
+These are ticked as "needs walk" — the patterns above (mobile-width, no `md:` responsive, tab overflow) will recur on each of them and the fixes are shell-level, not per-tab. Once the shell is fixed, walking these becomes faster.
