@@ -395,38 +395,12 @@ function OnboardingContent() {
       )}
 
       {/* Markets */}
-      {markets.length > 0 && (
-        <section className="px-5 py-5 border-t border-eb-border">
-          <div className="flex items-baseline gap-3 mb-3">
-            <span className="text-eb-body font-bold text-eb-pop">
-              {nextStep()}
-            </span>
-            <span className="text-eb-meta uppercase tracking-widest text-eb-muted">
-              {isDealerSignup ? "Shows I sell at" : "Shows I want updates about"}
-            </span>
-          </div>
-          <div className="space-y-2">
-            {markets.map((m) => (
-              <label
-                key={m.id}
-                className={`flex items-center gap-3 p-3 border-2 cursor-pointer ${
-                  followedMarkets.has(m.id)
-                    ? "border-eb-black bg-eb-white"
-                    : "border-eb-border"
-                }`}
-              >
-                <input
-                  type="checkbox"
-                  checked={followedMarkets.has(m.id)}
-                  onChange={() => toggleMarket(m.id)}
-                  className="eb-check"
-                />
-                <span className="text-eb-body font-bold">{m.name}</span>
-              </label>
-            ))}
-          </div>
-        </section>
-      )}
+      {/* Per-market follow checkboxes used to live here and wrote to
+          buyer_market_follows with drop_alerts_enabled=true. That was
+          the drop-era design. The drop cron is retired now, so those
+          rows are inert. Per-show opt-in is the real feature and lives
+          below in "Market Reminders". Keeping onboarding to one section
+          per concept. */}
 
       {/* Notifications */}
       <section className="px-5 py-5 border-t border-eb-border">
