@@ -12,7 +12,7 @@ import { BottomNav } from "@/components/bottom-nav";
 import { DealerApplyDrawer } from "@/components/dealer-apply-drawer";
 import { InstagramInput } from "@/components/instagram-input";
 import { Masthead } from "@/components/masthead";
-import { SHOWS, type ShowName } from "@/lib/shows";
+import { SHOWS, type ShowName, marketReminderKey } from "@/lib/shows";
 
 interface UserProfile {
   id: string;
@@ -359,43 +359,76 @@ export default function AccountPage() {
     [profile.first_name, profile.last_name].filter(Boolean).join(" ") ||
     "User";
 
+  // Active notification types — kept tight to features we actually
+  // ship SMS for. Dealers get the new-inquiry text; buyers get the
+  // price-drop text. Anything else was historical (drop_alerts,
+  // drop_reminders, watcher_milestones, new_markets) and the cron
+  // or feature behind it has been retired.
   const DEALER_NOTIFS = [
     {
       key: "new_inquiries",
       title: "New Inquiries",
       desc: "Text me when a buyer sends an inquiry",
     },
-    {
-      key: "drop_reminders",
-      title: "Drop Reminders",
-      desc: "Text me the day before a drop",
-    },
-    {
-      key: "watcher_milestones",
-      title: "Watcher Milestones",
-      desc: "Text me when items hit 10+ watchers",
-    },
   ];
 
   const BUYER_NOTIFS = [
-    {
-      key: "drop_alerts",
-      title: "Drop Alerts",
-      desc: "Text me when markets I follow go live",
-    },
     {
       key: "price_drops",
       title: "Price Drops",
       desc: "Text me when watched items drop in price",
     },
-    {
-      key: "new_markets",
-      title: "New Markets",
-      desc: "Text me when new LA markets are added",
-    },
   ];
 
   const notifItems = isDealer ? DEALER_NOTIFS : BUYER_NOTIFS;
+
+  // Market-reminder opt-in: one notification_preferences row per show
+  // (key = market_reminder_<slug>). Explicit-opt-in default so we
+  // don't text someone unless they ticked the box here or elsewhere.
+  const getMarketReminderPref = (show: ShowName): boolean => {
+    const key = marketReminderKey(show);
+    const p = profile?.notification_preferences?.find((n) => n.key === key);
+    return p?.enabled === 1;
+  };
+  const toggleMarketReminder = useCallback(
+    async (show: ShowName) => {
+      const key = marketReminderKey(show);
+      const current = getMarketReminderPref(show);
+      const next = !current;
+
+      // Optimistic update
+      setProfile((p) => {
+        if (!p) return p;
+        const prefs = (p.notification_preferences || []).map((n) =>
+          n.key === key ? { ...n, enabled: next ? 1 : 0 } : n
+        );
+        if (!prefs.find((n) => n.key === key)) {
+          prefs.push({ key, enabled: next ? 1 : 0 });
+        }
+        return { ...p, notification_preferences: prefs };
+      });
+
+      const res = await apiFetch("/api/users/me", {
+        method: "PATCH",
+        body: JSON.stringify({
+          notification_preferences: [{ key, enabled: next }],
+        }),
+      });
+
+      if (!res.ok) {
+        setProfile((p) => {
+          if (!p) return p;
+          const prefs = (p.notification_preferences || []).map((n) =>
+            n.key === key ? { ...n, enabled: current ? 1 : 0 } : n
+          );
+          return { ...p, notification_preferences: prefs };
+        });
+      }
+    },
+    // profile dependency wraps the getPref closure — intentional.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [profile]
+  );
 
   return (
     <>
@@ -760,6 +793,40 @@ export default function AccountPage() {
             />
           </label>
         ))}
+      </section>
+
+      <div className="border-t border-eb-border mx-5" />
+
+      {/* Market reminders — per-show opt-in for the pre-show SMS.
+          Dealers selling at a show are auto-subscribed via their
+          market subscriptions; this section is the explicit opt-in
+          path everyone else gets. */}
+      <section className="px-5 py-5">
+        <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-1">
+          Market Reminders
+        </div>
+        <div className="text-eb-micro text-eb-muted mb-3 leading-relaxed max-w-[22rem]">
+          Text me before each show to see what top dealers are bringing.
+        </div>
+        {SHOWS.map((show, i) => {
+          const on = getMarketReminderPref(show);
+          return (
+            <label
+              key={show}
+              className={`flex items-center gap-3 py-3 cursor-pointer${i < SHOWS.length - 1 ? " border-b border-eb-border" : ""}`}
+            >
+              <input
+                type="checkbox"
+                checked={on}
+                onChange={() => toggleMarketReminder(show)}
+                className="eb-check"
+              />
+              <div className="text-eb-body font-bold text-eb-black">
+                {show}
+              </div>
+            </label>
+          );
+        })}
       </section>
 
       <div className="border-t border-eb-border mx-5" />
