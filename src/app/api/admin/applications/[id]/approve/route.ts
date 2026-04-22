@@ -4,6 +4,7 @@ import { getSession } from "@/lib/auth";
 import { isAdmin } from "@/lib/admin";
 import { newId } from "@/lib/id";
 import { sendSMSWithLog } from "@/lib/sms";
+import { composeDealerApproval } from "@/lib/sms-templates";
 import { getBaseUrl } from "@/lib/url";
 import { nanoid } from "nanoid";
 
@@ -59,16 +60,12 @@ export async function POST(
     args: [newId(), phone, token, expiresAt],
   });
 
-  const url = `${getBaseUrl(request)}/v/${token}`;
-  await sendSMSWithLog(
-    phone,
-    `Early Bird: You're approved as a dealer! Tap to get started.\n\n${url}`,
-    {
-      event_type: "sms.dealer_approval",
-      entity_type: "dealer_application",
-      entity_id: id,
-    }
-  );
+  const url = `${getBaseUrl(request)}/v/${token}?to=/sell`;
+  await sendSMSWithLog(phone, composeDealerApproval(url), {
+    event_type: "sms.dealer_approval",
+    entity_type: "dealer_application",
+    entity_id: id,
+  });
 
   return json({ approved: true, dealer_id: dealerId });
 }

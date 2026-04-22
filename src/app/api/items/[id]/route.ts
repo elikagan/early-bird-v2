@@ -361,7 +361,7 @@ export async function PATCH(
         if (winner.rows.length > 0) {
           await sendSMSWithLog(
             (winner.rows[0] as Record<string, unknown>).phone as string,
-            composeSoldReceipt(ctx.dealerName, itemTitle, ctx.boothNumber, ctx.marketName, ctx.marketDate),
+            composeSoldReceipt(ctx.dealerName, itemTitle),
             {
               event_type: "sms.sold_receipt",
               entity_type: "item",

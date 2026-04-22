@@ -11,48 +11,15 @@ export function composeInquiryNotification(
 }
 
 /**
- * SMS sent to buyer when dealer holds an item for them.
- */
-export function composeHoldReceipt(
-  dealerName: string,
-  itemTitle: string,
-  boothNumber: string | null,
-  marketName: string,
-  marketDate: string
-): string {
-  const booth = boothNumber ? ` at Booth ${boothNumber}` : "";
-  return `Early Bird: ${dealerName} is holding ${itemTitle} for you. First dibs${booth}, ${marketName}, ${marketDate}.`;
-}
-
-/**
  * SMS sent to winning buyer when dealer sells to them. No pickup details —
  * payment and logistics are arranged directly between buyer and dealer.
  * Includes a no-warranty / common-sense disclaimer.
- *
- * The booth/market/date args are accepted for backward compatibility but
- * intentionally unused in the current copy.
  */
 export function composeSoldReceipt(
   dealerName: string,
-  itemTitle: string,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _boothNumber: string | null,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _marketName: string,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _marketDate: string
+  itemTitle: string
 ): string {
   return `Early Bird: Congrats! ${dealerName} marked the ${itemTitle} sold to you. We trust you'll both honor whatever you agreed on. Early Bird doesn't warranty this transaction — use common sense.`;
-}
-
-/**
- * SMS sent to losing inquirers when item sells to someone else.
- */
-export function composeLostReceipt(
-  itemTitle: string,
-  dealerName: string
-): string {
-  return `Early Bird: ${itemTitle} sold to another buyer. Keep an eye on ${dealerName}'s booth for more drops.`;
 }
 
 /**
@@ -71,14 +38,23 @@ export function composePriceDropNotification(
  * SMS with magic link for auth.
  */
 export function composeMagicLink(url: string): string {
-  return `Early Bird\n\n${url}`;
+  return `Early Bird sign-in link:\n\n${url}`;
 }
 
 /**
- * SMS sent to a new dealer when an admin invites them to the platform.
+ * SMS sent to a new dealer when an admin invites them to the platform (cold
+ * invite, not an approval of an existing application).
  */
 export function composeDealerInvite(url: string): string {
   return `Early Bird: You've been invited to sell on Early Bird. Tap to set up your booth:\n\n${url}`;
+}
+
+/**
+ * SMS sent when an admin approves a dealer application. Different from the
+ * cold invite — this person applied, so we welcome them rather than invite.
+ */
+export function composeDealerApproval(url: string): string {
+  return `Early Bird: Welcome aboard. You're approved to sell. Tap here to set up your booth:\n\n${url}`;
 }
 
 /**
@@ -101,16 +77,4 @@ export function composeInquiryBuyerConfirmation(
   url: string
 ): string {
   return `Early Bird: tap to confirm it's you and send your message about "${itemTitle}" to ${dealerName}:\n\n${url}`;
-}
-
-/**
- * SMS sent to followers when a market drops (goes live).
- */
-export function composeDropAlert(
-  marketName: string,
-  itemCount: number,
-  dealerCount: number,
-  url: string
-): string {
-  return `Early Bird: ${marketName} is live — ${itemCount} items from ${dealerCount} dealers. Shop now.\n\n${url}`;
 }
