@@ -6,34 +6,62 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
-import { formatDate, daysUntil, heroCountdown } from "@/lib/format";
+import {
+  formatPrice,
+  formatShortDate,
+  getInitials,
+} from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
 import { Masthead } from "@/components/masthead";
 
 interface Market {
   id: string;
   name: string;
-  location: string;
+  location: string | null;
   drop_at: string;
   starts_at: string;
   status: string;
+  archived?: number;
   dealer_count: number;
   item_count: number;
-  dealer_preshop_enabled: number;
 }
 
 interface PreviewItem {
   id: string;
+  title: string;
+  price: number;
+  status: string;
   thumb_url: string | null;
   photo_url: string | null;
+  dealer_name: string;
+}
+
+const MAX_PROMO_ITEMS = 8;
+
+/**
+ * Day-granularity countdown. Mirrors the `/` page helper — same rules,
+ * same output.
+ */
+function daysUntilLabel(iso: string): string {
+  const now = new Date();
+  const start = new Date(iso);
+  const nowDay = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  const startDay = Date.UTC(
+    start.getFullYear(),
+    start.getMonth(),
+    start.getDate()
+  );
+  const days = Math.round((startDay - nowDay) / (1000 * 60 * 60 * 24));
+  if (days <= 0) return "Open today";
+  if (days === 1) return "Opens tomorrow";
+  return `Opens in ${days} days`;
 }
 
 export default function HomePage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [markets, setMarkets] = useState<Market[]>([]);
-  const [previewItems, setPreviewItems] = useState<PreviewItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [markets, setMarkets] = useState<Market[] | null>(null);
+  const [featuredItems, setFeaturedItems] = useState<PreviewItem[]>([]);
   const [pendingApp, setPendingApp] = useState(false);
 
   const isDealer = user?.is_dealer === 1;
@@ -49,13 +77,22 @@ export default function HomePage() {
     async function load() {
       const [marketsRes, appRes] = await Promise.all([
         apiFetch("/api/markets"),
-        user && !isDealer ? apiFetch("/api/dealer-applications") : Promise.resolve(null),
+        user && !isDealer
+          ? apiFetch("/api/dealer-applications")
+          : Promise.resolve(null),
       ]);
-      let loadedMarkets: Market[] = [];
+
+      let upcoming: Market[] = [];
       if (marketsRes.ok) {
-        loadedMarkets = await marketsRes.json();
-        setMarkets(loadedMarkets);
+        const raw: Market[] = await marketsRes.json();
+        // Only non-archived; API already sorts drop_at ASC so we just
+        // filter. This matches the `/` page pipeline exactly.
+        upcoming = raw.filter((m) => Number(m.archived ?? 0) !== 1);
+        setMarkets(upcoming);
+      } else {
+        setMarkets([]);
       }
+
       if (appRes?.ok) {
         const data = await appRes.json();
         if (data.application?.status === "pending") {
@@ -63,28 +100,25 @@ export default function HomePage() {
         }
       }
 
-      // Fetch preview items for hero market
-      const live = loadedMarkets.find((m) => m.status === "live");
-      const upcoming = loadedMarkets.filter((m) => m.status === "upcoming");
-      const hero = live || upcoming[0];
-      if (hero) {
-        const previewRes = await apiFetch(`/api/items?market_id=${hero.id}&limit=6`);
-        if (previewRes.ok) {
-          const items = await previewRes.json();
-          setPreviewItems(
+      const featured = upcoming[0];
+      if (featured) {
+        const itemsRes = await apiFetch(
+          `/api/items?market_id=${featured.id}&limit=${MAX_PROMO_ITEMS}`
+        );
+        if (itemsRes.ok) {
+          const items: PreviewItem[] = await itemsRes.json();
+          setFeaturedItems(
             items
-              .filter((i: PreviewItem) => i.thumb_url || i.photo_url)
-              .slice(0, 6)
+              .filter((i) => i.status !== "deleted")
+              .slice(0, MAX_PROMO_ITEMS)
           );
         }
       }
-
-      setLoading(false);
     }
-    load();
+    if (user) load();
   }, [user, isDealer]);
 
-  if (authLoading || loading || !user) {
+  if (authLoading || !user || markets === null) {
     return (
       <>
         <div className="flex-1 flex items-center justify-center">
@@ -95,21 +129,8 @@ export default function HomePage() {
     );
   }
 
-  const liveMarket = markets.find((m) => m.status === "live");
-  const upcomingMarkets = markets.filter((m) => m.status === "upcoming");
-  const heroMarket = liveMarket || upcomingMarkets[0];
-  const otherMarkets = heroMarket
-    ? markets.filter((m) => m.id !== heroMarket.id && m.status !== "closed")
-    : [];
-
-  // Show the "Dealer pre-shopping is live" banner only when:
-  //  1. the signed-in user is a dealer, AND
-  //  2. there's at least one upcoming market where pre-shop is turned on.
-  const showPreshopBanner =
-    isDealer &&
-    markets.some(
-      (m) => m.status === "upcoming" && (m.dealer_preshop_enabled ?? 1) === 1
-    );
+  const featured = markets[0] ?? null;
+  const comingUp = markets.slice(1);
 
   return (
     <>
@@ -129,222 +150,127 @@ export default function HomePage() {
         </div>
       )}
 
-      <main className="pb-24">
-        {/* Empty state */}
-        {!heroMarket && (
-          <div className="eb-empty">
-            <div className="eb-icon">○</div>
-            <p>
-              You&apos;re not following any markets yet.
-              <br />
-              Follow LA flea markets to see upcoming ones here.
-            </p>
+      {featured ? (
+        <>
+          {/* Featured market — same pattern as / and /buy: muted
+              eyebrow (date + location) then display name then stats. */}
+          <section className="px-5 pt-5 pb-5 border-b border-eb-border">
+            <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-1">
+              Open now {"\u00b7"} {formatShortDate(featured.starts_at)}
+              {featured.location ? <> {"\u00b7"} {featured.location}</> : null}
+            </div>
+            <h1 className="text-eb-display font-bold text-eb-black uppercase tracking-wider leading-tight">
+              {featured.name}
+            </h1>
+            {(featured.dealer_count > 0 || featured.item_count > 0) && (
+              <div className="text-eb-meta text-eb-muted mt-2">
+                {featured.item_count} items {"\u00b7"} {featured.dealer_count}{" "}
+                dealers
+              </div>
+            )}
+          </section>
+
+          {/* Promo grid — 2-wide, first N items of the featured market. */}
+          {featuredItems.length > 0 && (
+            <div className="eb-grid">
+              {featuredItems.map((item) => {
+                const isSold = item.status === "sold";
+                const isHeld = item.status === "hold";
+                return (
+                  <Link
+                    key={item.id}
+                    href={`/item/${item.id}`}
+                    className={`eb-grid-card${isSold ? " eb-sold" : ""}`}
+                  >
+                    {item.photo_url ? (
+                      <Image
+                        src={item.thumb_url || item.photo_url}
+                        alt={item.title}
+                        width={400}
+                        height={400}
+                        sizes="(max-width: 430px) 50vw, 215px"
+                        className="eb-photo"
+                      />
+                    ) : (
+                      <div className="eb-photo bg-eb-border" />
+                    )}
+                    <div className="eb-body">
+                      <div className="eb-title">{item.title}</div>
+                      <div className="flex items-center gap-2">
+                        <div className="eb-price">{formatPrice(item.price)}</div>
+                        {isHeld && <span className="eb-tag-hold">HELD</span>}
+                      </div>
+                      <div className="eb-dealer">
+                        <span className="eb-avatar eb-avatar-sm">
+                          {getInitials(item.dealer_name)}
+                        </span>
+                        <span className="eb-dealer-name">
+                          {item.dealer_name}
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Browse-all CTA — signed-in users go to /buy?market= */}
+          <div className="px-5 pt-4 pb-6 border-b border-eb-border">
+            <Link
+              href={`/buy?market=${featured.id}`}
+              className="eb-btn block text-center"
+            >
+              Browse all {featured.item_count} items {"\u2192"}
+            </Link>
           </div>
-        )}
 
-        {/* ═══════════════ HERO MARKET ═══════════════ */}
-        {heroMarket && (
-          <section className="px-5 pt-8 pb-7 border-b-2 border-eb-black">
-            <div className="text-eb-micro uppercase tracking-widest font-bold text-eb-pop">
-              {heroMarket.status === "live" ? "Live now" : "Upcoming"}
-            </div>
-            <h2 className="text-eb-hero text-eb-black leading-tight mt-2">
-              {heroMarket.name}
-            </h2>
-            <div className="text-eb-caption text-eb-muted mt-2">
-              {formatDate(heroMarket.starts_at)}
-              <span className="mx-1.5 text-eb-light">·</span>
-              {heroMarket.status === "live"
-                ? `${heroMarket.dealer_count} dealers · ${heroMarket.item_count} items`
-                : `~${heroMarket.dealer_count} dealers`}
-            </div>
-
-            {/* Preview image grid */}
-            {previewItems.length > 0 && (
-              <div className="grid grid-cols-3 gap-1.5 mt-5">
-                {previewItems.map((pi) => (
-                  <Link key={pi.id} href={`/item/${pi.id}`}>
-                    <Image
-                      src={pi.thumb_url || pi.photo_url || ""}
-                      alt=""
-                      width={200}
-                      height={200}
-                      sizes="(max-width: 430px) 33vw, 130px"
-                      className="w-full aspect-square object-cover object-top"
-                    />
+          {/* Coming up — editorial rows */}
+          {comingUp.length > 0 && (
+            <section className="pt-6 pb-24">
+              <div className="px-5 text-eb-micro uppercase tracking-widest text-eb-muted mb-2">
+                Coming up
+              </div>
+              <div className="divide-y divide-eb-border border-y border-eb-border">
+                {comingUp.map((m) => (
+                  <Link
+                    key={m.id}
+                    href={`/buy?market=${m.id}`}
+                    className="flex items-start justify-between gap-4 px-5 py-4 active:bg-eb-border/20"
+                  >
+                    <div className="min-w-0">
+                      <div className="text-eb-body font-bold text-eb-black truncate">
+                        {m.name}
+                      </div>
+                      <div className="text-eb-meta text-eb-muted mt-1 tabular-nums">
+                        {formatShortDate(m.starts_at)}
+                        {m.location ? <> {"\u00b7"} {m.location}</> : null}
+                      </div>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <div className="text-eb-micro uppercase tracking-widest text-eb-muted">
+                        {daysUntilLabel(m.starts_at)}
+                      </div>
+                    </div>
                   </Link>
                 ))}
               </div>
-            )}
-
-            {/* Countdown to when the market opens for shopping.
-                For dealers on pre-shop-enabled markets, this doubles as
-                the pre-shop status indicator (green dot + "pre-shopping
-                is live" header) so the countdown and status live in
-                one component instead of two stacked banners. */}
-            {heroMarket.status === "upcoming" && (
-              <div className="mt-4">
-                {isDealer &&
-                  (heroMarket.dealer_preshop_enabled ?? 1) === 1 && (
-                    <div className="px-4 py-2 border-2 border-eb-green bg-eb-green/10 flex items-center gap-2">
-                      <span className="inline-block w-2 h-2 rounded-full bg-eb-green" />
-                      <span className="text-eb-micro uppercase tracking-widest font-bold text-eb-green">
-                        Dealer pre-shopping is live
-                      </span>
-                    </div>
-                  )}
-                <div className="eb-drop-box">
-                  <div>
-                    <div className="eb-drop-label">
-                      {isDealer &&
-                      (heroMarket.dealer_preshop_enabled ?? 1) === 1
-                        ? "Regular shopping opens"
-                        : "Shopping opens"}
-                    </div>
-                    <div className="eb-drop-sub">
-                      {formatDate(heroMarket.drop_at)}
-                    </div>
-                  </div>
-                  <div className="eb-drop-time">
-                    {heroCountdown(heroMarket.drop_at)}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* CTA */}
-            {heroMarket.status === "live" && (
-              <Link
-                href={`/buy?market=${heroMarket.id}`}
-                className="eb-btn mt-6 text-center"
-              >
-                Browse the market {"\u2192"}
-              </Link>
-            )}
-            {heroMarket.status === "upcoming" && user && (
-              <Link
-                href={`/buy?market=${heroMarket.id}`}
-                className="eb-btn mt-6 text-center"
-              >
-                {isDealer && (heroMarket.dealer_preshop_enabled ?? 1) === 1
-                  ? "Pre-shop now"
-                  : "Preview items"}{" "}
-                {"\u2192"}
-              </Link>
-            )}
-            {heroMarket.status === "upcoming" && !user && (
-              <Link href="/" className="eb-btn mt-6 text-center">
-                Sign up to get texted when shopping opens {"\u2192"}
-              </Link>
-            )}
-          </section>
-        )}
-
-        {/* ═══════════════ COMING UP ═══════════════ */}
-        {otherMarkets.length > 0 && (
-          <section className="pt-8 pb-8 border-b-2 border-eb-black">
-            <div className="px-5">
-              <div className="text-eb-micro uppercase tracking-widest font-bold text-eb-muted">
-                Coming up
-              </div>
-              <h3 className="text-eb-title font-bold text-eb-black mt-1.5 mb-4">
-                Upcoming markets
-              </h3>
-            </div>
-
-            <div className="divide-y divide-eb-border border-t border-eb-border">
-              {otherMarkets.map((m) => (
-                <Link
-                  key={m.id}
-                  href={`/buy?market=${m.id}`}
-                  className="flex items-start justify-between gap-4 px-5 py-4 active:bg-eb-border/40"
-                >
-                  <div className="min-w-0">
-                    <div className="text-eb-body font-bold text-eb-black truncate">
-                      {m.name}
-                    </div>
-                    <div className="text-eb-meta text-eb-muted mt-1">
-                      {formatDate(m.starts_at)}
-                      <span className="mx-1.5 text-eb-light">·</span>~
-                      {m.dealer_count} dealers
-                    </div>
-                  </div>
-                  <div className="shrink-0 text-eb-caption font-bold tabular-nums text-eb-black pt-0.5">
-                    {daysUntil(m.drop_at)}d
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* ═══════════════ HOW IT WORKS ═══════════════ */}
-        <section>
-          <div className="px-5 pt-8 pb-5">
-            <div className="text-eb-micro uppercase tracking-widest font-bold text-eb-muted">
-              How it works
-            </div>
-            <h3 className="text-eb-title font-bold text-eb-black mt-1.5">
-              {user && isDealer
-                ? "Selling on Early Bird"
-                : "Shopping Early Bird"}
-            </h3>
+            </section>
+          )}
+        </>
+      ) : (
+        <section className="px-5 py-12 text-center">
+          <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-2">
+            Between shows
           </div>
-
-          <div className="px-5 pb-10 space-y-9">
-            {(user && isDealer
-              ? [
-                  {
-                    num: "01",
-                    label: "Post",
-                    body: "List your items anytime before the market. When we drop the market — typically the day before — everything goes live at once and buyers start browsing.",
-                  },
-                  {
-                    num: "02",
-                    label: "Connect",
-                    body: "When a buyer\u2019s interested, you get a single text with their name, number, and message. Take it from there — call, text, or meet at the booth.",
-                  },
-                  {
-                    num: "03",
-                    label: "Get paid",
-                    body: "Arrange payment with buyers however you like — cash, Venmo, Zelle, whatever works. Early Bird never handles money.",
-                  },
-                ]
-              : [
-                  {
-                    num: "01",
-                    label: "Browse",
-                    body: "Dealers post what they\u2019re bringing before each flea market. Browse from your couch, save what you like, and reach out before the crowd shows up at 4am.",
-                  },
-                  {
-                    num: "02",
-                    label: "Connect",
-                    body: "Tap \u201cI\u2019m Interested\u201d on any item to send the dealer a single text with your name, number, and message. Take it from there — call, text, or meet at the booth.",
-                  },
-                  {
-                    num: "03",
-                    label: "Get it",
-                    body: "Pay the dealer in person, however they take payment. Early Bird never handles money.",
-                  },
-                ]
-            ).map((step) => (
-              <div key={step.num}>
-                <div className="flex items-baseline gap-3 mb-2">
-                  <span className="text-eb-caption font-bold tabular-nums text-eb-pop">
-                    {step.num}
-                  </span>
-                  <span className="text-eb-caption font-bold uppercase tracking-wider text-eb-black">
-                    {step.label}
-                  </span>
-                </div>
-                <p className="text-eb-body text-eb-text leading-relaxed">
-                  {step.body}
-                </p>
-              </div>
-            ))}
-          </div>
+          <h1 className="text-eb-display font-bold text-eb-black uppercase tracking-wider leading-tight">
+            Nothing up right now
+          </h1>
+          <p className="text-eb-caption text-eb-muted mt-3 leading-relaxed">
+            Next market hasn{"\u2019"}t been announced yet. Check back soon.
+          </p>
         </section>
-      </main>
+      )}
 
       <BottomNav active="buy" />
     </>

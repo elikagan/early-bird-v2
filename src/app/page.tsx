@@ -7,6 +7,7 @@ import Image from "next/image";
 import { useAuth } from "@/lib/auth-context";
 import { formatPrice, formatShortDate, getInitials } from "@/lib/format";
 import { Masthead } from "@/components/masthead";
+import { SignupDrawer } from "@/components/signup-drawer";
 
 interface Market {
   id: string;
@@ -58,6 +59,7 @@ export default function HomePage() {
   const { user, loading: authLoading } = useAuth();
   const [markets, setMarkets] = useState<Market[] | null>(null);
   const [featuredItems, setFeaturedItems] = useState<PreviewItem[]>([]);
+  const [showSignIn, setShowSignIn] = useState(false);
 
   // Signed-in users get their personalized /home; this page is the
   // anonymous-visitor experience.
@@ -326,12 +328,13 @@ export default function HomePage() {
           </a>
         </div>
         <div className="flex flex-wrap gap-4 mt-4">
-          <a
-            href="/auth/verify"
+          <button
+            type="button"
+            onClick={() => setShowSignIn(true)}
             className="text-eb-micro text-eb-muted underline"
           >
             Sign in
-          </a>
+          </button>
           <a
             href="/terms"
             className="text-eb-micro text-eb-muted underline"
@@ -346,6 +349,14 @@ export default function HomePage() {
           </a>
         </div>
       </footer>
+
+      <SignupDrawer
+        open={showSignIn}
+        onClose={() => setShowSignIn(false)}
+        headline="Sign in"
+        subtext="Enter your phone number and we'll text a sign-in link. No password."
+        consentLabel="Text me when shopping opens"
+      />
     </>
   );
 }

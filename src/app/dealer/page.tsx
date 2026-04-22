@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { Masthead } from "@/components/masthead";
+import { SignupDrawer } from "@/components/signup-drawer";
 
 /**
  * Public dealer landing page. Pitches Early Bird to LA flea market
@@ -13,6 +15,7 @@ import { Masthead } from "@/components/masthead";
  * self-serve signup form.
  */
 export default function DealerLandingPage() {
+  const [showSignIn, setShowSignIn] = useState(false);
   return (
     <>
       <Masthead
@@ -133,12 +136,13 @@ export default function DealerLandingPage() {
           </a>
         </div>
         <div className="flex flex-wrap gap-4 mt-4">
-          <a
-            href="/auth/verify"
+          <button
+            type="button"
+            onClick={() => setShowSignIn(true)}
             className="text-eb-micro text-eb-muted underline"
           >
             Sign in
-          </a>
+          </button>
           <a href="/terms" className="text-eb-micro text-eb-muted underline">
             Terms
           </a>
@@ -147,6 +151,14 @@ export default function DealerLandingPage() {
           </a>
         </div>
       </footer>
+
+      <SignupDrawer
+        open={showSignIn}
+        onClose={() => setShowSignIn(false)}
+        headline="Sign in"
+        subtext="Enter your phone number and we'll text a sign-in link. No password."
+        consentLabel="Text me when shopping opens"
+      />
     </>
   );
 }
