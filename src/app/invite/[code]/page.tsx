@@ -4,20 +4,9 @@ import { useState, useCallback, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { NotFoundScreen } from "@/components/not-found-screen";
 import { SHOWS, type ShowName } from "@/lib/shows";
+import { formatPhone } from "@/lib/format";
 
 type Step = "loading" | "form" | "invalid";
-
-function formatPhoneForDisplay(raw: string | null): string {
-  if (!raw) return "";
-  const digits = raw.replace(/\D/g, "");
-  if (digits.length === 11 && digits.startsWith("1")) {
-    return `(${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7)}`;
-  }
-  if (digits.length === 10) {
-    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
-  }
-  return raw;
-}
 
 export default function InvitePage() {
   const params = useParams();
@@ -157,7 +146,7 @@ export default function InvitePage() {
                     Phone Number
                   </label>
                   <div className="eb-input flex items-center bg-eb-border/30 text-eb-text cursor-not-allowed select-none">
-                    {formatPhoneForDisplay(invitePhone)}
+                    {formatPhone(invitePhone || "")}
                   </div>
                   <p className="text-eb-micro text-eb-muted mt-1">
                     This is the number your admin added for you.
