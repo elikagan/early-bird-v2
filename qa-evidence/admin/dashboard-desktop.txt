@@ -1,0 +1,31 @@
+# Admin Dashboard — Desktop (1280×800)
+# Captured 2026-04-22 by Claude during Chunk A QA walk.
+
+## Visual observation (from preview_screenshot)
+
+**Major: admin UI is constrained to a mobile-width column on
+desktop.** The entire admin shell renders at ~430px wide, centered,
+with enormous empty margins on both sides of a 1280px viewport.
+The dashboard uses ~30% of the available horizontal space and
+wastes the rest. A real admin tool for a desktop user would use
+the width (sidebar nav, wider stat cards, bigger tables).
+
+**Tab bar still has the DASHBOARD/MARKETS overlap on desktop too,**
+because the container is narrow and the tabs still don't wrap. The
+ADMIN layout inherits mobile-first constraints that never get
+relaxed for larger viewports.
+
+**Same issues as mobile carry over:** stat labels wrap awkwardly,
+Recent Actions shows raw event_type strings, empty space below the
+Recent Actions list is enormous at desktop height.
+
+## Assessment
+
+This is what Eli meant by "admin looks fucking terrible." Two
+root causes:
+
+1. Shell is mobile-first with no `md:` / `lg:` breakpoint responses.
+   On desktop the whole UI is just a phone screen in the middle.
+2. Content hasn't been designed for the desktop admin role. Admin
+   surfaces do serious work (managing dealers, markets, items,
+   SMS blasts). They deserve a desktop-grade layout.

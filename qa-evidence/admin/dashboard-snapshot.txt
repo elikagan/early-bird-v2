@@ -1,0 +1,7 @@
+# Admin Dashboard — stat cards present with arrow affordance
+
+Verified during the dashboard-mobile capture:
+- 4 stat cards: Dealers, Buyers, Items/wk, Sold/wk
+- Each card has "→" glyph in the label, confirming the clickability fix
+  committed earlier in `5393100` is live.
+- All four render as <button> elements (accessibility tree shows `button:` role).

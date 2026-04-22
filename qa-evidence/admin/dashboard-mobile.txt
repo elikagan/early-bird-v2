@@ -1,0 +1,39 @@
+# Admin Dashboard — Mobile (375×812)
+# Captured 2026-04-22 by Claude during Chunk A QA walk.
+
+## Visual observation (from preview_screenshot)
+
+**Critical: tab bar overflows at 375px wide.** Labels visibly
+overlap — "DASHBOARD" runs into "MARKETS" rendering as
+"DASHBOARDARKETS". All 7 tab buttons are forced into a single
+no-wrap row with no horizontal scroll indicator.
+
+**Stat labels wrap awkwardly.** "ITEMS / WK →" breaks to two
+lines, orphaning the arrow below "WK". Same for "SOLD / WK →".
+The dashboard fix from commit 5393100 (adding arrows) works
+but the container wasn't sized for the new width.
+
+**Recent Actions list is raw event-type strings.** Shows
+"send_dealer_blast" verbatim to an admin. No admin name,
+no market context, no count. Not human-readable.
+
+**No admin-mode branding.** The only indicator you're in /admin
+is the tab bar itself. A subtle "ADMIN" chip near the logo or
+a distinct background would help confirm the role at a glance.
+
+## Accessibility snapshot (preview_snapshot)
+
+RootWebArea: "Early Bird"
+  banner → link: "EARLY BIRD" / heading: "EARLY BIRD"
+  tab bar: DASHBOARD / MARKETS / DEALERS / ITEMS / BLAST / SMS / HEALTH
+  stats:
+    button: "19 DEALERS →"
+    button: "9 BUYERS →"
+    button: "50 ITEMS / WK →"
+    button: "0 SOLD / WK →"
+  NEXT MARKET — Downtown Modernism — Sun Apr 26 · 50 items · 10 dealers
+    countdown: 03D 01H 34M
+  RECENT ACTIONS (3 rows):
+    send_dealer_blast  — 18m ago
+    send_dealer_blast  — 3h ago
+    Sent SMS blast     — 6d ago

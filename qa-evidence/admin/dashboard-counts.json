@@ -1,0 +1,16 @@
+{
+  "captured_at": "2026-04-22T21:27:40.734Z",
+  "db_totals": {
+    "dealers": 19,
+    "buyers": 9,
+    "items_this_week": 50,
+    "sold_this_week": 0
+  },
+  "dashboard_shows": {
+    "dealers": 19,
+    "buyers": 9,
+    "items_this_week": 50,
+    "sold_this_week": 0
+  },
+  "note": "Compare db_totals vs dashboard_shows. Discrepancy = bug."
+}
