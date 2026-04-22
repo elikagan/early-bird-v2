@@ -349,8 +349,23 @@ function MarketsTab() {
     })();
   }, []);
 
+  const [createError, setCreateError] = useState<string | null>(null);
+
   const createMarket = async () => {
-    if (!formName || !formDate || !formDrop || creating) return;
+    setCreateError(null);
+    if (creating) return;
+    if (!formName.trim()) {
+      setCreateError("Market name is required");
+      return;
+    }
+    if (!formDate) {
+      setCreateError("Market date is required");
+      return;
+    }
+    if (!formDrop) {
+      setCreateError("Listings-open date is required");
+      return;
+    }
     setCreating(true);
     const res = await apiFetch("/api/admin/markets", {
       method: "POST",
@@ -369,6 +384,9 @@ function MarketsTab() {
       setFormDrop("");
       setFormTest(false);
       loadMarkets();
+    } else {
+      const data = await res.json().catch(() => ({}));
+      setCreateError(data.error || "Failed to create market");
     }
     setCreating(false);
   };
@@ -488,9 +506,14 @@ function MarketsTab() {
             />
             <span className="text-eb-caption text-eb-muted">Test market</span>
           </label>
+          {createError && (
+            <p className="text-eb-meta text-eb-red" role="alert">
+              {createError}
+            </p>
+          )}
           <button
             onClick={createMarket}
-            disabled={creating || !formName || !formDate || !formDrop}
+            disabled={creating}
             className="eb-btn"
           >
             {creating ? "CREATING\u2026" : "CREATE MARKET"}
