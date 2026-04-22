@@ -22,7 +22,7 @@ export function DealerApplyDrawer({ open, onClose, onSubmitted }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   const submit = useCallback(async () => {
-    if (!name.trim() || !biz.trim() || !ig.trim()) return;
+    if (!name.trim() || !biz.trim()) return;
     setSubmitting(true);
     setError(null);
     try {
@@ -59,6 +59,26 @@ export function DealerApplyDrawer({ open, onClose, onSubmitted }: Props) {
           <div className="w-10 h-1 rounded-full bg-eb-border" />
         </div>
 
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close"
+          className="absolute top-3 right-3 w-11 h-11 flex items-center justify-center text-eb-muted hover:text-eb-black"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 20 20"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+          >
+            <line x1="4" y1="4" x2="16" y2="16" />
+            <line x1="16" y1="4" x2="4" y2="16" />
+          </svg>
+        </button>
+
         <h2 className="text-eb-body font-bold text-eb-black uppercase tracking-wider mb-1">
           Apply to Sell
         </h2>
@@ -84,22 +104,29 @@ export function DealerApplyDrawer({ open, onClose, onSubmitted }: Props) {
 
           <div>
             <label className="text-eb-micro text-eb-muted uppercase tracking-widest block mb-1">
-              Business Name
+              Business or Your Name
             </label>
             <input
               type="text"
               className="eb-input"
               value={biz}
               onChange={(e) => setBiz(e.target.value.slice(0, 60))}
-              placeholder="Vintage Finds LA"
+              placeholder="Vintage Finds LA, or Jane Doe"
             />
           </div>
 
           <div>
-            <label className="text-eb-micro text-eb-muted uppercase tracking-widest block mb-1">
-              Instagram
-            </label>
+            <div className="flex items-baseline justify-between mb-1">
+              <label className="text-eb-micro text-eb-muted uppercase tracking-widest">
+                Instagram
+              </label>
+              <span className="text-eb-micro text-eb-muted">Optional</span>
+            </div>
             <InstagramInput value={ig} onChange={setIg} />
+            <p className="text-eb-micro text-eb-muted mt-1 leading-relaxed">
+              We use this to vet applications. If you don&apos;t have one, leave
+              it blank and we&apos;ll reach out to verify another way.
+            </p>
           </div>
 
           <p className="text-eb-micro text-eb-muted">
@@ -112,7 +139,7 @@ export function DealerApplyDrawer({ open, onClose, onSubmitted }: Props) {
           <div className="flex gap-2">
             <button
               onClick={submit}
-              disabled={submitting || !name.trim() || !biz.trim() || !ig.trim()}
+              disabled={submitting || !name.trim() || !biz.trim()}
               className="eb-btn flex-1"
             >
               {submitting ? "Submitting\u2026" : "Submit Application"}
