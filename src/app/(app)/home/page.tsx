@@ -10,6 +10,7 @@ import {
   formatPrice,
   formatShortDate,
   getInitials,
+  marketEyebrow,
 } from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
 import { Masthead } from "@/components/masthead";
@@ -156,7 +157,8 @@ export default function HomePage() {
               eyebrow (date + location) then display name then stats. */}
           <section className="px-5 pt-5 pb-5 border-b border-eb-border">
             <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-1">
-              Open now {"\u00b7"} {formatShortDate(featured.starts_at)}
+              {marketEyebrow(featured.starts_at)} {"\u00b7"}{" "}
+              {formatShortDate(featured.starts_at)}
               {featured.location ? <> {"\u00b7"} {featured.location}</> : null}
             </div>
             <h1 className="text-eb-display font-bold text-eb-black uppercase tracking-wider leading-tight">

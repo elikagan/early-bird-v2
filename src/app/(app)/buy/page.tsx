@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
-import { getInitials, formatPrice, formatShortDate } from "@/lib/format";
+import { getInitials, formatPrice, formatShortDate, marketEyebrow } from "@/lib/format";
 import { BottomNav, adjustNavCount } from "@/components/bottom-nav";
 import { Masthead } from "@/components/masthead";
 import { NotFoundScreen } from "@/components/not-found-screen";
@@ -142,6 +142,7 @@ function BuyFeedContent() {
           muted eyebrow + big display name + date/location + stats. */}
       <section className="px-5 pt-5 pb-5 border-b border-eb-border">
         <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-1">
+          {marketEyebrow(market.starts_at)} {"\u00b7"}{" "}
           {formatShortDate(market.starts_at)}
           {market.location ? <> {"\u00b7"} {market.location}</> : null}
         </div>

@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
-import { formatPrice, formatShortDate, getInitials } from "@/lib/format";
+import { formatPrice, formatShortDate, getInitials, marketEyebrow } from "@/lib/format";
 import {
   getAnonFavorites,
   addAnonFavorite,
@@ -206,17 +206,13 @@ export default function EarlyAccessPage() {
       {/* Market hero */}
       <section className="px-5 pt-5 pb-5 border-b border-eb-border">
         <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-1">
-          Pre-shop online via Early Bird
+          {marketEyebrow(market.starts_at)} {"\u00b7"}{" "}
+          {formatShortDate(market.starts_at)}
+          {market.location ? <> {"\u00b7"} {market.location}</> : null}
         </div>
         <h1 className="text-eb-display font-bold text-eb-black uppercase tracking-wider leading-tight">
           {market.name}
         </h1>
-        <div className="text-eb-body text-eb-black mt-2 tabular-nums">
-          {formatShortDate(market.starts_at)}
-          {market.location ? (
-            <span className="text-eb-muted"> {"\u00b7"} {market.location}</span>
-          ) : null}
-        </div>
         {(market.dealer_count > 0 || market.item_count > 0) && (
           <div className="text-eb-meta text-eb-muted mt-1">
             {market.item_count} items {"\u00b7"} {market.dealer_count} dealers
