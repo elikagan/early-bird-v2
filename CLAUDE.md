@@ -1,135 +1,56 @@
 # CLAUDE.md — Early Bird
 
-Read `EB_DESIGN.md` before doing anything. It is the source of truth for product decisions. Read `DESIGN_SYSTEM.md` for all visual/styling decisions. Read `RESKIN_PLAN.md` for the current session's scope. Do NOT read `REVISION_LOG.md` unless explicitly told to.
+## Start here
 
-## Tech Stack
+1. **`EB_DESIGN.md`** — source of truth for how the product is supposed to work. Read this before making any product decision or writing any user-facing copy. If code doesn't match this doc, the code is wrong.
+2. **`KNOWN_DEBT.md`** — running list of gaps between `EB_DESIGN.md` and what's actually shipped. Reference this before assuming something works; your fix might already be on the debt list.
+3. **`QA_FINDINGS.md`** — per-chunk audit log with severity-tagged items + fix commits. Historical record of what's been cleaned up.
+
+Everything else at the repo root with `*.ARCHIVED.md` in the name is old planning that no longer reflects shipped code. Don't read it. If a task requires historical context, ask the user.
+
+## Tech stack
 
 - Next.js (App Router)
-- Tailwind CSS (no DaisyUI — removed during reskin)
-- Supabase Postgres (migrated from Turso)
-- Monospace font globally (JetBrains Mono)
-- SMS: Pingram API (falls back to console stub without PINGRAM_API_KEY)
+- Tailwind CSS (no DaisyUI)
+- Supabase Postgres
+- SMS: Pingram (`PINGRAM_API_KEY`) with a console stub for local dev
+- Error tracking: Sentry (`SENTRY_AUTH_TOKEN`)
+- Typography: JetBrains Mono (`font-sans`, default) + Inter (`font-readable`, for long-form reading copy)
 
-## Rules
+## Hard rules
 
-1. **No inline styles.** Never write `style=""` on any element. The pre-commit hook will reject it. Use design system classes (`eb-*`) and Tailwind utilities only.
-2. **Design system is law.** All colors, font sizes, and spacing come from `DESIGN_SYSTEM.md` tokens. No hardcoded hex values. No arbitrary Tailwind values like `text-[14px]` — use the defined scale.
-3. **One job per session.** Each session has a single phase or task. Do not bleed into other phases. Read `RESKIN_PLAN.md` for your session's scope.
-4. **Commit after every completed unit.** A unit is one screen, one route, or one feature. Commit and push immediately. Do not batch.
-5. **Never read REVISION_LOG.md.** It exceeds the token limit and is not needed for any session. If a task requires revision history, ask the user to provide the specific entry.
-6. **Rollback tag:** `pre-reskin` — everything before the visual redesign lives here.
+1. **No inline styles.** Use design system classes (`eb-*`) and Tailwind utilities. Pre-commit hook rejects `style=""`.
+2. **No hardcoded hex colors in components.** Use tokens from `tailwind.config.js`.
+3. **Touch targets ≥ 44px** on anything tappable (Apple HIG).
+4. **Reread EB_DESIGN.md before writing user-facing copy.** Product language matters; do not translate briefs literally.
+5. **Admin surfaces are never exposed to non-admins.** Server-side gate (`isAdmin(user.phone)`) + client-side layout gate.
+6. **Dealer surfaces are never exposed to non-dealers.** Server routes check `user.dealer_id`; `src/app/(app)/sell/layout.tsx` 404s non-dealers.
+7. **Every destructive action requires a styled confirm drawer.** Never use the browser's `confirm()` or `alert()` — they're banned in admin, same rule everywhere.
+8. **Every drawer locks body scroll while open.** Use `useBodyScrollLock(open)` from `@/lib/use-body-scroll-lock`.
+9. **Every SMS text goes through a `compose*()` function** in `src/lib/sms-templates.ts`. Never inline a string literal into `sendSMSWithLog()`.
+10. **Commit after every completed unit.** One logical change per commit. Reference the finding number from `QA_FINDINGS.md` in the message when applicable.
 
-## Build Phases
-
-- **Phase 1 — Wireframes:** Static HTML pages with hardcoded dummy data. No JS logic. No data fetching. One file per screen/state.
-- **Phase 2 — Backend:** Database schema, API routes, seed data. No frontend changes.
-- **Phase 3 — Wiring:** Connect wireframes to API. Replace dummy data with real fetches. Do not change classes or add elements.
-- **Phase 4 — Polish:** Loading/empty/error states, transitions, edge cases. Still no inline styles.
-
-## Communication Model
-
-There is no in-app messaging. Buyer taps "I'm Interested," writes a short message, and the app sends a single SMS/email to the dealer with the buyer's name, phone number, and message. After that, the app is out of the loop. Do not build chat, inboxes, threads, or real-time messaging.
-
-**Carve-out — per-inquiry transactional receipts.** The "out of the loop" rule has one narrow exception. When the dealer taps Hold or Sell on a specific inquiry card in the Inquiry Log on `item-detail-dealer-own.html`, the app sends one transactional SMS to the affected buyer(s): the winning buyer gets a "Sold! …" or "first dibs" receipt; the other inquirers get a "sold to another buyer" receipt. These are one-way after-the-fact receipts — same category as a Shopify order confirmation. They do NOT open a thread, do NOT accept replies, and do NOT create an inbox. This is the only place the app sends an outbound message after the original inquiry handoff. Full spec in `EB_DESIGN.md` → Communication: One-Touch Inquiry Handoff → Per-Inquiry Transactional Receipts (Carve-Out). Confirm-drawer wireframe: `public/wireframes/item-detail-dealer-own-confirm.html`.
-
-## Item Detail Has 3 States (Not 4)
-
-1. **Buyer view** — photos, price, dealer info, "I'm Interested" button with compose drawer
-2. **Dealer own item** — full detail, edit, status controls, inquiry log (read-only list of buyer inquiries)
-3. **Dealer browsing** — same as buyer view
-
-## Navigation
-
-```
-Buyers:  Buy · Watching | Account
-Dealers: Buy · Watching | Sell | Account
-```
-
-## Font
-
-Everything is monospace. The Tailwind config overrides `fontFamily.sans` to `JetBrains Mono`. No per-component font decisions.
-
-## Quality Enforcement
-
-Three layers. All three must pass before deploying.
-
-### Layer 1: Pre-commit hook (automatic)
-Blocks commits that contain: inline styles, console.log, dead links (href="#"), unexplained readOnly, TypeScript errors. You cannot skip this.
-
-### Layer 2: QA gate script (run before every deploy)
-```bash
-bash scripts/qa-gate.sh
-```
-Checks: build, lint, dead links, console.log, TODO/FIXME, buttons without handlers, links without href, unexplained readOnly, bare fetch without error handling, images without alt text. Errors block deploy. Warnings must be reviewed.
-
-### Layer 3: Production checklist (answer before declaring a feature done)
-For every feature you build, answer YES to all of these or document why it doesn't apply:
-
-**Input & Data**
-- [ ] Every user input has validation (type, length, format) with a visible error message
-- [ ] Every form has submit-disabled state while saving
-- [ ] Every form has double-submit protection
-- [ ] Price inputs use inputmode="numeric" and validate positive values
-- [ ] Phone inputs use inputmode="tel"
-- [ ] File inputs validate type and size with clear error on rejection
-
-**Loading & Errors**
-- [ ] Every async action shows a loading indicator (spinner, disabled button, skeleton)
-- [ ] Every fetch/API call has an error path the user can see and recover from
-- [ ] Network failure doesn't leave the UI in a broken state
-- [ ] Optimistic updates revert on failure
-
-**Mobile & Real-World**
-- [ ] All touch targets are 44px minimum
-- [ ] Tested on iPhone Safari (not just desktop Chrome)
-- [ ] Works on slow network (what happens if upload takes 30 seconds?)
-- [ ] Images from iPhone cameras work (HEIC format, EXIF orientation, 4-12MB files)
-- [ ] No hover-only interactions (everything works with tap)
-
-**Completeness**
-- [ ] No placeholder text, dummy data, or "coming soon" UI in production
-- [ ] No buttons/links that don't do anything
-- [ ] No readOnly inputs without a reason
-- [ ] No console.log or debug code
-- [ ] Feature works end-to-end: create → read → update → delete (where applicable)
-- [ ] What happens if two users do conflicting things at the same time?
-
-**After building, run:**
-```bash
-bash scripts/qa-gate.sh && vercel --prod --yes
-```
-
-## Design System Reference
-
-- **Tokens:** `tailwind.config.js` (`eb` color palette + `eb-*` fontSize scale)
-- **Component classes:** `globals.css` (`eb-masthead`, `eb-grid`, `eb-cta`, etc.)
-- **Visual reference:** `public/design-system.html` (all tokens + components rendered)
-- **Design mockups:** https://eb-designs.vercel.app (source in `/tmp/eb-designs/`)
-
-## Server Commands
+## Server commands
 
 ```bash
 npm run dev     # Start dev server
-npm run build   # Production build
+npm run build   # Production build (used by the pre-commit typecheck hook)
 npm run lint    # Lint check
 ```
 
-## Skill routing
+## Dev helpers
 
-When the user's request matches an available skill, ALWAYS invoke it using the Skill
-tool as your FIRST action. Do NOT answer directly, do NOT use other tools first.
-The skill has specialized workflows that produce better results than ad-hoc answers.
+- `scripts/eb-query.mjs` — service-role Supabase CLI. Supports `list`, `list-invites`, `find-by-phone`, `delete-user`, more. Reads `.env.local`.
+- `/api/auth/dev-login` — dev-only endpoint that mints a test admin/dealer/buyer session without SMS. Hard-gated to non-production.
+- `TEST_ADMIN_PHONE = "+15550000003"` (see `src/lib/admin.ts`) — test admin phone for the QA review tool. Only treated as admin in non-production.
 
-Key routing rules:
-- Product ideas, "is this worth building", brainstorming → invoke office-hours
-- Bugs, errors, "why is this broken", 500 errors → invoke investigate
-- Ship, deploy, push, create PR → invoke ship
-- QA, test the site, find bugs → invoke qa
-- Code review, check my diff → invoke review
-- Update docs after shipping → invoke document-release
-- Weekly retro → invoke retro
-- Design system, brand → invoke design-consultation
-- Visual audit, design polish → invoke design-review
-- Architecture review → invoke plan-eng-review
-- Save progress, checkpoint, resume → invoke checkpoint
-- Code quality, health check → invoke health
+## Key file map
+
+- Pages: `src/app/**/page.tsx`
+- Shared UI components: `src/components/`
+- Shared helpers: `src/lib/`
+- DB helpers + RPC wrapper: `src/lib/db.ts`
+- Auth: `src/lib/auth.ts` (session + cookie domain), `src/lib/admin.ts` (admin check)
+- SMS: `src/lib/sms.ts` (provider + retry + logging), `src/lib/sms-templates.ts` (all compose functions)
+- Market list (hardcoded shows): `src/lib/shows.ts`
+- Migrations: `supabase/migrations/*.sql`

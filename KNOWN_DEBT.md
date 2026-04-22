@@ -14,57 +14,50 @@ Last audited: 2026-04-22 by Claude.
 
 ## P0 — fix now
 
-<!-- Admin gating: corrected 2026-04-22. Original audit was wrong — every admin API route already calls isAdmin(user.phone) server-side, so no dealer was ever actually able to USE admin tools. But the /admin page SHELL loaded for any signed-in user (empty page of 403 errors), which is not professional. Fixed by adding a server-side layout that notFound()s non-admins. Same fix applied to /sell (non-dealers now 404 there too). -->
+*All P0 items resolved 2026-04-22. See commit history for details.*
 
-
-- **[P0] Supabase row-level security is off on at least one table** in project `hfvfmndjknxvhwrstkrg`. Supabase flagged `rls_disabled_in_public`. Right now the public anon key could theoretically read or write the affected table directly. Need to turn RLS on across ALL tables and add policies. (Task 1.)
-
-<!-- Dave Harker "logout" entry removed 2026-04-22: not a bug. Dave was in incognito mode, which wipes cookies + localStorage on tab close. Server sessions were always valid (11 active sessions at time of diagnosis). If anyone else reports this, check for incognito first. -->
-
+- ~~Supabase RLS disabled on `system_events`~~ — fixed in `2f35342` (RLS enabled, verified).
+- ~~`/admin` page loaded for any signed-in user~~ — fixed in `b453323` (server-side layout gates, non-admins get 404).
+- ~~`/sell` page loaded for any signed-in user~~ — fixed in `b453323` (server-side dealer-only layout).
+- ~~Dave Harker logout~~ — not a bug; incognito mode. See commit `4c7d427`.
 
 ## P1 — commitment not actually built
 
-- **[P1] No human-approval gate for mass texts exists at all.** Commitment #9 requires that every scheduled or admin-composed blast texts Eli first with a link showing the copy and recipient count, and only sends when Eli presses the button. Today there's no infrastructure for this — neither the scheduled cron half (reminders don't exist) nor the admin-composed half (blast tool doesn't exist). Task 3 will build the approval-gate shape and the dealer blast tool together.
-
-- **[P1] Market reminders for BUYERS are not sent.** Commitment #4 item 7 and commitment #7: buyers who opt in to a show are supposed to get a reminder text before the market. The opt-in saves correctly to `notification_preferences`, but no cron or scheduled job actually reads it and sends a text. When built, this must route through the commitment #9 approval gate.
-
-- **[P1] Market reminders for DEALERS are not sent.** Commitment #4 item 8 and commitment #8: dealers with items in a market are supposed to get an automatic "set up your booth" text before the market. The subscription/booth data exists, but there's no cron or send path that uses it. When built, this must also route through the commitment #9 approval gate.
-
-- **[P1] `markets.dealer_preshop_enabled` toggle in the admin UI does nothing.** Admins can flip it and it saves to the database, but no backend code reads the column. Either wire it up or remove the toggle — right now it misleads the admin about what's happening.
+- **[P1] No human-approval gate for SCHEDULED mass texts.** Admin-composed blasts do go through Eli (the /admin Blast tab is the approval gate) — but the scheduled reminders described in EB_DESIGN.md commitment #9 aren't wired up at all.
+- **[P1] Market reminders for BUYERS are not sent.** Commitment #4 item 7 + commitment #7: opt-in saves correctly but no scheduled job reads `notification_preferences` and sends. When built, must route through commitment #9's "text Eli first, he presses send" gate.
+- **[P1] Market reminders for DEALERS are not sent.** Commitment #4 item 8 + commitment #8: dealers with items in a market should get automatic "set up your booth" text. No cron reads the subscription data yet. Same approval-gate requirement.
 
 ## P2 — dead code and leftover bits to clean up
 
-- **[P2] Dealer approval uses the wrong text template.** When an admin approves a dealer application, the system sends the dealer-invite text ("You've been invited to sell on Early Bird…"). But the applicant wasn't invited — they applied. Ratified copy for the approval text: *"Early Bird: Welcome aboard. You're approved to sell. Tap here to set up your booth: [link]"* Write it as a new template and swap it in on the approval path.
+*Most P2 items resolved 2026-04-22 during Chunks 5 + 6 cleanup.*
 
-- **[P2] `/api/cron/drop-markets/route.ts`** — entire file is dead. The "drop" mechanic (scheduled timed release of markets) is retired. Not scheduled in `vercel.json` anymore. Delete the file and the `composeDropAlert` SMS template.
+- ~~Dealer approval used wrong template~~ — fixed; `composeDealerApproval` now used.
+- ~~`/api/cron/drop-markets`~~ — deleted.
+- ~~`markets.drop_notified_at` column~~ — dropped via migration `20260422000002`.
+- ~~`markets.dealer_preshop_enabled` column~~ — dropped (admin UI + column both gone).
+- ~~`items.held_for` column~~ — dropped + all code references purged.
+- ~~`composeHoldReceipt`, `composeLostReceipt`, `composeDropAlert`~~ — deleted.
+- ~~`composeEarlyAccess` + `/api/early-access/start`~~ — deleted.
+- ~~`sms.inquiry.lost` event type~~ — no references remain.
+- ~~Phone-change and admin-new-application inline SMS strings~~ — moved to template functions.
+- ~~/auth/verify?token= legacy page~~ — deleted (replaced by /v/[token]).
 
-- **[P2] `markets.drop_notified_at` column** — only ever set by the dead drop cron above. Drop the column.
+**Still pending:**
 
-- **[P2] `markets.dealer_preshop_enabled` column** — not read by any backend code. Drop once admin UI is cleaned.
-
-- **[P2] `items.held_for` column** — legacy from when holds were per-inquiry. Now replaced by a simple `status='held'` on the item. The code explicitly sets it to null on every status update, which is wasted work. Drop the column.
-
-- **[P2] `composeHoldReceipt` and `composeLostReceipt`** in `src/lib/sms-templates.ts` — defined but never called. Remove.
-
-- **[P2] `sms.inquiry.lost` event type** — no code writes it to `system_events`. Remove references.
-
-- **[P2] `/api/booth` and `/api/booth/[market_id]` endpoints** — appear unused by the frontend. Verify nothing on `/sell` or `/sell/add` calls them, then remove.
-
-- **[P2] `qa-comments.json` at repo root + `/api/qa-comments` route** — internal debug artifacts. Either gate behind a dev-only flag or remove.
+- **[P2] `/api/booth` and `/api/booth/[market_id]`** — verify nothing on `/sell` or `/sell/add` calls them, then remove.
+- **[P2] `qa-comments.json` at repo root + `/api/qa-comments`** — internal debug artifacts. Gate or remove.
+- **[P2] Orphaned `token_type='early_access'` branch in `/api/auth/verify/route.ts`.** Nothing creates these tokens anymore. Safe to delete along with the `buyer_market_early_access` table if we don't plan to bring back a gated pre-shop mode.
 
 ## P3 — docs + tooling cleanup
 
-- **[P3] `CLAUDE.md` still tells Claude to read `EB_DESIGN.md`, `DESIGN_SYSTEM.md`, and `RESKIN_PLAN.md`** as if those are live sources of truth. After this doc reset, update `CLAUDE.md` to point at the new `EB_DESIGN.md` and note the archives.
+*All P3 items resolved 2026-04-22.*
 
-- **[P3] `RESKIN_PLAN.md` may also be stale** (last touched 2026-04-12). Review and archive if done.
-
-- **[P3] `PHASE_1_REVIEW_NOTES.md` and `REVISION_LOG.md`** — old planning artifacts at repo root. Archive.
-
-- **[P3] `CLAUDE.md` skill routing section** — lists skills that may not all still be relevant. Audit.
+- ~~`CLAUDE.md` referenced archived docs~~ — rewritten to point at current `EB_DESIGN.md`, `KNOWN_DEBT.md`, `QA_FINDINGS.md`.
+- ~~`RESKIN_PLAN.md`, `PHASE_1_REVIEW_NOTES.md`, `REVISION_LOG.md`~~ — archived.
+- ~~CLAUDE.md skill routing section~~ — removed (was stale).
 
 ---
 
-## Open questions (Claude to investigate before asking Eli)
+## Open questions
 
-- **The `/early/` URLs in the code.** There are routes like `src/app/early/[marketId]/page.tsx` and an `/api/early-access/start` endpoint. Claude to read those and figure out what they actually do today (who lands there, what they see) before asking Eli anything — Eli doesn't recognize the terminology.
-- **Timing of market reminders.** Should the scheduled "notify Eli the blast is ready" text fire 2 days before the market? 1 day? Different for buyers vs dealers? Claude to propose a default (e.g., "evening before market") and ask Eli once.
+- **Timing of the scheduled market-reminder "notify Eli" text** (commitment #9). When the buyer + dealer reminder send paths get built, Eli needs to pick a timing. Default proposal: evening before the market for buyers, 2 days before for dealers. Confirm with Eli before implementing.
