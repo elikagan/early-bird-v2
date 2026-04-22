@@ -14,7 +14,8 @@ Last audited: 2026-04-22 by Claude.
 
 ## P0 — fix now
 
-- **[P0] Any dealer can access admin tools.** The code checks whether someone is a dealer, but never checks whether they're actually an admin. So every approved dealer has full access to the admin dashboard, the SMS blast tool, dealer approvals, and market editing — things only Eli and Dave should be able to do. Needs a separate "admin" flag on users and a gate on every admin route. EB_DESIGN.md says admins are a distinct account type; the code doesn't enforce that. Files: `src/lib/auth.ts`, `src/app/(app)/admin/*`, every route under `src/app/api/admin/*`.
+<!-- Admin gating: corrected 2026-04-22. Original audit was wrong — every admin API route already calls isAdmin(user.phone) server-side, so no dealer was ever actually able to USE admin tools. But the /admin page SHELL loaded for any signed-in user (empty page of 403 errors), which is not professional. Fixed by adding a server-side layout that notFound()s non-admins. Same fix applied to /sell (non-dealers now 404 there too). -->
+
 
 - **[P0] Supabase row-level security is off on at least one table** in project `hfvfmndjknxvhwrstkrg`. Supabase flagged `rls_disabled_in_public`. Right now the public anon key could theoretically read or write the affected table directly. Need to turn RLS on across ALL tables and add policies. (Task 1.)
 
