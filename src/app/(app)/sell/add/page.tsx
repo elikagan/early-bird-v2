@@ -216,7 +216,7 @@ function AddItemContent() {
   const ctaText =
     market?.status === "live"
       ? "Live instantly \u00b7 Watchers get notified"
-      : "Goes live when the market drops";
+      : "Visible to buyers once you post";
 
   return (
     <>

@@ -330,11 +330,10 @@ function SellContent() {
             <div className="divide-y divide-eb-border border-y border-eb-border">
               {allMarkets.map((m) => {
                 const isCurrent = m.id === market?.id;
-                const isPreshopOpen =
-                  m.status === "live" ||
-                  (m.status === "upcoming" &&
-                    (m.dealer_preshop_enabled ?? 1) === 1);
-                const canSwitch = isPreshopOpen && !isCurrent;
+                // Dealers can switch between any non-archived upcoming or
+                // live market they're participating in. The drop mechanic
+                // is retired — there's no "pre-shop" gate anymore.
+                const canSwitch = !isCurrent && m.status !== "closed";
                 return (
                   <button
                     key={m.id}
@@ -361,11 +360,10 @@ function SellContent() {
                         )}
                       </div>
                       <div className="text-eb-meta text-eb-muted mt-1">
-                        {m.status === "live"
-                          ? "Open now"
-                          : isPreshopOpen
-                            ? "Pre-shop open"
-                            : `Opens ${new Date(m.drop_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`}
+                        {new Date(m.starts_at).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                        })}
                       </div>
                     </div>
                     {canSwitch && (

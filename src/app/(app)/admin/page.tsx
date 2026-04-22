@@ -1765,15 +1765,13 @@ interface HealthData {
   now: string;
   status: {
     db: { ok: boolean; latency_ms: number };
-    drop_cron: { created_at: string; message: string } | null;
     ops_cron: { created_at: string; message: string } | null;
-    stuck_markets: Array<{ id: string; name: string; drop_at: string }>;
+    stuck_markets: Array<{ id: string; name: string; starts_at: string }>;
   };
   counts_24h: {
     sms_sent?: number;
     sms_failed?: number;
     sms_retried?: number;
-    drops_fired?: number;
     ops_alerts?: number;
     errors?: number;
   };
@@ -1838,22 +1836,15 @@ function HealthTab() {
       : data.recent_events.filter((e) => e.severity === filter);
 
   const dbAgo = formatRelative(data.now);
-  const dropAgo = data.status.drop_cron
-    ? formatRelative(data.status.drop_cron.created_at)
-    : null;
   const opsAgo = data.status.ops_cron
     ? formatRelative(data.status.ops_cron.created_at)
     : null;
 
-  const dropStale =
-    data.status.drop_cron
-      ? Date.now() - new Date(data.status.drop_cron.created_at).getTime() >
-        2 * 60 * 1000
-      : true;
+  // Ops cron runs every 15 min, so give it a 30-min staleness budget.
   const opsStale =
     data.status.ops_cron
       ? Date.now() - new Date(data.status.ops_cron.created_at).getTime() >
-        10 * 60 * 1000
+        30 * 60 * 1000
       : true;
 
   return (
@@ -1873,9 +1864,8 @@ function HealthTab() {
         </div>
         <div className="grid grid-cols-2 gap-2">
           <StatusCard label="Database" ok={data.status.db.ok} detail={`${data.status.db.latency_ms}ms · checked ${dbAgo}`} />
-          <StatusCard label="Drop cron" ok={!dropStale && !!data.status.drop_cron} detail={data.status.drop_cron ? `last ran ${dropAgo}` : "no runs logged yet"} />
           <StatusCard label="Ops cron" ok={!opsStale && !!data.status.ops_cron} detail={data.status.ops_cron ? `last ran ${opsAgo}` : "no runs logged yet"} />
-          <StatusCard label="Stuck markets" ok={data.status.stuck_markets.length === 0} detail={data.status.stuck_markets.length === 0 ? "none" : `${data.status.stuck_markets.length} past drop_at`} />
+          <StatusCard label="Past markets" ok={data.status.stuck_markets.length === 0} detail={data.status.stuck_markets.length === 0 ? "none" : `${data.status.stuck_markets.length} need archiving`} />
         </div>
       </div>
 
@@ -1885,7 +1875,6 @@ function HealthTab() {
           <MetricCard label="SMS sent" value={data.counts_24h.sms_sent ?? 0} />
           <MetricCard label="SMS failed" value={data.counts_24h.sms_failed ?? 0} bad={(data.counts_24h.sms_failed ?? 0) > 0} />
           <MetricCard label="SMS retried" value={data.counts_24h.sms_retried ?? 0} />
-          <MetricCard label="Drops fired" value={data.counts_24h.drops_fired ?? 0} />
           <MetricCard label="Ops alerts" value={data.counts_24h.ops_alerts ?? 0} bad={(data.counts_24h.ops_alerts ?? 0) > 0} />
           <MetricCard label="Errors logged" value={data.counts_24h.errors ?? 0} bad={(data.counts_24h.errors ?? 0) > 0} />
         </div>

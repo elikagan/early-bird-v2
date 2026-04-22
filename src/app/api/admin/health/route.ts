@@ -24,13 +24,7 @@ export async function GET(request: Request) {
   }
   const dbMs = Date.now() - dbProbeStart;
 
-  // Last cron runs
-  const lastDropCron = await db.execute({
-    sql: `SELECT created_at, message FROM system_events
-          WHERE event_type = 'cron.drop_markets.ran'
-          ORDER BY created_at DESC LIMIT 1`,
-    args: [],
-  });
+  // Last cron run (ops-check only — drop-markets is retired)
   const lastOpsCron = await db.execute({
     sql: `SELECT created_at, message FROM system_events
           WHERE event_type = 'cron.ops_check.ran'
@@ -44,7 +38,6 @@ export async function GET(request: Request) {
             COUNT(*) FILTER (WHERE event_type = 'sms.sent')::int AS sms_sent,
             COUNT(*) FILTER (WHERE event_type = 'sms.failed')::int AS sms_failed,
             COUNT(*) FILTER (WHERE event_type = 'sms.retried')::int AS sms_retried,
-            COUNT(*) FILTER (WHERE event_type = 'drop.fired')::int AS drops_fired,
             COUNT(*) FILTER (WHERE event_type = 'ops.alert_fired')::int AS ops_alerts,
             COUNT(*) FILTER (WHERE severity = 'error')::int AS errors
           FROM system_events
@@ -74,12 +67,13 @@ export async function GET(request: Request) {
     args: [],
   });
 
-  // Markets that are past their drop_at but haven't been notified —
-  // should always be 0 with a healthy cron.
+  // Upcoming markets whose start date has passed and that haven't
+  // been archived yet. Flagged so an admin knows to archive them —
+  // not an automated failure anymore.
   const stuckMarkets = await db.execute({
-    sql: `SELECT id, name, drop_at FROM markets
-          WHERE drop_at < now()
-            AND drop_notified_at IS NULL
+    sql: `SELECT id, name, starts_at FROM markets
+          WHERE starts_at < now()
+            AND (archived IS NULL OR archived = 0)
             AND status = 'upcoming'`,
     args: [],
   });
@@ -88,7 +82,6 @@ export async function GET(request: Request) {
     now: new Date().toISOString(),
     status: {
       db: { ok: dbOk, latency_ms: dbMs },
-      drop_cron: lastDropCron.rows[0] || null,
       ops_cron: lastOpsCron.rows[0] || null,
       stuck_markets: stuckMarkets.rows,
     },

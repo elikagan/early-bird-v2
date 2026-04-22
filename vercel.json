@@ -1,12 +1,8 @@
 {
   "crons": [
     {
-      "path": "/api/cron/drop-markets",
-      "schedule": "* * * * *"
-    },
-    {
       "path": "/api/cron/ops-check",
-      "schedule": "*/5 * * * *"
+      "schedule": "*/15 * * * *"
     },
     {
       "path": "/api/cron/prune-events",

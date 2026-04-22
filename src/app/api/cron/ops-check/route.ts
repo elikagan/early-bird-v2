@@ -1,26 +1,23 @@
 /**
  * Ops-check cron — the watchdog that fires the admin's phone when
- * something is broken or degrading. Runs every 5 min (see vercel.json).
+ * something is broken. Runs every 15 min (see vercel.json).
  *
- * Checks, in order:
- *   1. Missed drop            — market past drop_at, drop_notified_at still null
- *   2. Cron heartbeat stopped — no CRON_DROP_MARKETS_RAN events in last 15 min
- *   3. SMS failure rate       — > 20% failures over the last 30 min
- *   4. Inquiry-without-SMS    — > 10% inquiries in last hour w/o an SMS log
+ * Checks:
+ *   1. SMS failure rate    — > 20% failures over the last 30 min
+ *   2. Inquiry-without-SMS — > 10% inquiries in last hour w/o an SMS log
  *
  * Each fired alert is de-duplicated: the same alert won't re-fire
- * within 60 min even if still true. (Re-fire window = 60 min keeps
- * the phone from buzzing 12 times during a sustained outage.)
+ * within 60 min even if still true.
  *
- * Also does self-healing for missed drops — fires the drop cron itself
- * so users aren't waiting for the admin to respond.
+ * Previously this cron also watched the drop-markets cron heartbeat
+ * and auto-fired missed drops. Drop mechanic has been retired, so
+ * those checks were removed along with the drop-markets cron itself.
  */
 
-import { NextResponse, after } from "next/server";
+import { NextResponse } from "next/server";
 import db from "@/lib/db";
 import { sendSMSWithLog } from "@/lib/sms";
 import { logEvent, EVT } from "@/lib/system-events";
-import { getBaseUrl } from "@/lib/url";
 
 export async function GET(request: Request) {
   try {
@@ -44,60 +41,7 @@ async function handle(request: Request) {
 
   const alerts: string[] = [];
 
-  // ── CHECK 1: Missed drop ──────────────────────────────────────
-  const missed = await db.execute({
-    sql: `SELECT id, name, drop_at FROM markets
-          WHERE drop_at < now() - interval '5 minutes'
-            AND drop_notified_at IS NULL
-            AND status = 'upcoming'`,
-    args: [],
-  });
-  if (missed.rows.length > 0) {
-    for (const row of missed.rows) {
-      const marketName = (row as Record<string, unknown>).name as string;
-      const marketId = (row as Record<string, unknown>).id as string;
-      alerts.push(
-        `MISSED DROP: "${marketName}" was due ${(row as Record<string, unknown>).drop_at}. Auto-firing now.`
-      );
-      await logEvent({
-        event_type: EVT.DROP_MISSED,
-        severity: "error",
-        entity_type: "market",
-        entity_id: marketId,
-        message: `Drop missed for ${marketName} — auto-firing`,
-      });
-      // Self-heal — trigger the drop cron to pick up this market.
-      after(async () => {
-        try {
-          await fetch(`${getBaseUrl(request)}/api/cron/drop-markets`, {
-            headers: { Authorization: `Bearer ${process.env.CRON_SECRET}` },
-          });
-        } catch {}
-      });
-    }
-  }
-
-  // ── CHECK 2: Cron heartbeat stopped ───────────────────────────
-  const lastCron = await db.execute({
-    sql: `SELECT created_at FROM system_events
-          WHERE event_type = ?
-          ORDER BY created_at DESC LIMIT 1`,
-    args: [EVT.CRON_DROP_MARKETS_RAN],
-  });
-  if (lastCron.rows.length > 0) {
-    const lastAt = new Date(
-      (lastCron.rows[0] as Record<string, unknown>).created_at as string
-    );
-    const staleMs = Date.now() - lastAt.getTime();
-    // Drop cron runs every minute. 15 min of silence = broken.
-    if (staleMs > 15 * 60 * 1000) {
-      alerts.push(
-        `CRON STOPPED: drop-markets hasn't run in ${Math.round(staleMs / 60000)} min.`
-      );
-    }
-  }
-
-  // ── CHECK 3: SMS failure rate (last 30 min) ──────────────────
+  // ── CHECK 1: SMS failure rate (last 30 min) ──────────────────
   const smsStats = await db.execute({
     sql: `SELECT
             COUNT(*) FILTER (WHERE event_type = 'sms.sent')::int as sent,
@@ -118,7 +62,7 @@ async function handle(request: Request) {
     );
   }
 
-  // ── CHECK 4: Inquiry-without-SMS (last 60 min) ───────────────
+  // ── CHECK 2: Inquiry-without-SMS (last 60 min) ───────────────
   // Every inquiry should have a matching sms.inquiry.new sent event
   // within seconds. Count inquiries where this didn't happen.
   const inqGap = await db.execute({
@@ -204,7 +148,6 @@ async function handle(request: Request) {
     checks: {
       sms: { sent, failed, total, rate: total > 0 ? failed / total : 0 },
       inquiries: { gap: inqGapN, total: inqTotal },
-      missed_drops: missed.rows.length,
     },
   });
 }
