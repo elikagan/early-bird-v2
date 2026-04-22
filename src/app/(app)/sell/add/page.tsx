@@ -120,7 +120,14 @@ function AddItemContent() {
       if (remaining <= 0) return;
 
       const toAdd = Array.from(files).slice(0, remaining);
-      const newSlots: PhotoSlot[] = [];
+
+      // Phase 1: preview + slot creation, all synchronous state updates
+      // before any upload fires. Previously we fired uploadOne mid-loop
+      // which created a race — if an upload finished before the
+      // setPhotos([...prev, ...newSlots]) call ran, its "done" status
+      // got overwritten by the later "processing" commit and the slot
+      // was stuck with a spinner forever.
+      const newSlots: { slot: PhotoSlot; file: File }[] = [];
 
       for (const file of toAdd) {
         if (file.size > MAX_RAW_SIZE) {
@@ -134,20 +141,29 @@ function AddItemContent() {
         const preview = await createThumbnail(file);
 
         newSlots.push({
-          id: slotId,
-          preview,
-          url: null,
-          thumb_url: null,
-          status: "processing",
+          slot: {
+            id: slotId,
+            preview,
+            url: null,
+            thumb_url: null,
+            status: "processing",
+          },
+          file,
         });
-
-        // Fire upload in background (don't await — they run in parallel)
-        uploadOne(file, slotId);
       }
 
-      if (newSlots.length > 0) {
-        setPhotos((prev) => [...prev, ...newSlots]);
-        setFormError(null);
+      if (newSlots.length === 0) return;
+
+      // Commit all slots to state first.
+      setPhotos((prev) => [...prev, ...newSlots.map((ns) => ns.slot)]);
+      setFormError(null);
+
+      // Phase 2: serial upload. Parallel uploads of 3+ iPhone photos
+      // stress createImageBitmap + OffscreenCanvas memory budgets on
+      // older devices; several dealers hit all-3-fail when they picked
+      // three at once. One at a time is reliable.
+      for (const { slot, file } of newSlots) {
+        await uploadOne(file, slot.id);
       }
     },
     [photos.length, uploadOne]
