@@ -282,6 +282,36 @@ function DashboardTab({ setTab }: { setTab: (t: Tab) => void }) {
    MARKETS TAB
    ════════════════════════════════════════════════════ */
 
+// Single-shot "copy the ad / social share URL" button for a market.
+// Lives inline in the market row actions so the admin doesn't have to
+// hunt for a different screen. Uses window.origin at click time so it
+// works on both earlybird.la and any preview deploy.
+function CopyShareLink({ marketId }: { marketId: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={async () => {
+        const origin =
+          typeof window !== "undefined" ? window.location.origin : "";
+        const url = `${origin}/early/${marketId}`;
+        try {
+          await navigator.clipboard.writeText(url);
+        } catch {
+          // Fallback if clipboard API is denied — surface the URL so the
+          // admin can copy it manually.
+          window.prompt("Copy this link:", url);
+        }
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1800);
+      }}
+      className="py-1.5 px-3 text-eb-micro font-bold uppercase tracking-wider border-2 border-eb-black text-eb-black bg-white"
+    >
+      {copied ? "\u2713 Copied" : "Copy Share Link"}
+    </button>
+  );
+}
+
 function MarketsTab() {
   const [markets, setMarkets] = useState<Market[]>([]);
   const [loading, setLoading] = useState(true);
@@ -570,7 +600,7 @@ function MarketsTab() {
                         )}
                       </div>
 
-                      <div className="flex gap-2 mt-3">
+                      <div className="flex gap-2 mt-3 flex-wrap">
                         <button
                           onClick={() => startEdit(m)}
                           className="py-1.5 px-3 text-eb-micro font-bold uppercase tracking-wider border-2 border-eb-border text-eb-muted"
@@ -589,6 +619,7 @@ function MarketsTab() {
                         >
                           Delete
                         </button>
+                        <CopyShareLink marketId={m.id} />
                       </div>
                     </>
                   )}

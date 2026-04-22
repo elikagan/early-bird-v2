@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/lib/auth-context";
@@ -15,7 +15,6 @@ import {
   timeAgo,
 } from "@/lib/format";
 import { BottomNav, adjustNavCount } from "@/components/bottom-nav";
-import { SignupDrawer } from "@/components/signup-drawer";
 import { NotFoundScreen } from "@/components/not-found-screen";
 
 interface Photo {
@@ -90,6 +89,7 @@ const ACCEPTED_TYPES = "image/jpeg,image/png,image/webp,image/heic,image/heif";
 export default function ItemDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user } = useAuth();
 
   const [item, setItem] = useState<ItemDetail | null>(null);
@@ -100,6 +100,8 @@ export default function ItemDetailPage() {
   const [dragging, setDragging] = useState(false);
   const [transition, setTransition] = useState(false);
   const carouselRef = useRef<HTMLDivElement>(null);
+  const drawerRef = useRef<HTMLDivElement>(null);
+  const handleRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<{ sx: number; sy: number; dx: number; swiping: boolean } | null>(null);
 
   // Favorites
@@ -108,11 +110,149 @@ export default function ItemDetailPage() {
 
   // Inquiry drawer (buyer)
   const [showInquiry, setShowInquiry] = useState(false);
+
+  // When the drawer is open: (1) lock body scroll, (2) track the iOS
+  // virtual keyboard height via visualViewport and write --eb-kb-offset
+  // on :root so the drawer CSS can lift itself above the keyboard,
+  // (3) attach NATIVE (non-passive) touch listeners to the drag
+  // handle so we can preventDefault and stop iOS from interpreting
+  // the drag as a scroll of the drawer's content.
+  useEffect(() => {
+    if (!showInquiry) return;
+
+    // 1. Lock body scroll
+    document.body.classList.add("eb-scroll-lock");
+
+    // 2. Keyboard offset
+    const vv = window.visualViewport;
+    const updateKb = () => {
+      if (!vv) return;
+      const occluded = Math.max(
+        0,
+        window.innerHeight - vv.height - vv.offsetTop
+      );
+      document.documentElement.style.setProperty(
+        "--eb-kb-offset",
+        `${occluded}px`
+      );
+    };
+    if (vv) {
+      vv.addEventListener("resize", updateKb);
+      vv.addEventListener("scroll", updateKb);
+      updateKb();
+    }
+
+    // 3. Drag-to-resize handle. Native listeners with passive:false
+    //    so preventDefault works. The drawer is resized in real time
+    //    by writing inline height on the ref (DOM mutation, not
+    //    JSX inline style).
+    const handle = handleRef.current;
+    const drawer = drawerRef.current;
+    let startY: number | null = null;
+    let startHeight = 0;
+
+    const onTouchStart = (ev: TouchEvent) => {
+      if (!drawer) return;
+      ev.preventDefault();
+      startY = ev.touches[0].clientY;
+      startHeight = drawer.getBoundingClientRect().height;
+      // Disable transition during active drag for direct feel.
+      drawer.style.transition = "none";
+    };
+    const onTouchMove = (ev: TouchEvent) => {
+      if (startY == null || !drawer) return;
+      ev.preventDefault();
+      const dy = ev.touches[0].clientY - startY;
+      // Drag DOWN (positive dy) = shrink. Drag UP (negative dy) = grow.
+      const next = startHeight - dy;
+      // Clamp to a minimum of 120 so the drawer never disappears while
+      // the user is still interacting. Max is handled by CSS
+      // max-height: 100svh - kb-offset.
+      drawer.style.height = `${Math.max(120, next)}px`;
+    };
+    const onTouchEnd = (ev: TouchEvent) => {
+      if (startY == null || !drawer) return;
+      const dy = ev.changedTouches[0].clientY - startY;
+      const finalHeight = startHeight - dy;
+      startY = null;
+      // Restore transition
+      drawer.style.transition = "";
+      // Closed-threshold: if the user dragged it small, dismiss.
+      if (finalHeight < 200) {
+        drawer.style.height = "";
+        setShowInquiry(false);
+        setAnonSent(false);
+        setAnonError(null);
+      }
+      // Otherwise keep the new height (no snap points — user owns it).
+    };
+    const onTouchCancel = () => {
+      startY = null;
+      if (drawer) drawer.style.transition = "";
+    };
+
+    if (handle) {
+      handle.addEventListener("touchstart", onTouchStart, { passive: false });
+      handle.addEventListener("touchmove", onTouchMove, { passive: false });
+      handle.addEventListener("touchend", onTouchEnd);
+      handle.addEventListener("touchcancel", onTouchCancel);
+    }
+
+    return () => {
+      document.body.classList.remove("eb-scroll-lock");
+      if (vv) {
+        vv.removeEventListener("resize", updateKb);
+        vv.removeEventListener("scroll", updateKb);
+      }
+      document.documentElement.style.removeProperty("--eb-kb-offset");
+      if (handle) {
+        handle.removeEventListener("touchstart", onTouchStart);
+        handle.removeEventListener("touchmove", onTouchMove);
+        handle.removeEventListener("touchend", onTouchEnd);
+        handle.removeEventListener("touchcancel", onTouchCancel);
+      }
+      // Clear any inline height on the drawer so next open is default.
+      if (drawerRef.current) {
+        drawerRef.current.style.height = "";
+        drawerRef.current.style.transition = "";
+      }
+    };
+  }, [showInquiry]);
   const [inquiryMsg, setInquiryMsg] = useState("");
   const [inquiryOption, setInquiryOption] = useState<
     "buy" | "discuss" | "price" | "custom" | null
   >(null);
   const [sending, setSending] = useState(false);
+  // Anon inquiry fields — only rendered when user is logged out. The
+  // signed-in flow keeps the original preset-message UI.
+  const [anonName, setAnonName] = useState("");
+  const [anonPhone, setAnonPhone] = useState("");
+  const [anonError, setAnonError] = useState<string | null>(null);
+  // Anon drawer has three post-submit states:
+  //   "pending" — form submitted, verification SMS sent, dealer NOT
+  //               notified yet. Waiting on the buyer to tap the link.
+  //   "confirmed" — buyer tapped the link, they've been redirected
+  //                 back to /item/[id]?sent=1, dealer has been texted.
+  //   false/null — pre-submission, or drawer closed.
+  const [anonSent, setAnonSent] = useState<"pending" | "confirmed" | false>(
+    false
+  );
+
+  // When verify redirects us here with ?sent=1, open the drawer in
+  // "confirmed" state. Then strip the query param via replaceState so
+  // browser Back from this page goes to the user's previous page
+  // (their listings grid), not a stale ?sent=1 URL.
+  useEffect(() => {
+    if (searchParams.get("sent") !== "1") return;
+    setShowInquiry(true);
+    setAnonSent("confirmed");
+    // Clean the URL in-place without adding a history entry
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("sent");
+      window.history.replaceState({}, "", url.pathname + url.search);
+    }
+  }, [searchParams]);
 
   // Confirm drawer (dealer-own)
   const [confirmInquiry, setConfirmInquiry] = useState<Inquiry | null>(null);
@@ -121,9 +261,6 @@ export default function ItemDetailPage() {
   // Delete
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
-
-  // Signup drawer (logged-out users)
-  const [showSignup, setShowSignup] = useState(false);
 
   // ── Edit mode state ──
   const [editing, setEditing] = useState(false);
@@ -155,8 +292,15 @@ export default function ItemDetailPage() {
       }
       const data: ItemDetail = await res.json();
       setItem(data);
-      setIsFav(data.is_favorited || false);
-      setFavId(data.favorite_id || null);
+      // Authed users: heart state comes from the /api/items/[id]
+      // payload. Anons: check localStorage.
+      if (user) {
+        setIsFav(data.is_favorited || false);
+        setFavId(data.favorite_id || null);
+      } else {
+        const { hasAnonFavorite } = await import("@/lib/anon-favorites");
+        setIsFav(hasAnonFavorite(data.id));
+      }
 
       // Dealer-own: fetch inquiries
       if (user && data.dealer_user_id === user.id) {
@@ -344,6 +488,21 @@ export default function ItemDetailPage() {
 
   const toggleFavorite = useCallback(async () => {
     if (!item) return;
+    // Anonymous path: toggle in localStorage. On their first login
+    // the AuthProvider drains this list into real /api/favorites rows.
+    if (!user) {
+      const { hasAnonFavorite, addAnonFavorite, removeAnonFavorite } =
+        await import("@/lib/anon-favorites");
+      if (hasAnonFavorite(item.id)) {
+        removeAnonFavorite(item.id);
+        setIsFav(false);
+      } else {
+        addAnonFavorite(item.id);
+        setIsFav(true);
+      }
+      return;
+    }
+    // Authenticated path: hit the API
     if (isFav && favId) {
       await apiFetch(`/api/favorites/${favId}`, { method: "DELETE" });
       setIsFav(false);
@@ -361,10 +520,14 @@ export default function ItemDetailPage() {
         adjustNavCount("watching", +1);
       }
     }
-  }, [item, isFav, favId]);
+  }, [item, isFav, favId, user]);
 
   const sendInquiry = useCallback(async () => {
-    if (!item || sending || !inquiryOption) return;
+    if (!item || sending) return;
+
+    // Unified message resolution — both auth states use the same
+    // preset options. Anons add name + phone on top.
+    if (!inquiryOption) return;
     let message = "";
     if (inquiryOption === "buy") message = "I'm interested and ready to buy.";
     else if (inquiryOption === "discuss") message = "I'm interested — I'd like to discuss.";
@@ -372,23 +535,52 @@ export default function ItemDetailPage() {
     else if (inquiryOption === "custom") message = inquiryMsg.trim();
     if (!message) return;
 
+    let body: Record<string, unknown> = { item_id: item.id, message };
+    if (!user) {
+      const trimmedName = anonName.trim();
+      if (!trimmedName) {
+        setAnonError("Name is required");
+        return;
+      }
+      if (!anonPhone) {
+        setAnonError("Phone is required");
+        return;
+      }
+      body = { ...body, name: trimmedName, phone: anonPhone };
+      setAnonError(null);
+    }
+
     setSending(true);
-    const res = await apiFetch("/api/inquiries", {
+    const res = await fetch("/api/inquiries", {
       method: "POST",
-      body: JSON.stringify({ item_id: item.id, message }),
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(body),
     });
     setSending(false);
     if (res.ok) {
-      setShowInquiry(false);
-      setInquiryMsg("");
-      setInquiryOption(null);
-      setIsFav(true);
-      // Flip the button to "Already inquired" without a refetch
-      setItem((prev) =>
-        prev ? { ...prev, my_inquiry_status: "open" } : prev
-      );
+      if (user) {
+        // Signed-in path: collapse drawer and flip the CTA.
+        setShowInquiry(false);
+        setInquiryMsg("");
+        setInquiryOption(null);
+        setIsFav(true);
+        setItem((prev) => (prev ? { ...prev, my_inquiry_status: "open" } : prev));
+      } else {
+        // Anon path: stay in the drawer but swap to the "pending
+        // verification" state. Dealer has NOT been texted yet — the
+        // buyer needs to tap the verify link for the inquiry to go
+        // through. Item page's "?sent=1" handler flips this to
+        // "confirmed" after they return from the magic link.
+        setAnonSent("pending");
+      }
+    } else {
+      const errData = await res.json().catch(() => ({}));
+      if (!user) {
+        setAnonError(errData.error || "Couldn't send your message. Try again.");
+      }
     }
-  }, [item, inquiryMsg, inquiryOption, sending]);
+  }, [item, user, inquiryMsg, inquiryOption, sending, anonName, anonPhone]);
 
   const updateStatus = useCallback(
     async (status: string, soldTo?: string) => {
@@ -483,13 +675,10 @@ export default function ItemDetailPage() {
           </button>
         ) : !isOwner && !user ? (
           <button
-            onClick={() => {
-              localStorage.setItem("eb_return_to", `/item/${id}`);
-              setShowSignup(true);
-            }}
+            onClick={toggleFavorite}
             className="eb-fav-btn"
           >
-            <svg viewBox="0 0 24 24" className="eb-fav-outline">
+            <svg viewBox="0 0 24 24" className={isFav ? "eb-fav-filled" : "eb-fav-outline"}>
               <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
             </svg>
           </button>
@@ -1173,17 +1362,20 @@ export default function ItemDetailPage() {
             </>
           )}
           {(item.status === "live" || item.status === "hold") && !user && (
-            <section className="px-5 pb-8">
-              <button
-                className="eb-cta"
-                onClick={() => {
-                  localStorage.setItem("eb_return_to", `/item/${id}`);
-                  setShowSignup(true);
-                }}
-              >
-                I{"\u2019"}M INTERESTED {"\u2192"}
-              </button>
-            </section>
+            <>
+              <section className="px-5 pb-4">
+                <button
+                  className="eb-cta"
+                  onClick={() => setShowInquiry(true)}
+                >
+                  I{"\u2019"}M INTERESTED {"\u2192"}
+                </button>
+              </section>
+              <p className="text-eb-meta text-eb-muted text-center px-5 pb-8 leading-relaxed">
+                Sends {item.dealer_name} a text with your name and number.
+                You deal directly.
+              </p>
+            </>
           )}
         </>
       )}
@@ -1196,112 +1388,247 @@ export default function ItemDetailPage() {
         <>
           <div
             className="fixed inset-0 bg-black/40 z-40"
-            onClick={() => setShowInquiry(false)}
+            onClick={() => {
+              setShowInquiry(false);
+              setAnonSent(false);
+              setAnonError(null);
+            }}
           />
-          <div className="fixed bottom-0 left-0 right-0 max-w-[430px] mx-auto bg-white rounded-t-2xl border-t border-eb-border z-50 px-5 pt-3 pb-6">
-            <div className="w-12 h-1 bg-eb-border rounded-full mx-auto mb-4" />
-
-            {/* Header */}
-            <div className="flex items-start justify-between gap-4 mb-1">
-              <h3 className="text-eb-title font-bold uppercase tracking-widest text-eb-black">
-                I&apos;m Interested
-              </h3>
-              <button
-                aria-label="Close"
-                className="text-eb-body text-eb-muted leading-none -mt-1"
-                onClick={() => setShowInquiry(false)}
-              >
-                {"\u2715"}
-              </button>
+          <div
+            ref={drawerRef}
+            className="eb-drawer-kb-aware fixed left-0 right-0 max-w-[430px] mx-auto bg-white rounded-t-2xl border-t border-eb-border z-50 flex flex-col"
+          >
+            {/* Drag handle — pinned to the top of the drawer, above
+                everything. Content below scrolls under it. Native
+                touch listeners are attached in the drawer's useEffect
+                so we can preventDefault and own the gesture. Drag up =
+                grow, drag down = shrink, drag too small = close. */}
+            <div
+              ref={handleRef}
+              className="eb-drawer-handle shrink-0 px-5 pt-3 pb-2 flex justify-center touch-none cursor-grab active:cursor-grabbing"
+            >
+              <div className="w-12 h-1 bg-eb-border rounded-full" />
             </div>
-            <p className="text-eb-caption text-eb-muted leading-relaxed mb-5">
-              We&apos;ll text{" "}
-              <span className="font-bold text-eb-black">{item.dealer_name}</span>{" "}
-              your message and number. They&apos;ll contact you directly — no
-              in-app messaging.
-            </p>
 
-            {/* Preset options + custom */}
-            <div className="space-y-2">
-              {[
-                { key: "buy" as const,     label: "Ready to buy",            text: "I'm interested and ready to buy." },
-                { key: "discuss" as const, label: "Let's discuss",           text: "I'm interested \u2014 I'd like to discuss." },
-                { key: "price" as const,   label: "What's your best price?", text: "What's your best price?" },
-                { key: "custom" as const,  label: "Write your own",          text: "" },
-              ].map((opt) => {
-                const isSelected = inquiryOption === opt.key;
-                return (
+            {/* Scrollable content area — takes remaining drawer height. */}
+            <div className="flex-1 overflow-y-auto overscroll-contain px-5 pb-6">
+            {/* Confirmed state. Buyer tapped the verify link, dealer
+                has been notified, session is now active. Show regardless
+                of auth state — after verify the user IS signed in, but
+                we still want them to see "inquiry sent" not the form
+                with "Ready to buy" options. */}
+            {anonSent === "confirmed" ? (
+              <>
+                <h3 className="text-eb-title font-bold uppercase tracking-widest text-eb-black mb-2">
+                  Inquiry sent
+                </h3>
+                <p className="text-eb-caption text-eb-muted leading-relaxed">
+                  {item.dealer_name} has your name and number. They
+                  {"\u2019"}ll text you directly.
+                </p>
+                <button
+                  className="eb-btn mt-5"
+                  onClick={() => {
+                    setShowInquiry(false);
+                    setAnonSent(false);
+                    setAnonName("");
+                    setAnonPhone("");
+                    setInquiryMsg("");
+                  }}
+                >
+                  Keep browsing
+                </button>
+              </>
+            ) : !user && anonSent === "pending" ? (
+              /* Pending verification. Form was submitted; dealer has
+                 NOT been texted yet. Buyer needs to tap the verify link. */
+              <>
+                <h3 className="text-eb-title font-bold uppercase tracking-widest text-eb-black mb-2">
+                  Confirm it{"\u2019"}s you
+                </h3>
+                <p className="text-eb-caption text-eb-muted leading-relaxed">
+                  We just texted a link to{" "}
+                  <span className="font-bold text-eb-black">{anonPhone}</span>.
+                  Tap it and {item.dealer_name} gets your message.
+                </p>
+                <p className="text-eb-meta text-eb-muted leading-relaxed mt-3">
+                  Don{"\u2019"}t see it? Check your messages in a minute, or{" "}
                   <button
-                    key={opt.key}
                     type="button"
-                    onClick={() => setInquiryOption(opt.key)}
-                    className={
-                      "w-full text-left px-4 py-3 border-2 transition-colors " +
-                      (isSelected
-                        ? "border-eb-pop bg-eb-pop-bg"
-                        : "border-eb-border bg-white active:bg-eb-border/30")
-                    }
+                    onClick={() => {
+                      setAnonSent(false);
+                      setAnonPhone("");
+                    }}
+                    className="underline"
                   >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <div className="text-eb-caption font-bold uppercase tracking-wider text-eb-black">
-                          {opt.label}
-                        </div>
-                        {opt.key !== "custom" && (
-                          <div className="text-eb-meta text-eb-muted mt-1 leading-relaxed">
-                            &ldquo;{opt.text}&rdquo;
-                          </div>
-                        )}
+                    use a different number
+                  </button>
+                  .
+                </p>
+              </>
+            ) : (
+              <>
+                <div className="flex items-start justify-between gap-4 mb-1">
+                  <h3 className="text-eb-title font-bold uppercase tracking-widest text-eb-black">
+                    I&apos;m Interested
+                  </h3>
+                  <button
+                    aria-label="Close"
+                    className="text-eb-body text-eb-muted leading-none -mt-1"
+                    onClick={() => setShowInquiry(false)}
+                  >
+                    {"\u2715"}
+                  </button>
+                </div>
+                <p className="text-eb-caption text-eb-muted leading-relaxed mb-5">
+                  {item.dealer_name} gets your name and number and takes it
+                  from there.
+                </p>
+
+                {/* Anon-only: name + phone collected above the preset
+                    choices. Signed-in users skip these — we already
+                    have their account. */}
+                  {!user && (
+                    <div className="space-y-4 mb-5">
+                      <div>
+                        <label className="text-eb-micro text-eb-muted uppercase tracking-widest block mb-1">
+                          Your Name
+                        </label>
+                        <input
+                          type="text"
+                          className="eb-input"
+                          value={anonName}
+                          onChange={(e) => setAnonName(e.target.value.slice(0, 60))}
+                          placeholder="Jane Doe"
+                        />
                       </div>
-                      <div
-                        className={
-                          "shrink-0 w-5 h-5 rounded-full border-2 mt-0.5 flex items-center justify-center " +
-                          (isSelected ? "border-eb-pop" : "border-eb-border")
-                        }
-                      >
-                        {isSelected && (
-                          <div className="w-2.5 h-2.5 rounded-full bg-eb-pop" />
-                        )}
+                      <div>
+                        <label className="text-eb-micro text-eb-muted uppercase tracking-widest block mb-1">
+                          Phone Number
+                        </label>
+                        <input
+                          type="tel"
+                          inputMode="tel"
+                          className="eb-input"
+                          value={anonPhone}
+                          onChange={(e) =>
+                            setAnonPhone(
+                              e.target.value
+                                .replace(/[^\d()\-\s+.]/g, "")
+                                .slice(0, 32)
+                            )
+                          }
+                          placeholder="(555) 123-4567"
+                        />
                       </div>
                     </div>
+                  )}
+
+                  {/* Preset options — same UI for both auth states. */}
+                  <div className="space-y-2">
+                    {[
+                      { key: "buy" as const,     label: "Ready to buy",            text: "I'm interested and ready to buy." },
+                      { key: "discuss" as const, label: "Let's discuss",           text: "I'm interested \u2014 I'd like to discuss." },
+                      { key: "price" as const,   label: "What's your best price?", text: "What's your best price?" },
+                      { key: "custom" as const,  label: "Write your own",          text: "" },
+                    ].map((opt) => {
+                      const isSelected = inquiryOption === opt.key;
+                      return (
+                        <button
+                          key={opt.key}
+                          type="button"
+                          onClick={() => setInquiryOption(opt.key)}
+                          className={
+                            "w-full text-left px-4 py-3 border-2 transition-colors " +
+                            (isSelected
+                              ? "border-eb-pop bg-eb-pop-bg"
+                              : "border-eb-border bg-white active:bg-eb-border/30")
+                          }
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <div className="text-eb-caption font-bold uppercase tracking-wider text-eb-black">
+                                {opt.label}
+                              </div>
+                              {opt.key !== "custom" && (
+                                <div className="text-eb-meta text-eb-muted mt-1 leading-relaxed">
+                                  &ldquo;{opt.text}&rdquo;
+                                </div>
+                              )}
+                            </div>
+                            <div
+                              className={
+                                "shrink-0 w-5 h-5 rounded-full border-2 mt-0.5 flex items-center justify-center " +
+                                (isSelected ? "border-eb-pop" : "border-eb-border")
+                              }
+                            >
+                              {isSelected && (
+                                <div className="w-2.5 h-2.5 rounded-full bg-eb-pop" />
+                              )}
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Custom textarea — reveals when "Write your own" is selected */}
+                  {inquiryOption === "custom" && (
+                    <div className="mt-4">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-eb-meta uppercase tracking-wider text-eb-muted">
+                          Your Message
+                        </span>
+                        <span className="text-eb-meta text-eb-muted tabular-nums">
+                          {inquiryMsg.length} / 240
+                        </span>
+                      </div>
+                      <textarea
+                        className="eb-input h-24 resize-none"
+                        placeholder={`Love the ${item.title.toLowerCase()} \u2014 any details?`}
+                        value={inquiryMsg}
+                        onChange={(e) => setInquiryMsg(e.target.value.slice(0, 240))}
+                        onFocus={(e) => {
+                          // Wait for the keyboard + visualViewport listener
+                          // to settle, then pull the textarea into the
+                          // visible portion of the drawer. iOS won't do
+                          // this automatically inside a fixed container.
+                          const el = e.currentTarget;
+                          setTimeout(() => {
+                            el?.scrollIntoView({
+                              block: "center",
+                              behavior: "smooth",
+                            });
+                          }, 300);
+                        }}
+                      />
+                    </div>
+                  )}
+
+                  {!user && anonError && (
+                    <p className="text-eb-meta text-eb-red mt-3">{anonError}</p>
+                  )}
+
+                  <button
+                    className="eb-btn mt-5"
+                    onClick={sendInquiry}
+                    disabled={
+                      sending ||
+                      !inquiryOption ||
+                      (inquiryOption === "custom" && inquiryMsg.trim().length === 0)
+                    }
+                  >
+                    {sending ? "Sending\u2026" : user ? "Send Inquiry" : "Text the dealer"}
                   </button>
-                );
-              })}
-            </div>
 
-            {/* Custom textarea — reveals when "Write your own" is selected */}
-            {inquiryOption === "custom" && (
-              <div className="mt-4">
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-eb-meta uppercase tracking-wider text-eb-muted">
-                    Your Message
-                  </span>
-                  <span className="text-eb-meta text-eb-muted tabular-nums">
-                    {inquiryMsg.length} / 240
-                  </span>
-                </div>
-                <textarea
-                  className="eb-input h-24 resize-none"
-                  placeholder={`Love the ${item.title.toLowerCase()} \u2014 any details?`}
-                  value={inquiryMsg}
-                  onChange={(e) => setInquiryMsg(e.target.value.slice(0, 240))}
-                  autoFocus
-                />
-              </div>
+                {!user && (
+                  <p className="text-eb-micro font-readable text-eb-muted text-center leading-relaxed mt-2">
+                    Msg &amp; data rates may apply. Reply STOP to opt out.
+                  </p>
+                )}
+              </>
             )}
-
-            {/* Send button — disabled until a valid selection exists */}
-            <button
-              className="eb-btn mt-5"
-              onClick={sendInquiry}
-              disabled={
-                sending ||
-                !inquiryOption ||
-                (inquiryOption === "custom" && inquiryMsg.trim().length === 0)
-              }
-            >
-              {sending ? "Sending..." : "Send Inquiry"}
-            </button>
+            </div>
           </div>
         </>
       )}
@@ -1444,14 +1771,6 @@ export default function ItemDetailPage() {
           </div>
         </>
       )}
-
-      {/* Signup drawer (logged-out users) */}
-      <SignupDrawer
-        open={showSignup}
-        onClose={() => setShowSignup(false)}
-        headline="Don't lose this one"
-        subtext="Sign up to save it, message the dealer, or watch for a price drop."
-      />
     </>
   );
 }

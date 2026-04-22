@@ -37,7 +37,19 @@ function VerifyContent() {
         try { localStorage.setItem("eb_token", data.session_token); } catch {}
 
         let dest = "/home";
-        if (data.phone_changed) {
+        // Highest priority: explicit `?to=` query param. Used by the
+        // inquiry confirmation SMS so the buyer lands back on the item
+        // they were looking at. Must start with "/" to prevent an
+        // open-redirect from a doctored SMS link.
+        const explicitTo = searchParams.get("to");
+        if (explicitTo && explicitTo.startsWith("/")) {
+          dest = explicitTo;
+        } else if (data.inquiry_confirmed_item_id) {
+          // Anon inquiry verified: drop them back on the item they
+          // were looking at, with a flag the item page reads to show
+          // the "inquiry sent" drawer state.
+          dest = `/item/${data.inquiry_confirmed_item_id}?sent=1`;
+        } else if (data.phone_changed) {
           dest = "/account";
         } else if (data.early_access_market_id) {
           // Early-access flow: grant was written server-side, drop the
@@ -58,7 +70,11 @@ function VerifyContent() {
             localStorage.removeItem("eb_return_to");
           }
         }
-        window.location.href = dest;
+        // replace() instead of href=: don't leave /v/[token] in the
+        // browser history. Otherwise back button lands on the verify
+        // page, it tries to re-verify an already-used token, and the
+        // user gets an error — the "weird login loop".
+        window.location.replace(dest);
       } catch {
         if (!cancelled) setError("Something went wrong. Please try again.");
       }

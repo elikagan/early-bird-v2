@@ -89,6 +89,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const userData = await res.json();
       setUser(userData);
       if (stored) setToken(stored);
+
+      // First-login sync of anonymous favorites. If the user stacked
+      // up hearts while browsing signed-out, promote those localStorage
+      // rows into real /api/favorites rows now that we know who they
+      // are. Fire-and-forget — we don't want to block the UI on this.
+      try {
+        const { getAnonFavorites, clearAnonFavorites } = await import(
+          "@/lib/anon-favorites"
+        );
+        const anonFavs = getAnonFavorites();
+        if (anonFavs.size > 0) {
+          const headers: Record<string, string> = {
+            "Content-Type": "application/json",
+          };
+          if (stored) headers["Authorization"] = `Bearer ${stored}`;
+          await Promise.all(
+            Array.from(anonFavs).map((itemId) =>
+              fetch("/api/favorites", {
+                method: "POST",
+                credentials: "include",
+                headers,
+                body: JSON.stringify({ item_id: itemId }),
+              }).catch(() => {})
+            )
+          );
+          clearAnonFavorites();
+        }
+      } catch {
+        // Dynamic import failed — skip silently, not worth blocking on.
+      }
     } catch {
       // Network error (offline, DNS fail, etc.) — do NOT log out.
       // The cookie is still there; we'll pick them up on the next load.
