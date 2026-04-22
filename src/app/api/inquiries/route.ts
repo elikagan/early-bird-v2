@@ -35,11 +35,11 @@ export async function POST(request: Request) {
   if (!message || typeof message !== "string" || message.trim().length === 0) {
     return error("message is required", 400);
   }
-  // Cap so the dealer SMS template renders cleanly. 500 chars leaves
-  // room for the "Early Bird: {name} at {phone} says: "{message}"…"
-  // framing without SMS carriers fragmenting or Pingram rejecting.
-  if (message.length > 500) {
-    return error("Message is too long — keep it under 500 characters", 400);
+  // Cap matches the UI counter (240 chars). Keeps the dealer SMS under
+  // ~3 segments including the "Early Bird: {name} at {phone} says: …"
+  // framing. A curl client can still bypass the UI, so enforce server-side.
+  if (message.length > 240) {
+    return error("Message is too long — keep it under 240 characters", 400);
   }
 
   const user = await getSession(request);
