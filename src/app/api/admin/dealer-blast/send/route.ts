@@ -89,7 +89,7 @@ export async function POST(request: Request) {
     args: [
       blastId,
       null,
-      test_only ? "dealer_blast_test" : "dealer_blast",
+      "dealers",
       message,
       sent,
       failed,
