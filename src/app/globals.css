@@ -158,11 +158,14 @@
   }
   .eb-grid-card .eb-fav {
     position: absolute;
-    top: 8px;
-    right: 8px;
+    top: 6px;
+    right: 6px;
     z-index: 1;
-    width: 32px;
-    height: 32px;
+    /* 44px meets Apple HIG minimum touch target. Icon stays visually
+       small via the svg size below — extra space is invisible padding
+       around the hit area. */
+    width: 44px;
+    height: 44px;
     background: rgba(255, 255, 255, 0.92);
     border-radius: 50%;
     display: flex;
@@ -174,8 +177,8 @@
     padding: 0;
   }
   .eb-grid-card .eb-fav svg {
-    width: 17px;
-    height: 17px;
+    width: 20px;
+    height: 20px;
   }
   .eb-grid-card .eb-fav .eb-fav-filled {
     fill: var(--eb-pop);
