@@ -117,22 +117,6 @@ function SellContent() {
     load();
   }, [marketId, user]);
 
-  const updateItemStatus = useCallback(
-    async (itemId: string, status: string) => {
-      const res = await apiFetch(`/api/items/${itemId}`, {
-        method: "PATCH",
-        body: JSON.stringify({ status }),
-      });
-      if (res.ok) {
-        const updated = await res.json();
-        setItems((prev) =>
-          prev.map((i) => (i.id === itemId ? { ...i, ...updated } : i))
-        );
-      }
-    },
-    []
-  );
-
   const saveBooth = useCallback(
     async (value: string) => {
       if (!market) return;
@@ -470,52 +454,21 @@ function SellContent() {
                             .join(" · ")}
                         </div>
                       )}
-                    <div className="flex flex-col gap-1 mt-2">
-                      {isSold ? (
-                        <span className="text-eb-meta text-eb-muted">
-                          Sold
-                        </span>
-                      ) : isHeld ? (
-                        <>
-                          <span className="eb-tag-hold inline-block">
-                            HELD
-                          </span>
-                          <button
-                            className="text-eb-caption font-bold border border-eb-border px-2 py-0.5 text-eb-text text-left"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              updateItemStatus(item.id, "sold");
-                            }}
-                          >
-                            Mark Sold
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <button
-                            className="text-eb-caption font-bold border border-eb-border px-2 py-0.5 text-eb-text text-left"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              updateItemStatus(item.id, "hold");
-                            }}
-                          >
-                            Hold
-                          </button>
-                          <button
-                            className="text-eb-caption font-bold border border-eb-border px-2 py-0.5 text-eb-text text-left"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              updateItemStatus(item.id, "sold");
-                            }}
-                          >
-                            Mark Sold
-                          </button>
-                        </>
-                      )}
-                    </div>
+                    {isSold && (
+                      <div className="text-eb-meta text-eb-muted mt-2">
+                        Sold
+                      </div>
+                    )}
+                    {isHeld && (
+                      <div className="mt-2">
+                        <span className="eb-tag-hold inline-block">HELD</span>
+                      </div>
+                    )}
+                    {isDeleted && (
+                      <div className="text-eb-meta text-eb-muted mt-2">
+                        Removed
+                      </div>
+                    )}
                   </div>
                 </Link>
               );
