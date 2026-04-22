@@ -71,9 +71,8 @@ function OnboardingContent() {
       if (res.ok) {
         const data = await res.json();
         setMarkets(data);
-        const initial = new Set<string>();
-        data.slice(0, 2).forEach((m: Market) => initial.add(m.id));
-        setFollowedMarkets(initial);
+        // No default selections. Explicit opt-in only — we don't
+        // auto-subscribe users to shows they didn't ask for.
       }
     }
     load();
@@ -403,7 +402,7 @@ function OnboardingContent() {
               {nextStep()}
             </span>
             <span className="text-eb-meta uppercase tracking-widest text-eb-muted">
-              {isDealerSignup ? "Markets you sell at" : "Follow markets"}
+              {isDealerSignup ? "Shows I sell at" : "Shows I want updates about"}
             </span>
           </div>
           <div className="space-y-2">
@@ -542,7 +541,7 @@ function OnboardingContent() {
             ? "SAVING\u2026"
             : isDealerSignup
               ? "SUBMIT APPLICATION"
-              : "START SHOPPING"}
+              : "LET'S GO"}
         </button>
       </footer>
     </div>
