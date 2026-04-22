@@ -146,13 +146,16 @@ function AdminPage() {
     <>
       <Masthead right={null} />
 
-      {/* Tab bar */}
+      {/* Tab bar — shrink-0 per tab so labels keep their full width
+          and the container scrolls horizontally on mobile. Previously
+          flex-1 + min-w-0 crammed 7 labels into 375px, forcing
+          text to overlap ("DASHBOARDMARKETS"). */}
       <div className="flex border-b-2 border-eb-black overflow-x-auto">
         {(["dashboard", "markets", "dealers", "items", "blast", "sms", "health"] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`flex-1 min-w-0 py-3 text-eb-micro font-bold uppercase tracking-wider text-center whitespace-nowrap ${
+            className={`shrink-0 px-4 py-3 text-eb-micro font-bold uppercase tracking-wider whitespace-nowrap ${
               activeTab === t
                 ? "text-eb-black border-b-2 border-eb-pop -mb-[2px]"
                 : "text-eb-muted"
