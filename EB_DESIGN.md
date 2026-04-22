@@ -42,8 +42,10 @@ When an inquiry happens, the dealer gets a text with the buyer's name, phone, an
 ### 4. Early Bird only sends texts that earn their place. Don't spam.
 This is the complete list of texts Early Bird is allowed to send. Anything not on this list, we don't send. No welcome texts. No "we miss you." No "check out our new feature." No marketing.
 
+**Internal ops texts (admin-only, never go to a user):** a new dealer application notifies the admin phones (`ADMIN_PHONES`) so we can review quickly; the ops-check cron texts admins when SMS delivery degrades. These never reach a buyer or dealer.
+
 **Group A — sent automatically, triggered by a specific person's action:**
-1. **Magic link** — for sign-in, and for confirming an anonymous inquiry.
+1. **Magic link** — for sign-in, for confirming an anonymous inquiry, and for verifying a phone-number change on an existing account. All three are the same concept: tap a link we texted you to prove it's you.
 2. **Inquiry notification to the dealer** — buyer's name, phone, item, and message. Fires when a buyer taps "I'm Interested."
 3. **Sold-to-you receipt** — when a dealer marks an item sold to a specific buyer, that buyer gets one text. The losing inquirers get nothing.
 4. **Price-drop alert** — when a dealer lowers the price on an item, people who favorited that item get ONE text the first time the price drops. No further texts on later drops.

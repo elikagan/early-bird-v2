@@ -79,14 +79,6 @@ export function composeDealerApproval(url: string): string {
 }
 
 /**
- * SMS sent to a buyer who requested early access to pre-shop a market.
- * Contains the magic link that signs them in and grants access.
- */
-export function composeEarlyAccess(marketName: string, url: string): string {
-  return `Early Bird: Here's your link to pre-shop ${marketName}:\n\n${url}`;
-}
-
-/**
  * SMS sent to a buyer right after they submit an anonymous inquiry.
  * Dealer has NOT been notified yet — this link proves phone ownership.
  * Tapping it creates the inquiry, fires the dealer notification, and
