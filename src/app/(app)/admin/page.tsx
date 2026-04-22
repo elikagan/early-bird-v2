@@ -212,23 +212,36 @@ function DashboardTab({ setTab }: { setTab: (t: Tab) => void }) {
 
   return (
     <>
-      {/* Stats grid */}
+      {/* Stats grid — arrow on each label tells the admin the tile is
+          clickable (navigates to the corresponding tab). */}
       <div className="eb-stats border-b border-eb-border">
-        <button onClick={() => setTab("dealers")} className="eb-stat">
+        <button
+          onClick={() => setTab("dealers")}
+          className="eb-stat active:bg-eb-border/30"
+        >
           <div className="eb-stat-num">{data.dealer_count}</div>
-          <div className="eb-stat-label">Dealers</div>
+          <div className="eb-stat-label">Dealers {"\u2192"}</div>
         </button>
-        <button onClick={() => setTab("dealers")} className="eb-stat">
+        <button
+          onClick={() => setTab("dealers")}
+          className="eb-stat active:bg-eb-border/30"
+        >
           <div className="eb-stat-num">{data.buyer_count}</div>
-          <div className="eb-stat-label">Buyers</div>
+          <div className="eb-stat-label">Buyers {"\u2192"}</div>
         </button>
-        <button onClick={() => setTab("items")} className="eb-stat">
+        <button
+          onClick={() => setTab("items")}
+          className="eb-stat active:bg-eb-border/30"
+        >
           <div className="eb-stat-num">{data.items_this_week}</div>
-          <div className="eb-stat-label">Items / wk</div>
+          <div className="eb-stat-label">Items / wk {"\u2192"}</div>
         </button>
-        <button onClick={() => setTab("items")} className="eb-stat">
+        <button
+          onClick={() => setTab("items")}
+          className="eb-stat active:bg-eb-border/30"
+        >
           <div className="eb-stat-num">{data.sold_this_week}</div>
-          <div className="eb-stat-label">Sold / wk</div>
+          <div className="eb-stat-label">Sold / wk {"\u2192"}</div>
         </button>
       </div>
 
