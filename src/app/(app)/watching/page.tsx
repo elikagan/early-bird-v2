@@ -74,7 +74,7 @@ export default function WatchingPage() {
         <div className="eb-empty">
           <div className="eb-icon">{"\u2661"}</div>
           <p>
-            Sign up to save items to your watchlist
+            Sign in to save items to your watchlist
             and get notified about price drops.
           </p>
           <button
@@ -84,7 +84,7 @@ export default function WatchingPage() {
             }}
             className="eb-btn mt-4"
           >
-            Sign up {"\u2192"}
+            Sign in {"\u2192"}
           </button>
         </div>
         <BottomNav active="watching" />
@@ -203,7 +203,7 @@ export default function WatchingPage() {
             <p>
               Nothing watched yet.
               <br />
-              Tap the heart on any item to save it here.
+              Browse items, then tap the heart on anything you want to save here.
             </p>
             <Link href="/home">Browse listings {"\u2192"}</Link>
           </div>
