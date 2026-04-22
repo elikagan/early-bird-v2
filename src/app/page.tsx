@@ -108,10 +108,21 @@ export default function HomePage() {
 
   return (
     <>
-      {/* Logo stays as a non-navigating brand mark on this page —
-          we're already home. SignInLink renders on the right for
-          returning users. */}
-      <Masthead href={null} />
+      {/* Logo is a non-navigating brand mark on this page (we're
+          already home). Right slot is a "Dealer →" anchor link
+          that smooth-scrolls down to the "For Dealers" section.
+          Sign-in moves to the footer for returning users. */}
+      <Masthead
+        href={null}
+        right={
+          <Link
+            href="/dealer"
+            className="text-eb-meta uppercase tracking-widest text-eb-muted"
+          >
+            Dealer {"\u2192"}
+          </Link>
+        }
+      />
 
       {markets === null ? (
         <div className="py-20 flex justify-center">
@@ -297,6 +308,50 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Footer — brand, contact, sign-in for returning users, legal */}
+      <footer className="px-5 py-8 border-t border-eb-border">
+        <div className="text-eb-meta font-bold text-eb-black uppercase tracking-wider">
+          Early Bird
+        </div>
+        <div className="text-eb-micro text-eb-muted mt-1">Los Angeles, CA</div>
+        <div className="flex flex-wrap gap-4 mt-3">
+          <a
+            href="mailto:hi@earlybird.la"
+            className="text-eb-micro text-eb-muted"
+          >
+            hi@earlybird.la
+          </a>
+          <a
+            href="https://instagram.com/early_bird_la"
+            className="text-eb-micro text-eb-muted"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            @early_bird_la
+          </a>
+        </div>
+        <div className="flex flex-wrap gap-4 mt-4">
+          <a
+            href="/auth/verify"
+            className="text-eb-micro text-eb-muted underline"
+          >
+            Sign in
+          </a>
+          <a
+            href="/terms"
+            className="text-eb-micro text-eb-muted underline"
+          >
+            Terms
+          </a>
+          <a
+            href="/privacy"
+            className="text-eb-micro text-eb-muted underline"
+          >
+            Privacy
+          </a>
+        </div>
+      </footer>
     </>
   );
 }
