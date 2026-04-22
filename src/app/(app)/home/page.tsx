@@ -11,6 +11,7 @@ import {
   formatShortDate,
   getInitials,
   marketEyebrow,
+  daysUntilLabel,
 } from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
 import { Masthead } from "@/components/masthead";
@@ -38,25 +39,6 @@ interface PreviewItem {
 }
 
 const MAX_PROMO_ITEMS = 8;
-
-/**
- * Day-granularity countdown. Mirrors the `/` page helper — same rules,
- * same output.
- */
-function daysUntilLabel(iso: string): string {
-  const now = new Date();
-  const start = new Date(iso);
-  const nowDay = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
-  const startDay = Date.UTC(
-    start.getFullYear(),
-    start.getMonth(),
-    start.getDate()
-  );
-  const days = Math.round((startDay - nowDay) / (1000 * 60 * 60 * 24));
-  if (days <= 0) return "Open today";
-  if (days === 1) return "Opens tomorrow";
-  return `Opens in ${days} days`;
-}
 
 export default function HomePage() {
   const { user, loading: authLoading } = useAuth();

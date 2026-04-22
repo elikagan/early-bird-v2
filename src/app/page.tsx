@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/lib/auth-context";
-import { formatPrice, formatShortDate, getInitials, marketEyebrow } from "@/lib/format";
+import { formatPrice, formatShortDate, getInitials, marketEyebrow, daysUntilLabel } from "@/lib/format";
 import { Masthead } from "@/components/masthead";
 import { SignupDrawer } from "@/components/signup-drawer";
 
@@ -33,26 +33,6 @@ interface PreviewItem {
 }
 
 const MAX_PROMO_ITEMS = 8;
-
-/**
- * Day-granularity countdown. Uses the calendar-day diff (not
- * millisecond-diff) so a show on "tomorrow 8am" reads as "opens
- * tomorrow" even at 11:59pm tonight.
- */
-function daysUntilLabel(iso: string): string {
-  const now = new Date();
-  const start = new Date(iso);
-  const nowDay = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
-  const startDay = Date.UTC(
-    start.getFullYear(),
-    start.getMonth(),
-    start.getDate()
-  );
-  const days = Math.round((startDay - nowDay) / (1000 * 60 * 60 * 24));
-  if (days <= 0) return "Open today";
-  if (days === 1) return "Opens tomorrow";
-  return `Opens in ${days} days`;
-}
 
 export default function HomePage() {
   const router = useRouter();

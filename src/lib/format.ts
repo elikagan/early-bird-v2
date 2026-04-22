@@ -53,6 +53,26 @@ export function daysUntil(iso: string): number {
   return Math.max(0, Math.floor((new Date(iso).getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
 }
 
+/**
+ * Calendar-day diff label for market "coming up" rows. Uses UTC
+ * calendar days so a show tomorrow at 8am still reads as "Opens
+ * tomorrow" even at 11:59pm tonight.
+ */
+export function daysUntilLabel(iso: string): string {
+  const now = new Date();
+  const start = new Date(iso);
+  const nowDay = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  const startDay = Date.UTC(
+    start.getFullYear(),
+    start.getMonth(),
+    start.getDate()
+  );
+  const days = Math.round((startDay - nowDay) / (1000 * 60 * 60 * 24));
+  if (days <= 0) return "Open today";
+  if (days === 1) return "Opens tomorrow";
+  return `Opens in ${days} days`;
+}
+
 export function heroCountdown(iso: string): string {
   const diff = new Date(iso).getTime() - Date.now();
   if (diff <= 0) return "NOW";
