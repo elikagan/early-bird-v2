@@ -12,7 +12,7 @@ import { SHOWS } from "@/lib/shows";
 
 /* ─── Types ─── */
 
-type Tab = "dashboard" | "markets" | "dealers" | "items" | "sms" | "health";
+type Tab = "dashboard" | "markets" | "dealers" | "items" | "blast" | "sms" | "health";
 
 interface DashboardData {
   dealer_count: number;
@@ -148,7 +148,7 @@ function AdminPage() {
 
       {/* Tab bar */}
       <div className="flex border-b-2 border-eb-black overflow-x-auto">
-        {(["dashboard", "markets", "dealers", "items", "sms", "health"] as Tab[]).map((t) => (
+        {(["dashboard", "markets", "dealers", "items", "blast", "sms", "health"] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -169,6 +169,7 @@ function AdminPage() {
         {activeTab === "markets" && <MarketsTab />}
         {activeTab === "dealers" && <DealersTab />}
         {activeTab === "items" && <ItemsTab />}
+        {activeTab === "blast" && <BlastTab />}
         {activeTab === "sms" && <SmsTab />}
         {activeTab === "health" && <HealthTab />}
       </main>
@@ -1959,4 +1960,209 @@ function formatRelative(iso: string): string {
   if (h < 24) return `${h}h ago`;
   const d = Math.round(h / 24);
   return `${d}d ago`;
+}
+
+/* ════════════════════════════════════════════════════
+   DEALER BLAST TAB — personalized-link SMS to dealers
+   + unredeemed invites. Every link auto-signs the
+   recipient into /sell (dealers) or the invite
+   redemption flow (unredeemed invites).
+   ════════════════════════════════════════════════════ */
+
+interface BlastPreview {
+  total: number;
+  invites: number;
+  dealers: number;
+  sample: {
+    kind: "dealer" | "invite";
+    phone_masked: string;
+    name: string;
+  }[];
+}
+
+const DEFAULT_BLAST_TEMPLATE =
+  "Early Bird — from Eli + Dave. Downtown Modernism is this Saturday 4/26 and customers start arriving end of day Thursday. Post at least 4 pieces you're bringing (one photo each is fine): {link}";
+
+function BlastTab() {
+  const [preview, setPreview] = useState<BlastPreview | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState(DEFAULT_BLAST_TEMPLATE);
+  const [sending, setSending] = useState(false);
+  const [result, setResult] = useState<{
+    sent: number;
+    failed: number;
+    total: number;
+    test: boolean;
+  } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const res = await apiFetch("/api/admin/dealer-blast/preview");
+    if (res.ok) setPreview(await res.json());
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  const send = async (testOnly: boolean) => {
+    setError(null);
+    if (!message.includes("{link}")) {
+      setError("Message must contain {link} — that's where each dealer's personalized sign-in link will be inserted.");
+      return;
+    }
+    const confirmText = testOnly
+      ? "Send a TEST message to just your own phone?"
+      : `Send this text to ${preview?.total ?? 0} dealers? This cannot be undone.`;
+    if (!confirm(confirmText)) return;
+
+    setSending(true);
+    setResult(null);
+    try {
+      const res = await apiFetch("/api/admin/dealer-blast/send", {
+        method: "POST",
+        body: JSON.stringify({ message, test_only: testOnly }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || "Send failed");
+      } else {
+        const data = await res.json();
+        setResult({
+          sent: data.sent,
+          failed: data.failed,
+          total: data.total,
+          test: testOnly,
+        });
+      }
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const renderedPreview = message.replace(
+    /\{link\}/g,
+    "https://earlybird.la/v/abc…?to=/sell"
+  );
+
+  return (
+    <div className="px-5 py-4 space-y-4">
+      <div>
+        <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-1">
+          Dealer Blast
+        </div>
+        <p className="text-eb-micro text-eb-muted leading-relaxed">
+          One-shot SMS to dealers + unredeemed invites. Each recipient gets a
+          personalized link. Signed-up dealers tap it and land directly on
+          their <span className="font-bold">/sell</span> page, signed in.
+          Unredeemed invites go to the onboarding flow.
+        </p>
+      </div>
+
+      {loading ? (
+        <div className="text-eb-caption text-eb-muted">Loading recipients…</div>
+      ) : preview ? (
+        <>
+          <div className="border border-eb-border p-3">
+            <div className="text-eb-body font-bold">
+              Will send to {preview.total} dealer{preview.total === 1 ? "" : "s"}
+            </div>
+            <div className="text-eb-micro text-eb-muted mt-1">
+              {preview.dealers} signed-up dealer
+              {preview.dealers === 1 ? "" : "s"} · {preview.invites} unredeemed
+              invite{preview.invites === 1 ? "" : "s"} · deduped by phone
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-eb-meta uppercase tracking-widest text-eb-muted mb-1">
+              Message (use <span className="font-bold">{"{link}"}</span> as placeholder)
+            </label>
+            <textarea
+              className="eb-input w-full min-h-[120px] leading-relaxed"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              disabled={sending}
+            />
+            <div className="text-eb-micro text-eb-muted mt-1">
+              Characters: {message.length}
+            </div>
+          </div>
+
+          <div>
+            <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-1">
+              Preview (what a dealer will see)
+            </div>
+            <div className="border-2 border-eb-border bg-eb-bg-soft p-3 text-eb-caption whitespace-pre-wrap break-words">
+              {renderedPreview}
+            </div>
+          </div>
+
+          {error && (
+            <div className="text-eb-caption text-eb-red border border-eb-red p-2">
+              {error}
+            </div>
+          )}
+
+          {result ? (
+            <div className="border-2 border-eb-green p-3">
+              <div className="text-eb-body font-bold text-eb-green">
+                {result.test ? "Test sent" : "Blast sent"}
+              </div>
+              <div className="text-eb-micro text-eb-muted mt-1">
+                {result.sent} delivered · {result.failed} failed · {result.total} total
+              </div>
+              <button
+                onClick={() => {
+                  setResult(null);
+                  void load();
+                }}
+                className="mt-2 py-1.5 px-3 text-eb-caption font-bold border-2 border-eb-border uppercase tracking-wider"
+              >
+                Send another
+              </button>
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <button
+                onClick={() => send(true)}
+                disabled={sending || preview.total === 0}
+                className="py-2 px-4 text-eb-caption font-bold border-2 border-eb-border text-eb-black uppercase tracking-wider disabled:opacity-50"
+              >
+                {sending ? "Sending…" : "Send Test to Me"}
+              </button>
+              <button
+                onClick={() => send(false)}
+                disabled={sending || preview.total === 0}
+                className="py-2 px-4 text-eb-caption font-bold bg-eb-black text-white uppercase tracking-wider disabled:opacity-50"
+              >
+                {sending
+                  ? "Sending…"
+                  : `Send to ${preview.total} Dealer${preview.total === 1 ? "" : "s"}`}
+              </button>
+            </div>
+          )}
+
+          {preview.sample.length > 0 && (
+            <details className="text-eb-micro text-eb-muted">
+              <summary className="cursor-pointer">First 3 recipients (sanity check)</summary>
+              <ul className="mt-1 space-y-0.5 ml-4">
+                {preview.sample.map((s, i) => (
+                  <li key={i}>
+                    {s.kind === "dealer" ? "Dealer" : "Invite"} · {s.phone_masked} · {s.name}
+                  </li>
+                ))}
+              </ul>
+            </details>
+          )}
+        </>
+      ) : (
+        <div className="text-eb-caption text-eb-red">
+          Failed to load recipients. Refresh to retry.
+        </div>
+      )}
+    </div>
+  );
 }
