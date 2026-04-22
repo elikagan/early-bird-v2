@@ -267,12 +267,16 @@ function AddItemContent() {
                 </div>
               )}
 
-              {/* Remove button (always visible) */}
+              {/* Remove button — 44px hit area around a 24px visible badge,
+                  meets Apple HIG thumb target. */}
               <button
                 onClick={() => removePhoto(photo.id)}
-                className="absolute top-1 right-1 w-6 h-6 bg-eb-black text-eb-white flex items-center justify-center text-eb-micro font-bold"
+                aria-label="Remove photo"
+                className="absolute top-0 right-0 w-11 h-11 flex items-start justify-end pt-1 pr-1"
               >
-                {"\u2715"}
+                <span className="w-6 h-6 bg-eb-black text-eb-white flex items-center justify-center text-eb-micro font-bold">
+                  {"\u2715"}
+                </span>
               </button>
 
               {/* Position badge */}
