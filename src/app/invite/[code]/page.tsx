@@ -66,7 +66,7 @@ export default function InvitePage() {
       return;
     }
     if (!biz.trim()) {
-      setError("Business name is required");
+      setError("Enter your business name (or your own name if you sell as yourself)");
       return;
     }
     if (selectedShows.size === 0) {
@@ -187,14 +187,14 @@ export default function InvitePage() {
 
               <div>
                 <label className="text-eb-micro text-eb-muted uppercase tracking-widest block mb-1">
-                  Business Name
+                  Business or Your Name
                 </label>
                 <input
                   type="text"
                   className="eb-input"
                   value={biz}
                   onChange={(e) => setBiz(e.target.value.slice(0, 60))}
-                  placeholder="Vintage Finds LA"
+                  placeholder="Vintage Finds LA, or Jane Doe"
                 />
               </div>
 

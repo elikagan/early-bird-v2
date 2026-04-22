@@ -62,6 +62,17 @@ export function heroCountdown(iso: string): string {
   return `${String(d).padStart(2, "0")}D ${String(h).padStart(2, "0")}H ${String(m).padStart(2, "0")}M`;
 }
 
+// Eyebrow for a market listed on the home / browse surfaces. "Open now" was
+// previously hardcoded, which lied next to a future date. This returns the
+// accurate state: the physical show is "Open now" only when starts_at is
+// within a day, otherwise buyers are pre-shopping online.
+export function marketEyebrow(startsAtIso: string): string {
+  const msUntilStart = new Date(startsAtIso).getTime() - Date.now();
+  const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+  if (msUntilStart < ONE_DAY_MS) return "Open now";
+  return "Pre-shopping now";
+}
+
 export function timeAgo(iso: string): string {
   const seconds = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
   if (seconds < 60) return "now";

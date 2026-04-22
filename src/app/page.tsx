@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/lib/auth-context";
-import { formatPrice, formatShortDate, getInitials } from "@/lib/format";
+import { formatPrice, formatShortDate, getInitials, marketEyebrow } from "@/lib/format";
 import { Masthead } from "@/components/masthead";
 import { SignupDrawer } from "@/components/signup-drawer";
 
@@ -137,7 +137,8 @@ export default function HomePage() {
               display name then stats. */}
           <section className="px-5 pt-5 pb-5 border-b border-eb-border">
             <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-1">
-              Open now {"\u00b7"} {formatShortDate(featured.starts_at)}
+              {marketEyebrow(featured.starts_at)} {"\u00b7"}{" "}
+              {formatShortDate(featured.starts_at)}
               {featured.location ? <> {"\u00b7"} {featured.location}</> : null}
             </div>
             <h1 className="text-eb-display font-bold text-eb-black uppercase tracking-wider leading-tight">
