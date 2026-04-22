@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/lib/auth-context";
@@ -89,6 +89,7 @@ const ACCEPTED_TYPES = "image/jpeg,image/png,image/webp,image/heic,image/heif";
 export default function ItemDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user } = useAuth();
 
   const [item, setItem] = useState<ItemDetail | null>(null);
@@ -227,7 +228,31 @@ export default function ItemDetailPage() {
   const [anonName, setAnonName] = useState("");
   const [anonPhone, setAnonPhone] = useState("");
   const [anonError, setAnonError] = useState<string | null>(null);
-  const [anonSent, setAnonSent] = useState(false);
+  // Anon drawer has three post-submit states:
+  //   "pending" — form submitted, verification SMS sent, dealer NOT
+  //               notified yet. Waiting on the buyer to tap the link.
+  //   "confirmed" — buyer tapped the link, they've been redirected
+  //                 back to /item/[id]?sent=1, dealer has been texted.
+  //   false/null — pre-submission, or drawer closed.
+  const [anonSent, setAnonSent] = useState<"pending" | "confirmed" | false>(
+    false
+  );
+
+  // When verify redirects us here with ?sent=1, open the drawer in
+  // "confirmed" state. Then strip the query param via replaceState so
+  // browser Back from this page goes to the user's previous page
+  // (their listings grid), not a stale ?sent=1 URL.
+  useEffect(() => {
+    if (searchParams.get("sent") !== "1") return;
+    setShowInquiry(true);
+    setAnonSent("confirmed");
+    // Clean the URL in-place without adding a history entry
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("sent");
+      window.history.replaceState({}, "", url.pathname + url.search);
+    }
+  }, [searchParams]);
 
   // Confirm drawer (dealer-own)
   const [confirmInquiry, setConfirmInquiry] = useState<Inquiry | null>(null);
@@ -542,10 +567,12 @@ export default function ItemDetailPage() {
         setIsFav(true);
         setItem((prev) => (prev ? { ...prev, my_inquiry_status: "open" } : prev));
       } else {
-        // Anon path: stay in the drawer but swap to the "texted"
-        // confirmation state. Dealer already got the SMS; the buyer
-        // now needs to tap the magic link they just received.
-        setAnonSent(true);
+        // Anon path: stay in the drawer but swap to the "pending
+        // verification" state. Dealer has NOT been texted yet — the
+        // buyer needs to tap the verify link for the inquiry to go
+        // through. Item page's "?sent=1" handler flips this to
+        // "confirmed" after they return from the magic link.
+        setAnonSent("pending");
       }
     } else {
       const errData = await res.json().catch(() => ({}));
@@ -1385,15 +1412,45 @@ export default function ItemDetailPage() {
 
             {/* Scrollable content area — takes remaining drawer height. */}
             <div className="flex-1 overflow-y-auto overscroll-contain px-5 pb-6">
-            {/* Anon confirmation state — after the text has been sent */}
-            {!user && anonSent ? (
+            {/* Anon — pending verification state.
+                Form has been submitted. Dealer has NOT been texted yet.
+                Buyer needs to tap the verify link we just sent. */}
+            {!user && anonSent === "pending" ? (
               <>
                 <h3 className="text-eb-title font-bold uppercase tracking-widest text-eb-black mb-2">
-                  Texted.
+                  Confirm it{"\u2019"}s you
                 </h3>
                 <p className="text-eb-caption text-eb-muted leading-relaxed">
-                  {item.dealer_name} sees your message now. Check your phone
-                  for a sign-in link — tap it to keep browsing.
+                  We just texted a link to{" "}
+                  <span className="font-bold text-eb-black">{anonPhone}</span>.
+                  Tap it and {item.dealer_name} gets your message.
+                </p>
+                <p className="text-eb-meta text-eb-muted leading-relaxed mt-3">
+                  Don{"\u2019"}t see it? Check your messages in a minute, or{" "}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAnonSent(false);
+                      setAnonPhone("");
+                    }}
+                    className="underline"
+                  >
+                    use a different number
+                  </button>
+                  .
+                </p>
+              </>
+            ) : !user && anonSent === "confirmed" ? (
+              /* Anon — confirmed state. Buyer tapped the verify link,
+                 we're back on this page with a session, dealer has
+                 been notified. */
+              <>
+                <h3 className="text-eb-title font-bold uppercase tracking-widest text-eb-black mb-2">
+                  Inquiry sent
+                </h3>
+                <p className="text-eb-caption text-eb-muted leading-relaxed">
+                  {item.dealer_name} has your name and number. They
+                  {"\u2019"}ll text you directly.
                 </p>
                 <button
                   className="eb-btn mt-5"
@@ -1405,7 +1462,7 @@ export default function ItemDetailPage() {
                     setInquiryMsg("");
                   }}
                 >
-                  Done
+                  Keep browsing
                 </button>
               </>
             ) : (

@@ -91,15 +91,16 @@ export function composeEarlyAccess(marketName: string, url: string): string {
 
 /**
  * SMS sent to a buyer right after they submit an anonymous inquiry.
- * Confirms the dealer got their message + gives them a magic link that
- * signs them in and returns them to the item they just inquired on.
+ * Dealer has NOT been notified yet — this link proves phone ownership.
+ * Tapping it creates the inquiry, fires the dealer notification, and
+ * returns the buyer to the listing signed in.
  */
 export function composeInquiryBuyerConfirmation(
   dealerName: string,
   itemTitle: string,
   url: string
 ): string {
-  return `Early Bird: ${dealerName} got your message about "${itemTitle}". Your sign-in link to keep browsing:\n\n${url}`;
+  return `Early Bird: tap to confirm it's you and send your message about "${itemTitle}" to ${dealerName}:\n\n${url}`;
 }
 
 /**
