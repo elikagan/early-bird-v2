@@ -18,7 +18,8 @@ Last audited: 2026-04-22 by Claude.
 
 - **[P0] Supabase row-level security is off on at least one table** in project `hfvfmndjknxvhwrstkrg`. Supabase flagged `rls_disabled_in_public`. Right now the public anon key could theoretically read or write the affected table directly. Need to turn RLS on across ALL tables and add policies. (Task 1.)
 
-- **[P0] Dave Harker (+17605868800, user_id `Bug9tDONJ09niFtE`) is being logged out repeatedly.** Not diagnosed yet. Sessions are supposed to last ten years, and the cookie is supposed to live on `.earlybird.la` so both earlybird.la and www.earlybird.la share it. The previous cookie-domain fix didn't stick. (Task 2.)
+<!-- Dave Harker "logout" entry removed 2026-04-22: not a bug. Dave was in incognito mode, which wipes cookies + localStorage on tab close. Server sessions were always valid (11 active sessions at time of diagnosis). If anyone else reports this, check for incognito first. -->
+
 
 ## P1 — commitment not actually built
 
