@@ -496,7 +496,7 @@ export default function AccountPage() {
                       setPhoneSent(false);
                       setEditingPhone(true);
                     }}
-                    className="text-eb-micro text-eb-muted underline"
+                    className="text-eb-micro text-eb-muted underline px-3 py-2 -mx-3 -my-2"
                   >
                     change
                   </button>
@@ -509,7 +509,7 @@ export default function AccountPage() {
                 setEditingName(true);
                 setNameError(null);
               }}
-              className="text-eb-micro text-eb-muted underline"
+              className="text-eb-micro text-eb-muted underline px-3 py-2 -mx-3 -my-2"
             >
               edit
             </button>
