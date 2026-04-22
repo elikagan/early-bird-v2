@@ -35,16 +35,24 @@ export async function POST(request: Request) {
   const originUrl = `${proto}://${host}`;
 
   const allRecipients = await getDealerBlastRecipients();
+  // Test mode always sends to the admin on their own phone, regardless
+  // of admin exclusion — this is the pre-flight eyeball check. If we
+  // used the real recipient list, the admin's phone would never match
+  // (they're filtered out) and the test would fail confusingly.
   const recipients = test_only
-    ? allRecipients.filter((r) => r.phone === user.phone)
+    ? [
+        {
+          kind: "dealer" as const,
+          phone: user.phone,
+          user_id: user.id,
+          display_name: null,
+          business_name: null,
+        },
+      ]
     : allRecipients;
 
   if (recipients.length === 0) {
-    return error(
-      test_only
-        ? "Test mode: your phone is not in the dealer recipient list. Add yourself as a dealer first."
-        : "No recipients"
-    );
+    return error("No recipients");
   }
 
   const blastId = newId();
