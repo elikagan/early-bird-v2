@@ -50,10 +50,12 @@ export async function GET(request: Request) {
     args: [],
   });
 
-  const adminPhones = (process.env.ADMIN_PHONES || "")
-    .split(",")
-    .map((p) => p.trim())
-    .filter(Boolean);
+  // Eli is the sole approver for mass-text blasts per EB_DESIGN.md
+  // commitment #9 ("the system texts Eli"). Dave still has admin
+  // access, but approving blasts is specifically Eli's role — Dave
+  // shouldn't get a spam "blast ready" text every time this runs.
+  const BLAST_APPROVER_PHONE = "+13104985138";
+  const approverPhones = [BLAST_APPROVER_PHONE];
 
   const baseUrl = getBaseUrl(request);
 
@@ -85,7 +87,7 @@ export async function GET(request: Request) {
         payload: { market_id: marketId, kind, recipient_count: recipients.length },
       });
 
-      for (const phone of adminPhones) {
+      for (const phone of approverPhones) {
         const token = nanoid(32);
         const expiresAt = new Date(
           Date.now() + 7 * 24 * 60 * 60 * 1000
