@@ -46,9 +46,6 @@ interface ItemDetail {
   original_price: number | null;
   price_firm: number;
   status: string;
-  held_for: string | null;
-  held_for_name: string | null;
-  held_for_avatar: string | null;
   sold_to: string | null;
   sold_to_name: string | null;
   sold_to_avatar: string | null;

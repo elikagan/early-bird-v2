@@ -111,7 +111,6 @@ CREATE TABLE IF NOT EXISTS items (
   original_price integer,
   price_firm     integer NOT NULL DEFAULT 0,
   status         text NOT NULL CHECK(status IN ('live','hold','sold')) DEFAULT 'live',
-  held_for       text REFERENCES users(id),
   sold_to        text REFERENCES users(id),
   created_at     timestamptz NOT NULL DEFAULT now()
 );

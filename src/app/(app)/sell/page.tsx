@@ -32,7 +32,6 @@ interface Market {
   drop_at: string;
   status: string;
   item_count: number;
-  dealer_preshop_enabled: number;
 }
 
 function SellContent() {

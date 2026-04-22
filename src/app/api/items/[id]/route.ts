@@ -28,15 +28,12 @@ export async function GET(
         (SELECT COUNT(*) FROM favorites f WHERE f.item_id = i.id) as watcher_count,
         (SELECT COUNT(*) FROM inquiries q WHERE q.item_id = i.id) as inquiry_count,
         bs.booth_number,
-        holder.display_name as held_for_name,
-        holder.avatar_url as held_for_avatar,
         buyer.display_name as sold_to_name,
         buyer.avatar_url as sold_to_avatar
       FROM items i
       JOIN dealers d ON d.id = i.dealer_id
       JOIN users u ON u.id = d.user_id
       LEFT JOIN booth_settings bs ON bs.dealer_id = d.id AND bs.market_id = i.market_id
-      LEFT JOIN users holder ON holder.id = i.held_for
       LEFT JOIN users buyer ON buyer.id = i.sold_to
       WHERE i.id = ?
     `,
@@ -133,7 +130,7 @@ export async function PATCH(
 
   // Concurrent edit safety: reject edits to sold items (status changes still allowed)
   const isStatusOnly = Object.keys(body).every((k) =>
-    ["status", "held_for", "sold_to"].includes(k)
+    ["status", "sold_to"].includes(k)
   );
   if (!isStatusOnly && item.status === "sold") {
     return error("Cannot edit a sold item", 409);
@@ -172,11 +169,6 @@ export async function PATCH(
   if (body.status !== undefined) {
     updates.push("status = ?");
     args.push(body.status);
-    // HOLD is now a plain global status — no buyer tied to it. Always
-    // null out held_for so no stale data lingers from the old per-
-    // inquiry hold feature.
-    updates.push("held_for = ?");
-    args.push(null);
   }
 
   if (body.sold_to !== undefined) {

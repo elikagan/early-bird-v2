@@ -33,7 +33,6 @@ interface Market {
   status: string;
   is_test: number;
   archived: number;
-  dealer_preshop_enabled: number;
   dealer_count: number;
   item_count: number;
   created_at: string;
