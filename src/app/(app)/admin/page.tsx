@@ -8,6 +8,7 @@ import { useRequireAuth } from "@/lib/require-auth";
 import { apiFetch } from "@/lib/api-client";
 import { formatPhone, formatDate, formatPrice, heroCountdown, timeAgo } from "@/lib/format";
 import { Masthead } from "@/components/masthead";
+import { ConfirmDrawer } from "@/components/confirm-drawer";
 import { SHOWS } from "@/lib/shows";
 
 /* ─── Types ─── */
@@ -410,14 +411,24 @@ function MarketsTab() {
     loadMarkets();
   };
 
-  const deleteMarket = async (m: Market) => {
-    if (!confirm(`Delete "${m.name}"? This cannot be undone.`)) return;
+  const [pendingDeleteMarket, setPendingDeleteMarket] = useState<Market | null>(null);
+  const [marketError, setMarketError] = useState<string | null>(null);
+
+  const confirmDeleteMarket = async () => {
+    const m = pendingDeleteMarket;
+    if (!m) return;
+    setPendingDeleteMarket(null);
     const res = await apiFetch(`/api/admin/markets/${m.id}`, { method: "DELETE" });
     if (!res.ok) {
-      const data = await res.json();
-      alert(data.error || "Failed to delete");
+      const data = await res.json().catch(() => ({}));
+      setMarketError(data.error || "Failed to delete market");
+      setTimeout(() => setMarketError(null), 4000);
     }
     loadMarkets();
+  };
+
+  const deleteMarket = (m: Market) => {
+    setPendingDeleteMarket(m);
   };
 
   const active = markets.filter((m) => !m.archived);
@@ -670,6 +681,22 @@ function MarketsTab() {
           )}
         </div>
       )}
+
+      {marketError && (
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 bg-eb-red text-white px-4 py-2 text-eb-caption z-40 shadow-lg">
+          {marketError}
+        </div>
+      )}
+
+      <ConfirmDrawer
+        open={!!pendingDeleteMarket}
+        title={`Delete ${pendingDeleteMarket?.name ?? "market"}?`}
+        message="This cannot be undone."
+        confirmLabel="Delete"
+        destructive
+        onConfirm={confirmDeleteMarket}
+        onCancel={() => setPendingDeleteMarket(null)}
+      />
     </>
   );
 }
@@ -808,14 +835,22 @@ function DealersTab() {
     expandUser(expandedId);
   };
 
-  const changeRole = async (userId: string, newDealer: number) => {
-    if (!confirm(`Change this user to ${newDealer ? "dealer" : "buyer"}?`)) return;
-    await apiFetch(`/api/admin/dealers/${userId}`, {
+  const [pendingRoleChange, setPendingRoleChange] = useState<{ userId: string; newDealer: number } | null>(null);
+
+  const confirmRoleChange = async () => {
+    const req = pendingRoleChange;
+    if (!req) return;
+    setPendingRoleChange(null);
+    await apiFetch(`/api/admin/dealers/${req.userId}`, {
       method: "PATCH",
-      body: JSON.stringify({ is_dealer: newDealer, business_name: newDealer ? "New Dealer" : undefined }),
+      body: JSON.stringify({ is_dealer: req.newDealer }),
     });
     loadUsers();
-    if (expandedId === userId) expandUser(userId);
+    if (expandedId === req.userId) expandUser(req.userId);
+  };
+
+  const changeRole = (userId: string, newDealer: number) => {
+    setPendingRoleChange({ userId, newDealer });
   };
 
   const approve = async (id: string) => {
@@ -1242,6 +1277,24 @@ function DealersTab() {
           )}
         </div>
       )}
+
+      <ConfirmDrawer
+        open={!!pendingRoleChange}
+        title={
+          pendingRoleChange?.newDealer
+            ? "Promote to dealer?"
+            : "Demote to buyer?"
+        }
+        message={
+          pendingRoleChange?.newDealer
+            ? "They'll get access to /sell and be able to post items."
+            : "They'll lose access to /sell and any items they posted will still exist but they can't manage them."
+        }
+        confirmLabel={pendingRoleChange?.newDealer ? "Promote" : "Demote"}
+        destructive={!pendingRoleChange?.newDealer}
+        onConfirm={confirmRoleChange}
+        onCancel={() => setPendingRoleChange(null)}
+      />
     </>
   );
 }
@@ -1322,11 +1375,19 @@ function ItemsTab() {
     loadItems();
   };
 
-  const deleteItem = async (id: string) => {
-    if (!confirm("Soft-delete this item?")) return;
+  const [pendingDeleteItem, setPendingDeleteItem] = useState<string | null>(null);
+
+  const confirmDeleteItem = async () => {
+    const id = pendingDeleteItem;
+    if (!id) return;
+    setPendingDeleteItem(null);
     await apiFetch(`/api/admin/items/${id}`, { method: "DELETE" });
     setExpandedId(null);
     loadItems();
+  };
+
+  const deleteItem = (id: string) => {
+    setPendingDeleteItem(id);
   };
 
   return (
@@ -1511,6 +1572,16 @@ function ItemsTab() {
           </div>
         )}
       </div>
+
+      <ConfirmDrawer
+        open={!!pendingDeleteItem}
+        title="Soft-delete this item?"
+        message="The item will be hidden from listings. You can restore it from the item detail page."
+        confirmLabel="Delete"
+        destructive
+        onConfirm={confirmDeleteItem}
+        onCancel={() => setPendingDeleteItem(null)}
+      />
     </>
   );
 }
@@ -1545,6 +1616,7 @@ function SmsTab() {
   const [sendResult, setSendResult] = useState<{ sent: number; failed: number; total: number } | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [audienceCounts, setAudienceCounts] = useState<Record<string, number>>({});
+  const [smsError, setSmsError] = useState<string | null>(null);
 
   const loadCounts = useCallback(async (marketId: string) => {
     const audiences = ["all", "buyers", "dealers"] as const;
@@ -1598,14 +1670,15 @@ function SmsTab() {
       setSendResult(result);
       setMessage("");
       setConfirming(false);
-      // Reload blast history + counts
+      setSmsError(null);
       const bRes = await apiFetch("/api/admin/sms-blasts");
       if (bRes.ok) setBlasts(await bRes.json());
       loadCounts(market);
     } else {
-      const data = await res.json();
-      setSendResult({ sent: 0, failed: 0, total: 0 });
-      alert(data.error || "Failed to send");
+      const data = await res.json().catch(() => ({}));
+      setSendResult(null);
+      setSmsError(data.error || "Failed to send blast");
+      setTimeout(() => setSmsError(null), 5000);
     }
     setSending(false);
   };
@@ -1755,6 +1828,12 @@ function SmsTab() {
           </div>
         )}
       </div>
+
+      {smsError && (
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 bg-eb-red text-white px-4 py-2 text-eb-caption z-40 shadow-lg">
+          {smsError}
+        </div>
+      )}
     </>
   );
 }
@@ -1995,6 +2074,7 @@ function BlastTab() {
     test: boolean;
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [pendingBlastConfirm, setPendingBlastConfirm] = useState<{ testOnly: boolean } | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -2013,11 +2093,11 @@ function BlastTab() {
       setError("Message must contain {link} — that's where each dealer's personalized sign-in link will be inserted.");
       return;
     }
-    const confirmText = testOnly
-      ? "Send a TEST message to just your own phone?"
-      : `Send this text to ${preview?.total ?? 0} dealers? This cannot be undone.`;
-    if (!confirm(confirmText)) return;
+    setPendingBlastConfirm({ testOnly });
+  };
 
+  const doSend = async (testOnly: boolean) => {
+    setPendingBlastConfirm(null);
     setSending(true);
     setResult(null);
     try {
@@ -2163,6 +2243,24 @@ function BlastTab() {
           Failed to load recipients. Refresh to retry.
         </div>
       )}
+
+      <ConfirmDrawer
+        open={!!pendingBlastConfirm}
+        title={
+          pendingBlastConfirm?.testOnly
+            ? "Send test to your phone?"
+            : `Send to ${preview?.total ?? 0} dealers?`
+        }
+        message={
+          pendingBlastConfirm?.testOnly
+            ? "You'll get the text. Nobody else does."
+            : `This texts all ${preview?.total ?? 0} dealers + unredeemed invites. Can't be undone.`
+        }
+        confirmLabel={pendingBlastConfirm?.testOnly ? "Send test" : "Send blast"}
+        destructive={!pendingBlastConfirm?.testOnly}
+        onConfirm={() => doSend(!!pendingBlastConfirm?.testOnly)}
+        onCancel={() => setPendingBlastConfirm(null)}
+      />
     </div>
   );
 }
