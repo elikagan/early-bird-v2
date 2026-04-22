@@ -377,7 +377,7 @@ function SellContent() {
           </p>
           <div className="flex gap-2 items-stretch">
             <div className="flex-1 flex items-center py-3 px-4 bg-white border-2 border-eb-border text-eb-caption text-eb-text truncate">
-              earlybird.la/d/{user.dealer_id}
+              earlybird.la/d/{user.dealer_id}?market={market.id}
             </div>
             <button
               onClick={async () => {
