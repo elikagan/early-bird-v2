@@ -37,16 +37,18 @@ export function SignupDrawer({
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [sentPhone, setSentPhone] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   if (!open) return null;
 
   const handleSend = async () => {
     if (!phone || sending) return;
+    setError(null);
     setSending(true);
     const result = normalizeUSPhone(phone);
     if (!result.ok) {
       setSending(false);
-      alert(result.reason);
+      setError(result.reason);
       return;
     }
     const formatted = result.phone;
@@ -58,6 +60,13 @@ export function SignupDrawer({
     if (res.ok) {
       setSentPhone(formatted);
       setSent(true);
+      setError(null);
+    } else {
+      const data = await res.json().catch(() => ({}));
+      setError(
+        data.error ||
+          "Couldn't send the sign-in link — try again in a moment."
+      );
     }
   };
 
@@ -65,6 +74,7 @@ export function SignupDrawer({
     setSent(false);
     setPhone("");
     setSentPhone("");
+    setError(null);
   };
 
   return (
@@ -72,6 +82,26 @@ export function SignupDrawer({
       <div className="fixed inset-0 bg-black/40 z-40" onClick={onClose} />
       <div className="fixed bottom-0 left-0 right-0 max-w-[430px] mx-auto bg-white rounded-t-2xl border-t border-eb-border z-50 px-6 pt-3 pb-8 animate-slide-up">
         <div className="w-12 h-1 bg-eb-border rounded-full mx-auto mb-5" />
+
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close"
+          className="absolute top-3 right-3 w-11 h-11 flex items-center justify-center text-eb-muted hover:text-eb-black"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 20 20"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+          >
+            <line x1="4" y1="4" x2="16" y2="16" />
+            <line x1="16" y1="4" x2="4" y2="16" />
+          </svg>
+        </button>
 
         {sent ? (
           <div className="border-l-2 border-eb-pop pl-4 py-2">
@@ -98,7 +128,7 @@ export function SignupDrawer({
             </h3>
             <p className="text-eb-caption text-eb-muted mb-4 leading-relaxed">
               {subtext ||
-                "Enter your phone number to get a sign-in link. No passwords, no codes."}
+                "New here or returning, same thing — enter your phone and we'll text you a one-tap sign-in link. No passwords, no codes."}
             </p>
             <input
               type="tel"
@@ -106,9 +136,17 @@ export function SignupDrawer({
               placeholder="(213) 555-0134"
               className="eb-input"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(e) => {
+                setPhone(e.target.value);
+                if (error) setError(null);
+              }}
               autoFocus
             />
+            {error && (
+              <p className="text-eb-meta text-eb-red mt-2" role="alert">
+                {error}
+              </p>
+            )}
             <button
               className="eb-btn mt-5"
               onClick={handleSend}
