@@ -45,6 +45,7 @@ function SellContent() {
   const [boothNumber, setBoothNumber] = useState("");
   const [boothSaving, setBoothSaving] = useState(false);
   const [boothSaved, setBoothSaved] = useState(false);
+  const [boothSaveError, setBoothSaveError] = useState<string | null>(null);
   const [linkCopied, setLinkCopied] = useState(false);
   // Dealer's market subscriptions. null = not yet loaded, [] = loaded
   // and they haven't picked any (backfill case — banner shown).
@@ -120,7 +121,11 @@ function SellContent() {
   const saveBooth = useCallback(
     async (value: string) => {
       if (!market) return;
+      const previous = boothNumber;
+      // Optimistic update — revert below if the server rejects.
+      setBoothNumber(value);
       setBoothSaving(true);
+      setBoothSaveError(null);
       const res = await apiFetch("/api/booth", {
         method: "POST",
         body: JSON.stringify({
@@ -132,9 +137,13 @@ function SellContent() {
       if (res.ok) {
         setBoothSaved(true);
         setTimeout(() => setBoothSaved(false), 1500);
+      } else {
+        setBoothNumber(previous);
+        setBoothSaveError("Couldn't save booth number — try again.");
+        setTimeout(() => setBoothSaveError(null), 3500);
       }
     },
-    [market]
+    [market, boothNumber]
   );
 
   if (loading) {
@@ -208,6 +217,11 @@ function SellContent() {
           Market on the left, booth on the right.  */}
       {market && (
         <div className="px-5 py-4 border-b border-eb-border">
+          {boothSaveError && (
+            <p className="text-eb-meta text-eb-red mb-2" role="alert">
+              {boothSaveError}
+            </p>
+          )}
           <div className="flex items-start justify-between gap-5">
             <div className="flex-1 min-w-0">
               <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-0.5 truncate">
@@ -269,7 +283,9 @@ function SellContent() {
               value={boothEditDraft}
               onChange={(e) =>
                 setBoothEditDraft(
-                  e.target.value.replace(/[^a-zA-Z0-9]/g, "").slice(0, 10)
+                  // Allow letters, digits, dash, slash — real booth
+                  // numbers include formats like "A-12" or "B/4".
+                  e.target.value.replace(/[^a-zA-Z0-9\-/]/g, "").slice(0, 10)
                 )
               }
               placeholder="A12"
@@ -285,7 +301,6 @@ function SellContent() {
               </button>
               <button
                 onClick={async () => {
-                  setBoothNumber(boothEditDraft);
                   setShowBoothEditor(false);
                   await saveBooth(boothEditDraft);
                 }}
