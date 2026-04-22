@@ -343,6 +343,51 @@ export default function AccountPage() {
     return p ? p.enabled === 1 : false;
   };
 
+  // Market-reminder toggle — must be declared ABOVE any early return
+  // so React sees the same hook count on every render (React logs a
+  // hook-order violation otherwise).
+  const toggleMarketReminder = useCallback(
+    async (show: ShowName) => {
+      const key = marketReminderKey(show);
+      const current = (() => {
+        const p = profile?.notification_preferences?.find(
+          (n) => n.key === key
+        );
+        return p?.enabled === 1;
+      })();
+      const next = !current;
+
+      setProfile((p) => {
+        if (!p) return p;
+        const prefs = (p.notification_preferences || []).map((n) =>
+          n.key === key ? { ...n, enabled: next ? 1 : 0 } : n
+        );
+        if (!prefs.find((n) => n.key === key)) {
+          prefs.push({ key, enabled: next ? 1 : 0 });
+        }
+        return { ...p, notification_preferences: prefs };
+      });
+
+      const res = await apiFetch("/api/users/me", {
+        method: "PATCH",
+        body: JSON.stringify({
+          notification_preferences: [{ key, enabled: next }],
+        }),
+      });
+
+      if (!res.ok) {
+        setProfile((p) => {
+          if (!p) return p;
+          const prefs = (p.notification_preferences || []).map((n) =>
+            n.key === key ? { ...n, enabled: current ? 1 : 0 } : n
+          );
+          return { ...p, notification_preferences: prefs };
+        });
+      }
+    },
+    [profile]
+  );
+
   if (loading || !profile) {
     return (
       <>
@@ -387,48 +432,9 @@ export default function AccountPage() {
   // don't text someone unless they ticked the box here or elsewhere.
   const getMarketReminderPref = (show: ShowName): boolean => {
     const key = marketReminderKey(show);
-    const p = profile?.notification_preferences?.find((n) => n.key === key);
+    const p = profile.notification_preferences?.find((n) => n.key === key);
     return p?.enabled === 1;
   };
-  const toggleMarketReminder = useCallback(
-    async (show: ShowName) => {
-      const key = marketReminderKey(show);
-      const current = getMarketReminderPref(show);
-      const next = !current;
-
-      // Optimistic update
-      setProfile((p) => {
-        if (!p) return p;
-        const prefs = (p.notification_preferences || []).map((n) =>
-          n.key === key ? { ...n, enabled: next ? 1 : 0 } : n
-        );
-        if (!prefs.find((n) => n.key === key)) {
-          prefs.push({ key, enabled: next ? 1 : 0 });
-        }
-        return { ...p, notification_preferences: prefs };
-      });
-
-      const res = await apiFetch("/api/users/me", {
-        method: "PATCH",
-        body: JSON.stringify({
-          notification_preferences: [{ key, enabled: next }],
-        }),
-      });
-
-      if (!res.ok) {
-        setProfile((p) => {
-          if (!p) return p;
-          const prefs = (p.notification_preferences || []).map((n) =>
-            n.key === key ? { ...n, enabled: current ? 1 : 0 } : n
-          );
-          return { ...p, notification_preferences: prefs };
-        });
-      }
-    },
-    // profile dependency wraps the getPref closure — intentional.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [profile]
-  );
 
   return (
     <>
