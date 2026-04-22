@@ -238,3 +238,30 @@ Walked all 7 admin tabs at 375×812 and 1280×800. Screenshots + accessibility s
 - Admin API gating: hit /api/admin/* with no session / non-admin session.
 
 These are ticked as "needs walk" — the patterns above (mobile-width, no `md:` responsive, tab overflow) will recur on each of them and the fixes are shell-level, not per-tab. Once the shell is fixed, walking these becomes faster.
+
+---
+
+## Chunks C + D — Buyer and Anon walks (2026-04-22)
+
+### Dealer chunk (only /account bug worth noting)
+
+- **[function/major] `/account` throws a React hook-order violation at runtime.** `toggleMarketReminder` was declared via `useCallback` AFTER an `if (loading || !profile) return <spinner/>` early return — first render (profile null) skipped the hook, second render added it, React logged "change in the order of Hooks." **Fixed in commit `98b409b`.** Caught only by opening the page; static code reading missed it.
+
+### Buyer (/home, /buy, /watching, /onboarding)
+
+- **[function/major] Onboarding has TWO redundant market-reminder sections.** The first ("Shows I want updates about") renders `/api/markets` entries as checkboxes — which includes full market names like "Palm Springs Vintage Market" and "PCC Flea", not the canonical SHOWS list. Ticking them writes `market_follows` rows with `drop_alerts_enabled=true`, but the drop cron is retired (deleted in an earlier chunk), so these follows don't do anything. The second section ("Market Reminders") below is the real per-show opt-in using `notification_preferences.market_reminder_<slug>`. **Fix:** remove the first section, OR repurpose it to write to the per-show notification_preferences.
+
+- **[copy/minor] PCC Flea shows up in onboarding's shows list** but isn't in `src/lib/shows.ts` SHOWS const. That means dealer reminders for PCC Flea won't find recipients via `dealer_market_subscriptions`, and buyer reminders won't have a `market_reminder_pcc_flea` key. Either add PCC Flea to SHOWS, or drop the PCC Flea market from active rotation until the SHOWS list is updated.
+
+- `/home` (buyer): clean render, no bugs visible. My Chunk 2 `marketEyebrow` + `daysUntilLabel` fixes landed correctly.
+- `/buy?market=<id>`: clean render, 44px heart buttons present with outline/filled states.
+- `/watching` (empty state): "Nothing watched yet. Browse items, then tap the heart..." — my Chunk 2 copy fix landed.
+
+### Anon (/, /early/[id], /d/[id], /dealer)
+
+- **[design/minor] Heart inconsistency between /buy (anon) and /early/[id] (anon).** `/early/[marketId]` shows hearts to logged-out visitors and stores favorites in localStorage (anon-favorites.ts). `/buy?market=<id>` gates hearts behind `user &&` so anon visitors can't heart items there. **Fix:** either enable anon hearts on /buy with the same localStorage fallback, or hide hearts on /early for anon for consistency. The first option seems more user-friendly given anon browsing is encouraged.
+
+- `/` (landing): eyebrow updated to "PRE-SHOPPING NOW · 4.26 · DOWNTOWN LA", looks clean. Shows items, coming-up list, About + FAQ.
+- `/early/[marketId]`: renders cleanly, hearts with anon-favorites localStorage working, masthead shows "SIGN IN →".
+- `/d/[id]` (dealer share): renders cleanly, shows dealer business_name as hero, their items + "ALSO AT THIS SHOW" section.
+- `/dealer` (seller splash): clean marketing page. "FOR DEALERS" eyebrow, "Sell before sunrise." tagline, feature list.
