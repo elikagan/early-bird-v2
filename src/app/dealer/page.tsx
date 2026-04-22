@@ -155,9 +155,6 @@ export default function DealerLandingPage() {
       <SignupDrawer
         open={showSignIn}
         onClose={() => setShowSignIn(false)}
-        headline="Sign in"
-        subtext="Enter your phone number and we'll text a sign-in link. No password."
-        consentLabel="Text me when shopping opens"
       />
     </>
   );

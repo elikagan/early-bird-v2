@@ -91,8 +91,8 @@ export default function WatchingPage() {
         <SignupDrawer
           open={showSignup}
           onClose={() => setShowSignup(false)}
-          headline="Never miss a price drop"
-          subtext="Save items and get texted the instant a price changes."
+          headline="Sign in to save items"
+          subtext="We'll text a sign-in link. Once you're in, hearts on any listing save it to this watchlist and you'll get pinged on price changes."
         />
       </>
     );
