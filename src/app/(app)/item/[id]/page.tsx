@@ -356,15 +356,21 @@ export default function ItemDetailPage() {
 
   useEffect(() => {
     async function load() {
-      const res = await apiFetch(`/api/items/${id}`);
-      if (!res.ok) {
+      const [itemRes, meRes] = await Promise.all([
+        apiFetch(`/api/items/${id}`),
+        user ? apiFetch(`/api/items/${id}/me`) : Promise.resolve(null),
+      ]);
+      if (!itemRes.ok) {
         router.replace("/buy");
         return;
       }
-      const data: ItemDetail = await res.json();
+      const itemData: ItemDetail = await itemRes.json();
+      const meData: Partial<ItemDetail> =
+        meRes && meRes.ok ? await meRes.json() : {};
+      const data: ItemDetail = { ...itemData, ...meData };
       setItem(data);
-      // Authed users: heart state comes from the /api/items/[id]
-      // payload. Anons: check localStorage.
+      // Authed users: heart state comes from the /me payload. Anons:
+      // check localStorage.
       if (user) {
         setIsFav(data.is_favorited || false);
         setFavId(data.favorite_id || null);

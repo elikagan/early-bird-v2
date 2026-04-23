@@ -1,18 +1,20 @@
 import db from "@/lib/db";
 import { after } from "next/server";
-import { json, error } from "@/lib/api";
+import { json, cachedJson, error } from "@/lib/api";
 import { getSession } from "@/lib/auth";
 import { sendSMSWithLog } from "@/lib/sms";
 import { composeSoldReceipt, composePriceDropNotification } from "@/lib/sms-templates";
 import { shouldNotify } from "@/lib/notifications";
 import { formatPrice } from "@/lib/format";
 
+// Public, edge-cacheable view of an item. No getSession() here — that
+// would mark the route dynamic and block Vercel's edge cache.
+// Per-user bits (is_favorited, my_inquiry_status) live on /me.
 export async function GET(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const user = await getSession(request);
 
   const result = await db.execute({
     sql: `
@@ -44,22 +46,7 @@ export async function GET(
 
   const item = result.rows[0] as Record<string, unknown>;
 
-  // No pre-drop gate here — items are publicly browsable regardless of
-  // market status. The inquiry step is where we collect phone+name,
-  // not the view step.
-
-  // isOwner is still used below to skip view-count increments on the
-  // dealer's own views.
-  const isOwner = user?.id === item.dealer_user_id;
-
-  // Fan out the remaining reads in parallel. Previously sequential:
-  // photos → market → fav → my_inquiry → payment_methods = 5 round
-  // trips one after another. Each ~50-100ms on Supabase RPC, so item
-  // detail page was landing in 300-600ms minimum (worse on slow
-  // networks). All five are independent of each other once we have
-  // the item row, so Promise.all collapses them to a single round
-  // trip.
-  const [photosRes, marketRes, favRes, myInqRes, methodsRes] = await Promise.all([
+  const [photosRes, marketRes, methodsRes] = await Promise.all([
     db.execute({
       sql: `SELECT id, url, thumb_url, position FROM item_photos WHERE item_id = ? ORDER BY position`,
       args: [id],
@@ -68,18 +55,6 @@ export async function GET(
       sql: `SELECT id, name, location, drop_at, starts_at, status FROM markets WHERE id = ?`,
       args: [item.market_id as string],
     }),
-    user
-      ? db.execute({
-          sql: `SELECT id FROM favorites WHERE buyer_id = ? AND item_id = ?`,
-          args: [user.id, id],
-        })
-      : Promise.resolve({ rows: [] }),
-    user
-      ? db.execute({
-          sql: `SELECT status FROM inquiries WHERE buyer_id = ? AND item_id = ? ORDER BY created_at DESC LIMIT 1`,
-          args: [user.id, id],
-        })
-      : Promise.resolve({ rows: [] }),
     db.execute({
       sql: `SELECT method, enabled FROM dealer_payment_methods WHERE dealer_id = ?`,
       args: [item.dealer_ref as string],
@@ -90,30 +65,18 @@ export async function GET(
   (item as Record<string, unknown>).market = marketRes.rows[0] || null;
   (item as Record<string, unknown>).dealer_payment_methods = methodsRes.rows;
 
-  if (user) {
-    (item as Record<string, unknown>).is_favorited = favRes.rows.length > 0;
-    if (favRes.rows.length > 0) {
-      (item as Record<string, unknown>).favorite_id =
-        (favRes.rows[0] as Record<string, unknown>).id;
-    }
-    (item as Record<string, unknown>).my_inquiry_status =
-      myInqRes.rows.length > 0
-        ? (myInqRes.rows[0] as Record<string, unknown>).status
-        : null;
-  }
+  // Fire-and-forget view-count increment. Can't gate on is-owner here
+  // without calling getSession() (which would kill the cache), so every
+  // view counts including the dealer's own. Acceptable: dealer views
+  // are a rounding error and the counter was already best-effort.
+  db.execute({
+    sql: `UPDATE items SET view_count = view_count + 1 WHERE id = ?`,
+    args: [id],
+  }).catch(() => {});
+  (item as Record<string, unknown>).view_count =
+    ((item.view_count as number) || 0) + 1;
 
-  // Increment view count (non-owner views only, fire-and-forget)
-  if (!isOwner) {
-    db.execute({
-      sql: `UPDATE items SET view_count = view_count + 1 WHERE id = ?`,
-      args: [id],
-    }).catch(() => {}); // non-critical, don't block response
-    // Return incremented count in response
-    (item as Record<string, unknown>).view_count =
-      ((item.view_count as number) || 0) + 1;
-  }
-
-  return json(item);
+  return cachedJson(item);
 }
 
 export async function PATCH(
