@@ -1,4 +1,7 @@
 import db from "@/lib/db";
+import { headers } from "next/headers";
+import { getInitialUser } from "@/lib/auth";
+import { logPageView } from "@/lib/track";
 import HomeView, { type Market, type PreviewItem } from "./home-view";
 
 const MAX_PROMO_ITEMS = 8;
@@ -11,6 +14,13 @@ const MAX_PROMO_ITEMS = 8;
  * don't yet read cookies server-side here.
  */
 export default async function HomePage() {
+  const [me, h] = await Promise.all([getInitialUser(), headers()]);
+  logPageView({
+    path: "/home",
+    referer: h.get("referer"),
+    userAgent: h.get("user-agent"),
+    userId: me?.id ?? null,
+  });
   const marketsRes = await db.execute({
     sql: `
       SELECT

@@ -1,5 +1,8 @@
 import db from "@/lib/db";
 import { redirect, notFound } from "next/navigation";
+import { headers } from "next/headers";
+import { getInitialUser } from "@/lib/auth";
+import { logPageView } from "@/lib/track";
 import BuyView, { type Market, type Item } from "./buy-view";
 
 const PAGE_SIZE = 30;
@@ -15,6 +18,13 @@ export default async function BuyPage({
   searchParams: Promise<{ market?: string }>;
 }) {
   const { market: marketId } = await searchParams;
+  const [me, h] = await Promise.all([getInitialUser(), headers()]);
+  logPageView({
+    path: marketId ? `/buy?market=${marketId}` : "/buy",
+    referer: h.get("referer"),
+    userAgent: h.get("user-agent"),
+    userId: me?.id ?? null,
+  });
   if (!marketId) redirect("/home");
 
   const [marketRes, itemsRes] = await Promise.all([

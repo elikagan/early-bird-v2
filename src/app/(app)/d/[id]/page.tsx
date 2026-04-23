@@ -1,5 +1,8 @@
 import db from "@/lib/db";
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
+import { getInitialUser } from "@/lib/auth";
+import { logPageView } from "@/lib/track";
 import DealerView, {
   type DealerProfile,
   type Market,
@@ -22,6 +25,13 @@ export default async function DealerPage({
 }) {
   const { id: dealerId } = await params;
   const { market: queryMarket } = await searchParams;
+  const [me, h] = await Promise.all([getInitialUser(), headers()]);
+  logPageView({
+    path: `/d/${dealerId}`,
+    referer: h.get("referer"),
+    userAgent: h.get("user-agent"),
+    userId: me?.id ?? null,
+  });
 
   // Resolve marketId: explicit query wins, otherwise the earliest upcoming
   // non-archived market (matches the prior client-side behavior).

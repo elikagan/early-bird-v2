@@ -1,5 +1,8 @@
 import db from "@/lib/db";
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
+import { getInitialUser } from "@/lib/auth";
+import { logPageView } from "@/lib/track";
 import ItemView, { type ItemDetail } from "./item-view";
 
 /**
@@ -15,6 +18,13 @@ export default async function ItemPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const [me, h] = await Promise.all([getInitialUser(), headers()]);
+  logPageView({
+    path: `/item/${id}`,
+    referer: h.get("referer"),
+    userAgent: h.get("user-agent"),
+    userId: me?.id ?? null,
+  });
 
   const result = await db.execute({
     sql: `

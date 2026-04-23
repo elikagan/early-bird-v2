@@ -1,5 +1,8 @@
 import db from "@/lib/db";
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
+import { getInitialUser } from "@/lib/auth";
+import { logPageView } from "@/lib/track";
 import EarlyView, { type Market, type Item } from "./early-view";
 
 const PAGE_SIZE = 30;
@@ -17,6 +20,13 @@ export default async function EarlyPage({
   params: Promise<{ marketId: string }>;
 }) {
   const { marketId } = await params;
+  const [me, h] = await Promise.all([getInitialUser(), headers()]);
+  logPageView({
+    path: `/early/${marketId}`,
+    referer: h.get("referer"),
+    userAgent: h.get("user-agent"),
+    userId: me?.id ?? null,
+  });
 
   const [marketRes, itemsRes] = await Promise.all([
     db.execute({

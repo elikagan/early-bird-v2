@@ -13,7 +13,7 @@ import { SHOWS } from "@/lib/shows";
 
 /* ─── Types ─── */
 
-type Tab = "dashboard" | "markets" | "dealers" | "items" | "blast" | "sms" | "health";
+type Tab = "dashboard" | "activity" | "markets" | "dealers" | "items" | "blast" | "sms" | "health";
 
 interface DashboardData {
   dealer_count: number;
@@ -166,7 +166,7 @@ function AdminPage() {
           flex-1 + min-w-0 crammed 7 labels into 375px, forcing
           text to overlap ("DASHBOARDMARKETS"). */}
       <div className="flex border-b-2 border-eb-black overflow-x-auto">
-        {(["dashboard", "markets", "dealers", "items", "blast", "sms", "health"] as Tab[]).map((t) => (
+        {(["dashboard", "activity", "markets", "dealers", "items", "blast", "sms", "health"] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -184,6 +184,7 @@ function AdminPage() {
       {/* Tab content */}
       <main className="pb-32">
         {activeTab === "dashboard" && <DashboardTab setTab={setTab} />}
+        {activeTab === "activity" && <ActivityTab />}
         {activeTab === "markets" && <MarketsTab />}
         {activeTab === "dealers" && <DealersTab />}
         {activeTab === "items" && <ItemsTab />}
@@ -341,6 +342,150 @@ function CopyShareLink({ marketId }: { marketId: string }) {
     >
       {copied ? "\u2713 Copied" : "Copy Share Link"}
     </button>
+  );
+}
+
+interface ActivityData {
+  signups: { day: string; is_dealer: number; count: number }[];
+  inquiries: { day: string; count: number }[];
+  items: { day: string; count: number }[];
+  views: { day: string; total: number; signed_in: number }[];
+}
+
+function ActivityTab() {
+  const [data, setData] = useState<ActivityData | null>(null);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    void (async () => {
+      const res = await apiFetch("/api/admin/activity");
+      if (res.ok) setData(await res.json());
+      setLoading(false);
+    })();
+  }, []);
+
+  if (loading) return <div className="flex justify-center py-12"><span className="eb-spinner" /></div>;
+  if (!data) return <div className="eb-empty"><p>Couldn{"\u2019"}t load activity.</p></div>;
+
+  // Build last-7-days row list in LA time. Pad in days with 0 so gaps
+  // show as zero instead of being missing.
+  const fmtLA = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Los_Angeles",
+    year: "numeric", month: "2-digit", day: "2-digit",
+  });
+  const today = new Date();
+  const days: string[] = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(today);
+    d.setUTCDate(d.getUTCDate() - i);
+    days.push(fmtLA.format(d));
+  }
+  const rowFor = (day: string) => {
+    const signupRows = data.signups.filter((r) => r.day === day);
+    const newBuyers = signupRows
+      .filter((r) => Number(r.is_dealer) === 0)
+      .reduce((s, r) => s + Number(r.count), 0);
+    const newDealers = signupRows
+      .filter((r) => Number(r.is_dealer) === 1)
+      .reduce((s, r) => s + Number(r.count), 0);
+    const inq = data.inquiries.find((r) => r.day === day)?.count ?? 0;
+    const items = data.items.find((r) => r.day === day)?.count ?? 0;
+    const views = data.views.find((r) => r.day === day)?.total ?? 0;
+    return { day, newBuyers, newDealers, inq, items, views };
+  };
+  const rows = days.map(rowFor);
+  const today0 = rows[0];
+  const y0 = rows[1];
+
+  const labelFor = (day: string, idx: number) => {
+    if (idx === 0) return "Today";
+    if (idx === 1) return "Yesterday";
+    const d = new Date(day + "T12:00:00Z");
+    return d.toLocaleDateString("en-US", {
+      weekday: "short", month: "short", day: "numeric",
+      timeZone: "America/Los_Angeles",
+    });
+  };
+
+  const delta = (a: number, b: number) => {
+    if (a === b) return { txt: "=", cls: "text-eb-muted" };
+    const up = a > b;
+    return { txt: `${up ? "+" : "-"}${Math.abs(a - b)}`, cls: up ? "text-eb-green" : "text-eb-red" };
+  };
+
+  return (
+    <section className="px-5 py-6 space-y-8">
+      {/* Today vs yesterday */}
+      <div>
+        <h2 className="text-eb-title font-bold uppercase tracking-wider text-eb-black mb-3">
+          Today vs. yesterday
+        </h2>
+        <div className="grid grid-cols-3 gap-2">
+          <DeltaCard label="Page views" today={today0.views} delta={delta(today0.views, y0.views)} />
+          <DeltaCard label="New buyers" today={today0.newBuyers} delta={delta(today0.newBuyers, y0.newBuyers)} />
+          <DeltaCard label="New dealers" today={today0.newDealers} delta={delta(today0.newDealers, y0.newDealers)} />
+          <DeltaCard label="Inquiries" today={today0.inq} delta={delta(today0.inq, y0.inq)} />
+          <DeltaCard label="Items posted" today={today0.items} delta={delta(today0.items, y0.items)} />
+        </div>
+        <p className="text-eb-micro text-eb-muted mt-2">
+          All counts in LA time. Page views only track public pages and
+          skip crawlers by user-agent.
+        </p>
+      </div>
+
+      {/* 7-day table */}
+      <div>
+        <h2 className="text-eb-title font-bold uppercase tracking-wider text-eb-black mb-3">
+          Last 7 days
+        </h2>
+        <div className="border border-eb-border">
+          <div className="grid grid-cols-6 gap-2 px-3 py-2 border-b border-eb-border text-eb-micro uppercase tracking-wider text-eb-muted">
+            <div>Day</div>
+            <div className="text-right">Views</div>
+            <div className="text-right">Buyers</div>
+            <div className="text-right">Dealers</div>
+            <div className="text-right">Inq.</div>
+            <div className="text-right">Items</div>
+          </div>
+          {rows.map((r, i) => (
+            <div
+              key={r.day}
+              className="grid grid-cols-6 gap-2 px-3 py-2 border-b border-eb-border last:border-b-0 text-eb-meta text-eb-text tabular-nums"
+            >
+              <div className="truncate">{labelFor(r.day, i)}</div>
+              <div className="text-right">{r.views}</div>
+              <div className="text-right">{r.newBuyers}</div>
+              <div className="text-right">{r.newDealers}</div>
+              <div className="text-right">{r.inq}</div>
+              <div className="text-right">{r.items}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function DeltaCard({
+  label,
+  today,
+  delta,
+}: {
+  label: string;
+  today: number;
+  delta: { txt: string; cls: string };
+}) {
+  return (
+    <div className="border-2 border-eb-border px-3 py-3">
+      <div className="text-eb-micro uppercase tracking-wider text-eb-muted">
+        {label}
+      </div>
+      <div className="text-eb-display font-bold text-eb-black leading-tight mt-1 tabular-nums">
+        {today}
+      </div>
+      <div className={`text-eb-micro font-bold uppercase tracking-wider tabular-nums ${delta.cls}`}>
+        {delta.txt} vs. yesterday
+      </div>
+    </div>
   );
 }
 
@@ -759,7 +904,7 @@ function DealersTab() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [section, setSection] = useState<"users" | "applications" | "invite">("users");
+  const [section, setSection] = useState<"dealers" | "buyers" | "applications" | "invite">("dealers");
 
   // Create user form
   const [createPhone, setCreatePhone] = useState("");
@@ -800,7 +945,7 @@ function DealersTab() {
   };
 
   useEffect(() => {
-    if (section === "users") {
+    if (section === "dealers" || section === "buyers") {
       void (async () => {
         setLoading(true);
         const params = search ? `?search=${encodeURIComponent(search)}` : "";
@@ -921,7 +1066,7 @@ function DealersTab() {
     <>
       {/* Sub-nav */}
       <div className="flex border-b border-eb-border">
-        {(["users", "applications", "invite"] as const).map((s) => (
+        {(["dealers", "buyers", "applications", "invite"] as const).map((s) => (
           <button
             key={s}
             onClick={() => setSection(s)}
@@ -929,12 +1074,12 @@ function DealersTab() {
               section === s ? "text-eb-black border-b-2 border-eb-black" : "text-eb-muted"
             }`}
           >
-            {s === "users" ? "All Users" : s === "applications" ? "Applications" : "Invite"}
+            {s}
           </button>
         ))}
       </div>
 
-      {section === "users" && (
+      {(section === "dealers" || section === "buyers") && (
         <>
           {/* Create user form */}
           <div className="px-5 py-4 border-b border-eb-border">
@@ -1008,17 +1153,22 @@ function DealersTab() {
           </div>
 
           <div className="px-5 pb-4">
-            {loading ? (
-              <div className="flex justify-center py-8"><span className="eb-spinner" /></div>
-            ) : users.length === 0 ? (
-              <div className="eb-empty"><p>No users found</p></div>
-            ) : (
+            {(() => {
+              const wantDealer = section === "dealers" ? 1 : 0;
+              const filtered = users.filter((u) => Number(u.is_dealer) === wantDealer);
+              if (loading) {
+                return <div className="flex justify-center py-8"><span className="eb-spinner" /></div>;
+              }
+              if (filtered.length === 0) {
+                return <div className="eb-empty"><p>No {section} yet</p></div>;
+              }
+              return (
               <div className="space-y-2">
-                {users.map((u) => (
+                {filtered.map((u) => (
                   <div key={u.id} className="border-2 border-eb-border">
                     <button onClick={() => expandUser(u.id)} className="w-full text-left p-3">
-                      <div className="flex justify-between items-start">
-                        <div>
+                      <div className="flex justify-between items-start gap-2">
+                        <div className="min-w-0">
                           <span className="text-eb-caption font-bold text-eb-black">
                             {u.display_name || "No name"}
                           </span>
@@ -1026,10 +1176,8 @@ function DealersTab() {
                             <span className="text-eb-micro text-eb-muted ml-2">{u.business_name}</span>
                           )}
                         </div>
-                        <span className={`text-eb-micro font-bold uppercase px-1.5 py-0.5 ${
-                          u.is_dealer ? "text-eb-pop bg-eb-pop-light" : "text-eb-muted bg-eb-cream"
-                        }`}>
-                          {u.is_dealer ? "Dealer" : "Buyer"}
+                        <span className="text-eb-micro text-eb-muted shrink-0 tabular-nums">
+                          {timeAgo(u.created_at)}
                         </span>
                       </div>
                       <div className="text-eb-micro text-eb-muted mt-1">
@@ -1178,7 +1326,8 @@ function DealersTab() {
                   </div>
                 ))}
               </div>
-            )}
+              );
+            })()}
           </div>
         </>
       )}

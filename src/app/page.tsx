@@ -1,6 +1,8 @@
 import db from "@/lib/db";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { getInitialUser } from "@/lib/auth";
+import { logPageView } from "@/lib/track";
 import LandingView, { type Market, type PreviewItem } from "./landing-view";
 
 const MAX_PROMO_ITEMS = 8;
@@ -15,6 +17,13 @@ const MAX_PROMO_ITEMS = 8;
  */
 export default async function HomePage() {
   const me = await getInitialUser();
+  const h = await headers();
+  logPageView({
+    path: "/",
+    referer: h.get("referer"),
+    userAgent: h.get("user-agent"),
+    userId: me?.id ?? null,
+  });
   if (me) redirect("/home");
 
   const marketsRes = await db.execute({
