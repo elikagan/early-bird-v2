@@ -39,12 +39,6 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  /* When a drawer is open we lock body scroll so the page behind
-     can't scroll. Toggled via <body class="eb-scroll-lock"> from
-     the drawer component's useEffect. */
-  body.eb-scroll-lock {
-    overflow: hidden;
-  }
 }
 
 @layer components {

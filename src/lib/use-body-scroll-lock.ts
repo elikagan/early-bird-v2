@@ -3,51 +3,41 @@
 import { useEffect } from "react";
 
 /**
- * Lock document body scrolling while `locked` is true.
+ * Lock document scrolling while `locked` is true.
  *
- * Standard approach (overflow:hidden on body) is ignored by iOS Safari
- * in many cases, so we also pin body position:fixed at the current
- * scrollY and restore it on unlock. The user isn't thrown to the top
- * of the page when a drawer closes.
+ * Uses overflow:hidden + overscroll-behavior:none on <html>. This is
+ * enough on modern iOS Safari and doesn't trigger the paint-layer
+ * shift that position:fixed on body does — that shift blocks the main
+ * thread for 1-3s on tall scrolled pages and feels like a frozen drawer.
  *
  * Supports nested / stacked locks via a module-level counter: only the
- * outermost lock touches the body; subsequent locks no-op until the
+ * outermost lock touches the document; subsequent locks no-op until the
  * first one releases.
  */
 
 let lockCount = 0;
-let savedScrollY = 0;
 let savedOverflow = "";
-let savedPosition = "";
-let savedTop = "";
-let savedWidth = "";
+let savedOverscroll = "";
 
 export function useBodyScrollLock(locked: boolean): void {
   useEffect(() => {
     if (!locked) return;
 
     if (lockCount === 0) {
-      savedScrollY = window.scrollY;
-      savedOverflow = document.body.style.overflow;
-      savedPosition = document.body.style.position;
-      savedTop = document.body.style.top;
-      savedWidth = document.body.style.width;
-
-      document.body.style.overflow = "hidden";
-      document.body.style.position = "fixed";
-      document.body.style.top = `-${savedScrollY}px`;
-      document.body.style.width = "100%";
+      const html = document.documentElement;
+      savedOverflow = html.style.overflow;
+      savedOverscroll = html.style.overscrollBehavior;
+      html.style.overflow = "hidden";
+      html.style.overscrollBehavior = "none";
     }
     lockCount++;
 
     return () => {
       lockCount--;
       if (lockCount === 0) {
-        document.body.style.overflow = savedOverflow;
-        document.body.style.position = savedPosition;
-        document.body.style.top = savedTop;
-        document.body.style.width = savedWidth;
-        window.scrollTo(0, savedScrollY);
+        const html = document.documentElement;
+        html.style.overflow = savedOverflow;
+        html.style.overscrollBehavior = savedOverscroll;
       }
     };
   }, [locked]);
