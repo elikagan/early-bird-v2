@@ -314,6 +314,20 @@
     vertical-align: middle;
     margin-left: 3px;
   }
+  /* Inquiry pill on the sell page grid. Brightest thing on the card
+     so a dealer scrolling sees where the action is. Pairs with the
+     matching eb-grid-card-inquiry border below. */
+  .eb-tag-inquiry {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    background: var(--eb-pop);
+    color: #fff;
+    border-radius: 2px;
+  }
   .eb-tag-sold {
     display: inline-block;
     font-size: 10px;
@@ -337,6 +351,14 @@
   .eb-dot-green  { background: var(--eb-green); }
   .eb-dot-amber  { background: var(--eb-amber); }
   .eb-dot-red    { background: var(--eb-red); }
+
+  /* Dealer sell-grid card that has open inquiries. The pill inside
+     already pops, but a subtle orange photo frame makes the whole
+     card legible at a scroll-past glance. */
+  .eb-grid-card-inquiry .eb-photo {
+    outline: 3px solid var(--eb-pop);
+    outline-offset: -3px;
+  }
 
   /* ---- Sold state ---- */
   .eb-sold .eb-photo {
@@ -627,6 +649,44 @@
     text-transform: uppercase;
     letter-spacing: 0.1em;
     margin-top: 2px;
+  }
+
+  /* Stat-tile variants. The dealer's sell page has one actionable
+     tile (Inquiries); the rest are passive. We reset the button
+     defaults on the actionable one so it still looks like a tile. */
+  .eb-stat-inert {
+    cursor: default;
+  }
+  .eb-stat-button {
+    background: none;
+    border: none;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+  }
+  .eb-stat-button:disabled {
+    cursor: default;
+  }
+  /* Urgent: there ARE open inquiries and the filter is NOT on. Bring
+     the eye to this tile via a colored background + pop-colored
+     number so the dealer sees where the action is. */
+  .eb-stat-urgent {
+    background: var(--eb-pop-bg);
+  }
+  .eb-stat-urgent .eb-stat-num,
+  .eb-stat-urgent .eb-stat-label {
+    color: var(--eb-pop);
+  }
+  /* Active: the filter is on. Full orange background, white text, so
+     the tile reads as "pressed" and matches the orange inquiry pills
+     that are now the only items in the grid. */
+  .eb-stat-active,
+  .eb-stat-active.eb-stat-urgent {
+    background: var(--eb-pop);
+  }
+  .eb-stat-active .eb-stat-num,
+  .eb-stat-active .eb-stat-label {
+    color: #fff;
   }
 
   /* ---- Toggle switch ---- */

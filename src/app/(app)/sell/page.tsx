@@ -56,6 +56,9 @@ function SellContent() {
 
   useBodyScrollLock(showSwitcher || showBoothEditor);
   const [boothEditDraft, setBoothEditDraft] = useState("");
+  // When true, the items grid is filtered to only items with an open
+  // inquiry. Toggled by tapping the Inquiries stat tile.
+  const [inquiryFilter, setInquiryFilter] = useState(false);
 
   const marketId = searchParams.get("market");
 
@@ -149,29 +152,49 @@ function SellContent() {
     (s, i) => s + (i.inquiry_count || 0),
     0
   );
+  // Filter honors sold vs open — we count sold inquiries in the stat
+  // header but hide sold items from the filtered grid, since the
+  // filter's job is "where do I need to act?" and a sold item doesn't
+  // need action.
+  const visibleItems = inquiryFilter
+    ? items.filter((i) => i.status !== "sold" && i.inquiry_count > 0)
+    : items;
 
   return (
     <>
       <Masthead right={null} />
 
-      {/* Stats */}
+      {/* Stats. The Inquiries tile is the only one that's actually
+          actionable — tapping it filters the grid to just items with
+          open inquiries. When there are inquiries we make the tile
+          orange so the dealer's eye finds it first. */}
       <div className="eb-stats border-b border-eb-border">
-        <div className="eb-stat">
+        <div className="eb-stat eb-stat-inert">
           <div className="eb-stat-num">{items.length}</div>
           <div className="eb-stat-label">Listed</div>
         </div>
-        <div className="eb-stat">
+        <div className="eb-stat eb-stat-inert">
           <div className="eb-stat-num">{totalViews}</div>
           <div className="eb-stat-label">Views</div>
         </div>
-        <div className="eb-stat">
+        <div className="eb-stat eb-stat-inert">
           <div className="eb-stat-num">{totalWatchers}</div>
           <div className="eb-stat-label">Watchers</div>
         </div>
-        <div className="eb-stat">
+        <button
+          type="button"
+          onClick={() => totalInquiries > 0 && setInquiryFilter((v) => !v)}
+          disabled={totalInquiries === 0}
+          aria-pressed={inquiryFilter}
+          className={`eb-stat eb-stat-button ${
+            totalInquiries > 0 ? "eb-stat-urgent" : ""
+          } ${inquiryFilter ? "eb-stat-active" : ""}`}
+        >
           <div className="eb-stat-num">{totalInquiries}</div>
-          <div className="eb-stat-label">Inquiries</div>
-        </div>
+          <div className="eb-stat-label">
+            {inquiryFilter ? "Showing" : "Inquiries"}
+          </div>
+        </button>
       </div>
 
       {/* Previously: "FINISH SETUP — Tell us which shows you sell at"
@@ -392,16 +415,33 @@ function SellContent() {
       {/* Items grid */}
       <main className="pb-32">
         {items.length > 0 ? (
-          <div className="eb-grid mt-3">
-            {items.map((item) => {
+          <>
+            {inquiryFilter && (
+              <div className="px-5 pt-3 pb-1 flex items-center justify-between gap-3">
+                <div className="text-eb-meta text-eb-muted">
+                  Showing {visibleItems.length} of {items.length} — items with
+                  open inquiries
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setInquiryFilter(false)}
+                  className="text-eb-meta text-eb-pop font-bold uppercase tracking-wider"
+                >
+                  Show all
+                </button>
+              </div>
+            )}
+            <div className="eb-grid mt-3">
+            {visibleItems.map((item) => {
               const isSold = item.status === "sold";
               const isHeld = item.status === "hold";
               const isDeleted = item.status === "deleted";
+              const hasInquiries = !isSold && item.inquiry_count > 0;
               return (
                 <Link
                   key={item.id}
                   href={`/item/${item.id}`}
-                  className={`eb-grid-card${isSold || isDeleted ? " eb-sold" : ""}`}
+                  className={`eb-grid-card${isSold || isDeleted ? " eb-sold" : ""}${hasInquiries ? " eb-grid-card-inquiry" : ""}`}
                 >
                   {item.photo_url ? (
                     <Image
@@ -425,18 +465,20 @@ function SellContent() {
                         </span>
                       )}
                     </div>
+                    {hasInquiries && (
+                      <div className="mt-2">
+                        <span className="eb-tag-inquiry">
+                          {item.inquiry_count}{" "}
+                          {item.inquiry_count === 1 ? "Inquiry" : "Inquiries"}{" "}
+                          {"\u2192"}
+                        </span>
+                      </div>
+                    )}
                     {!isSold &&
-                      (item.watcher_count > 0 ||
-                        item.inquiry_count > 0) && (
+                      !hasInquiries &&
+                      item.watcher_count > 0 && (
                         <div className="text-eb-meta text-eb-muted mt-1 truncate">
-                          {[
-                            item.watcher_count > 0 &&
-                              `${item.watcher_count} watchers`,
-                            item.inquiry_count > 0 &&
-                              `${item.inquiry_count} ${item.inquiry_count === 1 ? "inquiry" : "inquiries"}`,
-                          ]
-                            .filter(Boolean)
-                            .join(" · ")}
+                          {item.watcher_count} watchers
                         </div>
                       )}
                     {isSold && (
@@ -458,7 +500,8 @@ function SellContent() {
                 </Link>
               );
             })}
-          </div>
+            </div>
+          </>
         ) : (
           <div className="eb-empty">
             <div className="eb-icon">○</div>
