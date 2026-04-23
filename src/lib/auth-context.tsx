@@ -38,22 +38,31 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
   user: null,
   token: null,
-  loading: true,
+  loading: false,
   login: () => {},
   logout: async () => {},
   refreshUser: async () => {},
 });
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  // Initialize token from localStorage synchronously to avoid flash-redirect
-  const [user, setUser] = useState<User | null>(null);
+export function AuthProvider({
+  children,
+  initialUser = null,
+}: {
+  children: ReactNode;
+  initialUser?: User | null;
+}) {
+  // Root layout reads the session cookie server-side and passes the
+  // resolved user down. When present we skip the "loading" state —
+  // that gate previously blanked every page for ~150-300ms while we
+  // waited on /api/auth/me to respond.
+  const [user, setUser] = useState<User | null>(initialUser);
   const [token, setToken] = useState<string | null>(() => {
     if (typeof window !== "undefined") {
       return localStorage.getItem("eb_token");
     }
     return null;
   });
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const logout = useCallback(async () => {
     // Clear cookie via API (httpOnly cookie can't be cleared client-side)

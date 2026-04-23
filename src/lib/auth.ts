@@ -1,4 +1,5 @@
 import db from "./db";
+import { cookies } from "next/headers";
 
 export interface SessionUser {
   id: string;
@@ -11,6 +12,10 @@ export interface SessionUser {
   dealer_id: string | null;
   business_name: string | null;
   instagram_handle: string | null;
+}
+
+export interface InitialUser extends SessionUser {
+  early_access_market_ids: string[];
 }
 
 /** Session cookie config — single source of truth */
@@ -79,4 +84,43 @@ export async function getSession(
 
   if (result.rows.length === 0) return null;
   return result.rows[0] as unknown as SessionUser;
+}
+
+/**
+ * Resolve the initial user for the root layout (Server Component).
+ * Reads the session cookie via next/headers and joins in early-access
+ * grants so the AuthProvider can initialize with a real user and
+ * skip the client-side /api/auth/me round-trip that was blocking
+ * first paint across the whole app.
+ */
+export async function getInitialUser(): Promise<InitialUser | null> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+  if (!token) return null;
+
+  const sessionRes = await db.execute({
+    sql: `
+      SELECT
+        u.id, u.phone, u.first_name, u.last_name,
+        u.display_name, u.avatar_url, u.is_dealer,
+        d.id as dealer_id, d.business_name, d.instagram_handle
+      FROM sessions s
+      JOIN users u ON u.id = s.user_id
+      LEFT JOIN dealers d ON d.user_id = u.id
+      WHERE s.token = ? AND s.expires_at > now()
+    `,
+    args: [token],
+  });
+  if (sessionRes.rows.length === 0) return null;
+  const user = sessionRes.rows[0] as unknown as SessionUser;
+
+  const grantsRes = await db.execute({
+    sql: `SELECT market_id FROM buyer_market_early_access WHERE user_id = ?`,
+    args: [user.id],
+  });
+  const early_access_market_ids = grantsRes.rows.map(
+    (r) => r.market_id as string
+  );
+
+  return { ...user, early_access_market_ids };
 }
