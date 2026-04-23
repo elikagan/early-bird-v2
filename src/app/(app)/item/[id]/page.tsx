@@ -1601,7 +1601,7 @@ export default function ItemDetailPage() {
                   <button
                     type="button"
                     aria-label="Close"
-                    className="w-11 h-11 flex items-center justify-center text-eb-body text-eb-muted shrink-0"
+                    className="w-11 h-11 flex items-center justify-center text-2xl text-eb-muted shrink-0"
                     onClick={() => {
                       setShowInquiry(false);
                       setAnonSent(false);
@@ -1774,7 +1774,7 @@ export default function ItemDetailPage() {
           <div className="fixed bottom-0 left-0 right-0 max-w-[430px] mx-auto bg-white rounded-t-2xl border-t border-eb-border z-50 px-5 pt-3 pb-6">
             <div className="w-12 h-1 bg-eb-border rounded-full mx-auto mb-4" />
             <button
-              className="absolute top-3 right-4 text-eb-body text-eb-muted"
+              className="absolute top-1 right-1 w-11 h-11 flex items-center justify-center text-2xl text-eb-muted"
               aria-label="Close"
               onClick={() => setConfirmInquiry(null)}
             >
@@ -1853,7 +1853,7 @@ export default function ItemDetailPage() {
           <div className="fixed bottom-0 left-0 right-0 max-w-[430px] mx-auto bg-white rounded-t-2xl border-t border-eb-border z-50 px-5 pt-3 pb-6">
             <div className="w-12 h-1 bg-eb-border rounded-full mx-auto mb-4" />
             <button
-              className="absolute top-3 right-4 text-eb-body text-eb-muted"
+              className="absolute top-1 right-1 w-11 h-11 flex items-center justify-center text-2xl text-eb-muted"
               aria-label="Close"
               onClick={() => setConfirmWalkupSold(false)}
             >

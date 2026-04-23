@@ -66,8 +66,8 @@ export function DealerApplyDrawer({ open, onClose, onSubmitted }: Props) {
           className="absolute top-3 right-3 w-11 h-11 flex items-center justify-center text-eb-muted hover:text-eb-black"
         >
           <svg
-            width="18"
-            height="18"
+            width="24"
+            height="24"
             viewBox="0 0 20 20"
             fill="none"
             stroke="currentColor"
