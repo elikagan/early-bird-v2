@@ -48,7 +48,11 @@ export async function GET(request: Request) {
     sql += ` AND i.status != 'deleted'`;
   }
 
-  const limit = Math.min(Math.max(1, Number(url.searchParams.get("limit")) || 50), 200);
+  // Default raised from 50 to 200 (cap unchanged). /early/[id] and /buy
+  // call this without ?limit, and Downtown Modernism hit 52 items —
+  // the old default silently clipped the last 2. 200 covers every
+  // current market and adds headroom before real pagination is needed.
+  const limit = Math.min(Math.max(1, Number(url.searchParams.get("limit")) || 200), 200);
   const offset = Math.max(0, Number(url.searchParams.get("offset")) || 0);
 
   sql += ` ORDER BY i.created_at DESC LIMIT ${limit} OFFSET ${offset}`;
