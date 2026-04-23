@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -15,6 +15,7 @@ import {
 import { BottomNav, adjustNavCount } from "@/components/bottom-nav";
 import { Masthead } from "@/components/masthead";
 import { NotFoundScreen } from "@/components/not-found-screen";
+import { useInfiniteItems } from "@/lib/use-infinite-items";
 
 interface Item {
   id: string;
@@ -84,50 +85,71 @@ export default function EarlyAccessPage() {
   const marketId = params.marketId as string;
 
   const [market, setMarket] = useState<Market | null>(null);
-  const [items, setItems] = useState<Item[]>([]);
   const [favMap, setFavMap] = useState<Map<string, string>>(new Map());
   const [anonFavs, setAnonFavs] = useState<Set<string>>(new Set());
-  const [loading, setLoading] = useState(true);
+  const [marketLoading, setMarketLoading] = useState(true);
   const [invalid, setInvalid] = useState(false);
 
+  // Market fetch (one-shot).
   useEffect(() => {
     async function load() {
       try {
         const marketRes = await apiFetch(`/api/markets/${marketId}`);
         if (!marketRes.ok) {
           setInvalid(true);
-          setLoading(false);
+          setMarketLoading(false);
           return;
         }
-        const marketData: Market = await marketRes.json();
-        setMarket(marketData);
-
-        const fetches: Promise<Response>[] = [
-          apiFetch(`/api/items?market_id=${marketId}`),
-        ];
-        if (user) fetches.push(apiFetch("/api/favorites"));
-        const [itemsRes, favsRes] = await Promise.all(fetches);
-
-        if (itemsRes.ok) {
-          const raw: Item[] = await itemsRes.json();
-          const visible = raw.filter((i) => i.status !== "deleted");
-          const seed = getSessionSeed(marketId);
-          setItems(shuffleWithSeed(visible, seed));
-        }
-
-        if (favsRes?.ok) {
-          const favs: { id: string; favorite_id: string }[] = await favsRes.json();
-          setFavMap(new Map(favs.map((f) => [f.id, f.favorite_id])));
-        }
-        if (!user) setAnonFavs(getAnonFavorites());
+        setMarket(await marketRes.json());
       } catch {
         setInvalid(true);
       } finally {
-        setLoading(false);
+        setMarketLoading(false);
       }
     }
     if (marketId) load();
-  }, [marketId, user]);
+  }, [marketId]);
+
+  // Favorites — one-shot, since we need the whole set to mark hearts.
+  useEffect(() => {
+    async function loadFavs() {
+      if (!user) {
+        setAnonFavs(getAnonFavorites());
+        return;
+      }
+      const favsRes = await apiFetch("/api/favorites");
+      if (favsRes.ok) {
+        const favs: { id: string; favorite_id: string }[] = await favsRes.json();
+        setFavMap(new Map(favs.map((f) => [f.id, f.favorite_id])));
+      }
+    }
+    loadFavs();
+  }, [user]);
+
+  // Items — paginated via useInfiniteItems. Each page gets filtered
+  // for deleted + shuffled within-batch so the grid has variety
+  // without re-ordering already-visible items when more load.
+  const seed = useMemo(() => getSessionSeed(marketId), [marketId]);
+  const pageTransform = useCallback(
+    (page: Item[]) => {
+      const visible = page.filter((i) => i.status !== "deleted");
+      return shuffleWithSeed(visible, seed);
+    },
+    [seed]
+  );
+  const {
+    items,
+    hasMore,
+    loadingInitial,
+    loadingMore,
+    sentinelRef,
+  } = useInfiniteItems<Item>(
+    (offset, limit) =>
+      `/api/items?market_id=${marketId}&limit=${limit}&offset=${offset}`,
+    pageTransform,
+    [marketId]
+  );
+  const loading = marketLoading || loadingInitial;
 
   const toggleFav = useCallback(
     async (e: React.MouseEvent, itemId: string) => {
@@ -222,6 +244,7 @@ export default function EarlyAccessPage() {
 
       <main className="pb-24">
         {items.length > 0 ? (
+          <>
           <div className="eb-grid">
             {items.map((item) => {
               const isSold = item.status === "sold";
@@ -275,6 +298,23 @@ export default function EarlyAccessPage() {
               );
             })}
           </div>
+          {/* Infinite-scroll sentinel — loadMore fires when this
+              scrolls into view (with a 400px rootMargin lead). */}
+          {hasMore && (
+            <div
+              ref={sentinelRef}
+              className="flex justify-center py-6"
+              aria-hidden="true"
+            >
+              {loadingMore && <span className="eb-spinner" />}
+            </div>
+          )}
+          {!hasMore && items.length > 0 && (
+            <div className="text-eb-meta text-eb-muted text-center py-6">
+              That&apos;s all {items.length} items.
+            </div>
+          )}
+          </>
         ) : (
           <div className="eb-empty">
             <div className="eb-icon">{"\u25cb"}</div>

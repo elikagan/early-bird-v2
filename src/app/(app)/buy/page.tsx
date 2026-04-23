@@ -10,6 +10,7 @@ import { getInitials, formatPrice, formatShortDate, marketEyebrow } from "@/lib/
 import { BottomNav, adjustNavCount } from "@/components/bottom-nav";
 import { Masthead } from "@/components/masthead";
 import { NotFoundScreen } from "@/components/not-found-screen";
+import { useInfiniteItems } from "@/lib/use-infinite-items";
 
 interface Item {
   id: string;
@@ -39,39 +40,50 @@ function BuyFeedContent() {
   const router = useRouter();
   const marketId = searchParams.get("market");
 
-  const [items, setItems] = useState<Item[]>([]);
   const [market, setMarket] = useState<Market | null>(null);
   const [favMap, setFavMap] = useState<Map<string, string>>(new Map());
-  const [loading, setLoading] = useState(true);
+  const [marketLoading, setMarketLoading] = useState(true);
 
+  // Redirect if no marketId
   useEffect(() => {
     if (!marketId) {
       router.replace("/home");
-      return;
     }
+  }, [marketId, router]);
 
+  // Market + favorites (one-shot)
+  useEffect(() => {
+    if (!marketId) return;
     async function load() {
       const fetches: Promise<Response>[] = [
-        apiFetch(`/api/items?market_id=${marketId}`),
         apiFetch(`/api/markets/${marketId}`),
       ];
       if (user) fetches.push(apiFetch("/api/favorites"));
-
-      const [itemsRes, marketRes, favsRes] = await Promise.all(fetches);
-
-      if (itemsRes.ok) setItems(await itemsRes.json());
+      const [marketRes, favsRes] = await Promise.all(fetches);
       if (marketRes.ok) setMarket(await marketRes.json());
-
       if (favsRes?.ok) {
         const favs: { id: string; favorite_id: string }[] = await favsRes.json();
         setFavMap(new Map(favs.map((f) => [f.id, f.favorite_id])));
       }
-
-      setLoading(false);
+      setMarketLoading(false);
     }
-
     load();
-  }, [marketId, router, user]);
+  }, [marketId, user]);
+
+  // Paginated items — 30 per page, scroll to load more.
+  const {
+    items,
+    hasMore,
+    loadingInitial,
+    loadingMore,
+    sentinelRef,
+  } = useInfiniteItems<Item>(
+    (offset, limit) =>
+      `/api/items?market_id=${marketId}&limit=${limit}&offset=${offset}`,
+    undefined,
+    [marketId]
+  );
+  const loading = marketLoading || loadingInitial;
 
   const toggleFav = useCallback(
     async (e: React.MouseEvent, itemId: string) => {
@@ -158,6 +170,7 @@ function BuyFeedContent() {
 
       <main className="pb-24">
         {items.length > 0 ? (
+          <>
           <div className="eb-grid">
             {items.map((item) => {
               const isSold = item.status === "sold";
@@ -212,6 +225,21 @@ function BuyFeedContent() {
               );
             })}
           </div>
+          {hasMore && (
+            <div
+              ref={sentinelRef}
+              className="flex justify-center py-6"
+              aria-hidden="true"
+            >
+              {loadingMore && <span className="eb-spinner" />}
+            </div>
+          )}
+          {!hasMore && items.length > 0 && (
+            <div className="text-eb-meta text-eb-muted text-center py-6">
+              That&apos;s all {items.length} items.
+            </div>
+          )}
+          </>
         ) : (
           <div className="eb-empty">
             <div className="eb-icon">{"\u25cb"}</div>
