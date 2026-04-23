@@ -191,9 +191,7 @@ function SellContent() {
           } ${inquiryFilter ? "eb-stat-active" : ""}`}
         >
           <div className="eb-stat-num">{totalInquiries}</div>
-          <div className="eb-stat-label">
-            {inquiryFilter ? "Showing" : "Inquiries"}
-          </div>
+          <div className="eb-stat-label">Inquiries</div>
         </button>
       </div>
 
