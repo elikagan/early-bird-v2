@@ -61,3 +61,13 @@ Last audited: 2026-04-22 by Claude.
 ## Open questions
 
 - **Timing of the scheduled market-reminder "notify Eli" text** (commitment #9). When the buyer + dealer reminder send paths get built, Eli needs to pick a timing. Default proposal: evening before the market for buyers, 2 days before for dealers. Confirm with Eli before implementing.
+
+## Perf fix plan (2026-04-22)
+
+- ~~A. Enlarge × close glyph~~ — done in `bc72ce8`.
+- ~~B. Replace body-scroll-lock with html-overflow approach~~ — done in `4b9845d`.
+- ~~C. Split `/api/items/[id]` into cacheable public + `/me`~~ — done in `39a1469`.
+- ~~D. Convert `/item/[id]/page.tsx` to Server Component~~ — done in `98988f2`.
+- **E. Add perf QA chunk to `QA_CHECKLIST.md`** — pending. See `PERF_FIX_PLAN.md` §E.
+- ~~F. Audit `"use client"` across other pages~~ — done: `/buy` (`b9a8474`), `/home` (`de438d9`), `/early/[marketId]` (`b6a3b84`), `/d/[id]` (`87ff2ab`). The plan mentioned `/dealer` but that route doesn't exist.
+- **Perf boomerang:** `(app)/layout.tsx` is a client layout that blanks the page on `useAuth().loading`. All the Server Component shells we built ship data in the RSC payload, but first paint is still `<Loading…>` until the auth-me round-trip resolves. Unwinding this gate — ideally by server-resolving the session cookie in the root layout — is the next real perf win.
