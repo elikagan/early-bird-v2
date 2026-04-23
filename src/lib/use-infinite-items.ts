@@ -28,16 +28,25 @@ export interface InfiniteItemsState<T> {
 export function useInfiniteItems<T>(
   buildUrl: (offset: number, limit: number) => string,
   transform: (page: T[]) => T[] = (p) => p,
-  deps: unknown[] = []
+  deps: unknown[] = [],
+  initialPage?: T[]
 ): InfiniteItemsState<T> {
-  const [items, setItems] = useState<T[]>([]);
-  const [hasMore, setHasMore] = useState(true);
-  const [loadingInitial, setLoadingInitial] = useState(true);
+  const seeded = initialPage != null;
+  const seedLen = initialPage?.length ?? 0;
+  const [items, setItems] = useState<T[]>(initialPage ?? []);
+  // If the server sent a full page, assume there may be more; if it sent
+  // a partial page, we're already at the end.
+  const [hasMore, setHasMore] = useState(!seeded || seedLen === PAGE_SIZE);
+  const [loadingInitial, setLoadingInitial] = useState(!seeded);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(false);
-  const offsetRef = useRef(0);
+  const offsetRef = useRef(seedLen);
   const inflightRef = useRef(false);
   const observerRef = useRef<IntersectionObserver | null>(null);
+  // First useEffect pass should skip refetching if we already have the
+  // seeded page. Subsequent dep changes (market switch, filter change)
+  // refetch as normal.
+  const skipNextLoadRef = useRef(seeded);
 
   const loadPage = useCallback(async () => {
     if (inflightRef.current || !hasMore) return;
@@ -74,7 +83,13 @@ export function useInfiniteItems<T>(
   }, [hasMore]);
 
   // Kick off first page and reset when any dep changes (e.g. marketId).
+  // When seeded (first render after SSR), skip the initial fetch — we
+  // already rendered the first page from RSC props.
   useEffect(() => {
+    if (skipNextLoadRef.current) {
+      skipNextLoadRef.current = false;
+      return;
+    }
     offsetRef.current = 0;
     setItems([]);
     setHasMore(true);
