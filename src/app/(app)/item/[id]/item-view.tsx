@@ -700,10 +700,13 @@ export default function ItemView({ initialItem }: { initialItem: ItemDetail }) {
             if (editing) { cancelEdit(); return; }
             // router.back() doesn't work when the user arrived via the
             // SMS inquiry-confirmation flow (the /v/[token] page was
-            // replaced out of history). Route explicitly to the market
-            // grid the item belongs to.
+            // replaced out of history). Route explicitly based on who
+            // this is: dealer-owner → their /sell page for the item's
+            // market; signed-in buyer → /buy grid; anon → /early.
             const marketId = item?.market?.id;
-            if (marketId) {
+            if (isOwner) {
+              router.push(marketId ? `/sell?market=${marketId}` : "/sell");
+            } else if (marketId) {
               router.push(user ? `/buy?market=${marketId}` : `/early/${marketId}`);
             } else {
               router.push("/");
