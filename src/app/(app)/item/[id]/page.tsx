@@ -124,10 +124,7 @@ export default function ItemDetailPage() {
   useEffect(() => {
     if (!showInquiry) return;
 
-    // 1. Lock body scroll
-    document.body.classList.add("eb-scroll-lock");
-
-    // 2. Keyboard offset
+    // 1. Keyboard offset
     const vv = window.visualViewport;
     const updateKb = () => {
       if (!vv) return;
@@ -146,7 +143,7 @@ export default function ItemDetailPage() {
       updateKb();
     }
 
-    // 3. Drag-to-resize handle. Native listeners with passive:false
+    // 2. Drag-to-resize handle. Native listeners with passive:false
     //    so preventDefault works. The drawer is resized in real time
     //    by writing inline height on the ref (DOM mutation, not
     //    JSX inline style).
@@ -203,7 +200,6 @@ export default function ItemDetailPage() {
     }
 
     return () => {
-      document.body.classList.remove("eb-scroll-lock");
       if (vv) {
         vv.removeEventListener("resize", updateKb);
         vv.removeEventListener("scroll", updateKb);
@@ -1494,8 +1490,12 @@ export default function ItemDetailPage() {
               <div className="w-12 h-1 bg-eb-border rounded-full" />
             </div>
 
-            {/* Scrollable content area — takes remaining drawer height. */}
-            <div className="flex-1 overflow-y-auto overscroll-contain px-5 pb-6">
+            {/* Scrollable content area — takes remaining drawer height.
+                min-h-0 is required so overflow-y-auto inside a flex parent
+                actually bounds its scroll region instead of pushing the
+                parent past its max-height (iOS will silently eat taps in
+                the overflowed area, which feels exactly like a frozen drawer). */}
+            <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 pb-6">
             {/* Confirmed state. Buyer tapped the verify link, dealer
                 has been notified, session is now active. Show regardless
                 of auth state — after verify the user IS signed in, but
@@ -1594,14 +1594,19 @@ export default function ItemDetailPage() {
               </>
             ) : (
               <>
-                <div className="flex items-start justify-between gap-4 mb-1">
-                  <h3 className="text-eb-title font-bold uppercase tracking-widest text-eb-black">
+                <div className="flex items-start justify-between gap-4 mb-1 -mr-3 -mt-2">
+                  <h3 className="text-eb-title font-bold uppercase tracking-widest text-eb-black mt-2">
                     I&apos;m Interested
                   </h3>
                   <button
+                    type="button"
                     aria-label="Close"
-                    className="text-eb-body text-eb-muted leading-none -mt-1"
-                    onClick={() => setShowInquiry(false)}
+                    className="w-11 h-11 flex items-center justify-center text-eb-body text-eb-muted shrink-0"
+                    onClick={() => {
+                      setShowInquiry(false);
+                      setAnonSent(false);
+                      setAnonError(null);
+                    }}
                   >
                     {"\u2715"}
                   </button>
