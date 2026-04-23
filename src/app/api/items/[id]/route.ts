@@ -52,48 +52,55 @@ export async function GET(
   // dealer's own views.
   const isOwner = user?.id === item.dealer_user_id;
 
-  // Photos
-  const photos = await db.execute({
-    sql: `SELECT id, url, thumb_url, position FROM item_photos WHERE item_id = ? ORDER BY position`,
-    args: [id],
-  });
-  (item as Record<string, unknown>).photos = photos.rows;
+  // Fan out the remaining reads in parallel. Previously sequential:
+  // photos → market → fav → my_inquiry → payment_methods = 5 round
+  // trips one after another. Each ~50-100ms on Supabase RPC, so item
+  // detail page was landing in 300-600ms minimum (worse on slow
+  // networks). All five are independent of each other once we have
+  // the item row, so Promise.all collapses them to a single round
+  // trip.
+  const [photosRes, marketRes, favRes, myInqRes, methodsRes] = await Promise.all([
+    db.execute({
+      sql: `SELECT id, url, thumb_url, position FROM item_photos WHERE item_id = ? ORDER BY position`,
+      args: [id],
+    }),
+    db.execute({
+      sql: `SELECT id, name, location, drop_at, starts_at, status FROM markets WHERE id = ?`,
+      args: [item.market_id as string],
+    }),
+    user
+      ? db.execute({
+          sql: `SELECT id FROM favorites WHERE buyer_id = ? AND item_id = ?`,
+          args: [user.id, id],
+        })
+      : Promise.resolve({ rows: [] }),
+    user
+      ? db.execute({
+          sql: `SELECT status FROM inquiries WHERE buyer_id = ? AND item_id = ? ORDER BY created_at DESC LIMIT 1`,
+          args: [user.id, id],
+        })
+      : Promise.resolve({ rows: [] }),
+    db.execute({
+      sql: `SELECT method, enabled FROM dealer_payment_methods WHERE dealer_id = ?`,
+      args: [item.dealer_ref as string],
+    }),
+  ]);
 
-  // Market context
-  const market = await db.execute({
-    sql: `SELECT id, name, location, drop_at, starts_at, status FROM markets WHERE id = ?`,
-    args: [item.market_id as string],
-  });
-  (item as Record<string, unknown>).market = market.rows[0] || null;
+  (item as Record<string, unknown>).photos = photosRes.rows;
+  (item as Record<string, unknown>).market = marketRes.rows[0] || null;
+  (item as Record<string, unknown>).dealer_payment_methods = methodsRes.rows;
 
-  // Favorite + inquiry status for current user
   if (user) {
-    const fav = await db.execute({
-      sql: `SELECT id FROM favorites WHERE buyer_id = ? AND item_id = ?`,
-      args: [user.id, id],
-    });
-    (item as Record<string, unknown>).is_favorited = fav.rows.length > 0;
-    if (fav.rows.length > 0) {
-      (item as Record<string, unknown>).favorite_id = (fav.rows[0] as Record<string, unknown>).id;
+    (item as Record<string, unknown>).is_favorited = favRes.rows.length > 0;
+    if (favRes.rows.length > 0) {
+      (item as Record<string, unknown>).favorite_id =
+        (favRes.rows[0] as Record<string, unknown>).id;
     }
-
-    // Buyer's own inquiry status on this item (for "Already inquired" UI).
-    const myInq = await db.execute({
-      sql: `SELECT status FROM inquiries WHERE buyer_id = ? AND item_id = ? ORDER BY created_at DESC LIMIT 1`,
-      args: [user.id, id],
-    });
     (item as Record<string, unknown>).my_inquiry_status =
-      myInq.rows.length > 0
-        ? (myInq.rows[0] as Record<string, unknown>).status
+      myInqRes.rows.length > 0
+        ? (myInqRes.rows[0] as Record<string, unknown>).status
         : null;
   }
-
-  // Payment methods for the dealer
-  const methods = await db.execute({
-    sql: `SELECT method, enabled FROM dealer_payment_methods WHERE dealer_id = ?`,
-    args: [item.dealer_ref as string],
-  });
-  (item as Record<string, unknown>).dealer_payment_methods = methods.rows;
 
   // Increment view count (non-owner views only, fire-and-forget)
   if (!isOwner) {
