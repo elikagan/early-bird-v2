@@ -13,7 +13,7 @@ import { SHOWS } from "@/lib/shows";
 
 /* ─── Types ─── */
 
-type Tab = "dashboard" | "activity" | "markets" | "dealers" | "items" | "blast" | "sms" | "health";
+type Tab = "dashboard" | "activity" | "feedback" | "markets" | "dealers" | "items" | "blast" | "sms" | "health";
 
 interface DashboardData {
   dealer_count: number;
@@ -166,7 +166,7 @@ function AdminPage() {
           flex-1 + min-w-0 crammed 7 labels into 375px, forcing
           text to overlap ("DASHBOARDMARKETS"). */}
       <div className="flex border-b-2 border-eb-black overflow-x-auto">
-        {(["dashboard", "activity", "markets", "dealers", "items", "blast", "sms", "health"] as Tab[]).map((t) => (
+        {(["dashboard", "activity", "feedback", "markets", "dealers", "items", "blast", "sms", "health"] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -185,6 +185,7 @@ function AdminPage() {
       <main className="pb-32">
         {activeTab === "dashboard" && <DashboardTab setTab={setTab} />}
         {activeTab === "activity" && <ActivityTab />}
+        {activeTab === "feedback" && <FeedbackTab />}
         {activeTab === "markets" && <MarketsTab />}
         {activeTab === "dealers" && <DealersTab />}
         {activeTab === "items" && <ItemsTab />}
@@ -486,6 +487,138 @@ function DeltaCard({
         {delta.txt} vs. yesterday
       </div>
     </div>
+  );
+}
+
+interface FeedbackRow {
+  id: string;
+  user_id: string;
+  audience: "buyer" | "dealer";
+  responses: Record<string, unknown>;
+  created_at: string;
+  display_name: string | null;
+  phone: string;
+  business_name: string | null;
+}
+
+function FeedbackTab() {
+  const [data, setData] = useState<{
+    market_id: string | null;
+    market_name: string | null;
+    market_starts_at: string | null;
+    responses: FeedbackRow[];
+  } | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [audience, setAudience] = useState<"all" | "buyer" | "dealer">("all");
+
+  useEffect(() => {
+    void (async () => {
+      setLoading(true);
+      const params = audience === "all" ? "" : `?audience=${audience}`;
+      const res = await apiFetch(`/api/admin/feedback${params}`);
+      if (res.ok) setData(await res.json());
+      setLoading(false);
+    })();
+  }, [audience]);
+
+  if (loading)
+    return <div className="flex justify-center py-12"><span className="eb-spinner" /></div>;
+  if (!data)
+    return <div className="eb-empty"><p>Couldn{"’"}t load feedback.</p></div>;
+
+  const filtered = data.responses;
+
+  return (
+    <section className="px-5 py-6 space-y-6">
+      <div>
+        <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-1">
+          Feedback for
+        </div>
+        <h2 className="text-eb-title font-bold uppercase tracking-wider text-eb-black">
+          {data.market_name ?? "—"}
+        </h2>
+        {data.market_starts_at && (
+          <div className="text-eb-meta text-eb-muted mt-1">
+            {new Date(data.market_starts_at).toLocaleDateString("en-US", {
+              weekday: "short",
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            })}
+          </div>
+        )}
+      </div>
+
+      <div className="flex gap-2">
+        {(["all", "buyer", "dealer"] as const).map((a) => (
+          <button
+            key={a}
+            onClick={() => setAudience(a)}
+            className={`px-3 py-1.5 text-eb-micro font-bold uppercase tracking-wider border-2 ${
+              audience === a
+                ? "border-eb-black bg-eb-black text-white"
+                : "border-eb-border text-eb-muted"
+            }`}
+          >
+            {a}
+          </button>
+        ))}
+      </div>
+
+      {filtered.length === 0 ? (
+        <div className="eb-empty">
+          <p>No feedback yet for this market.</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {filtered.map((r) => {
+            const entries = Object.entries(r.responses || {}).filter(
+              ([, v]) => v != null && v !== ""
+            );
+            return (
+              <div key={r.id} className="border-2 border-eb-border p-4">
+                <div className="flex items-baseline justify-between gap-3 mb-2">
+                  <div className="min-w-0">
+                    <span className="text-eb-caption font-bold text-eb-black">
+                      {r.display_name || "(no name)"}
+                    </span>
+                    <span className="text-eb-micro text-eb-muted ml-2">
+                      {r.business_name || formatPhone(r.phone)}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span
+                      className={`text-eb-micro font-bold uppercase px-1.5 py-0.5 ${
+                        r.audience === "dealer"
+                          ? "text-eb-pop bg-eb-pop-light"
+                          : "text-eb-muted bg-eb-cream"
+                      }`}
+                    >
+                      {r.audience}
+                    </span>
+                    <span className="text-eb-micro text-eb-muted tabular-nums">
+                      {timeAgo(r.created_at)}
+                    </span>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  {entries.map(([k, v]) => (
+                    <div key={k}>
+                      <div className="text-eb-micro uppercase tracking-widest text-eb-muted">
+                        {k}
+                      </div>
+                      <div className="text-eb-meta text-eb-text leading-relaxed whitespace-pre-wrap">
+                        {String(v)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </section>
   );
 }
 
