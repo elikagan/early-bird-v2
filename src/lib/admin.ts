@@ -9,6 +9,16 @@
 
 export const TEST_ADMIN_PHONE = "+15550000003";
 
+// Test phone numbers used by /api/auth/dev-login. These have rows in
+// the users table because dev-login created them, but they're not
+// real phones — Pingram fails on them and they shouldn't ever appear
+// as recipients of a blast.
+export const TEST_PHONES: ReadonlyArray<string> = [
+  "+15550000001",
+  "+15550000002",
+  TEST_ADMIN_PHONE,
+];
+
 export function isAdmin(phone: string): boolean {
   const raw = process.env.ADMIN_PHONES || "";
   const phones = raw.split(",").map((p) => p.trim()).filter(Boolean);
@@ -20,4 +30,15 @@ export function isAdmin(phone: string): boolean {
   }
 
   return false;
+}
+
+/**
+ * Phones that should never receive a blast: site admins (they wrote
+ * the message) and the test users. Used by both the blast preview
+ * count and the send path so the count matches what gets sent.
+ */
+export function blastExcludedPhones(): string[] {
+  const adminRaw = process.env.ADMIN_PHONES || "";
+  const admins = adminRaw.split(",").map((p) => p.trim()).filter(Boolean);
+  return [...admins, ...TEST_PHONES];
 }

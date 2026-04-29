@@ -1,7 +1,7 @@
 import db from "@/lib/db";
 import { json, error } from "@/lib/api";
 import { getSession } from "@/lib/auth";
-import { isAdmin } from "@/lib/admin";
+import { isAdmin, blastExcludedPhones } from "@/lib/admin";
 import { newId } from "@/lib/id";
 import { sendSMS } from "@/lib/sms";
 import { logAdminAction } from "@/lib/admin-log";
@@ -46,7 +46,11 @@ export async function POST(request: Request) {
     );
   }
 
-  const phones = recipients.rows.map((r) => r.phone as string);
+  // Strip admins (they wrote the message) + test/dev phones (sends fail).
+  const excluded = new Set(blastExcludedPhones());
+  const phones = recipients.rows
+    .map((r) => r.phone as string)
+    .filter((p) => p && !excluded.has(p));
   const total = phones.length;
 
   if (total === 0) {
