@@ -13,7 +13,7 @@ import { SHOWS } from "@/lib/shows";
 
 /* ─── Types ─── */
 
-type Tab = "dashboard" | "activity" | "feedback" | "markets" | "dealers" | "items" | "blast" | "sms" | "health";
+type Tab = "dashboard" | "activity" | "replies" | "feedback" | "markets" | "dealers" | "items" | "blast" | "sms" | "health";
 
 interface DashboardData {
   dealer_count: number;
@@ -166,7 +166,7 @@ function AdminPage() {
           flex-1 + min-w-0 crammed 7 labels into 375px, forcing
           text to overlap ("DASHBOARDMARKETS"). */}
       <div className="flex border-b-2 border-eb-black overflow-x-auto">
-        {(["dashboard", "activity", "feedback", "markets", "dealers", "items", "blast", "sms", "health"] as Tab[]).map((t) => (
+        {(["dashboard", "activity", "replies", "feedback", "markets", "dealers", "items", "blast", "sms", "health"] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -185,6 +185,7 @@ function AdminPage() {
       <main className="pb-32">
         {activeTab === "dashboard" && <DashboardTab setTab={setTab} />}
         {activeTab === "activity" && <ActivityTab />}
+        {activeTab === "replies" && <RepliesTab />}
         {activeTab === "feedback" && <FeedbackTab />}
         {activeTab === "markets" && <MarketsTab />}
         {activeTab === "dealers" && <DealersTab />}
@@ -499,6 +500,130 @@ interface FeedbackRow {
   display_name: string | null;
   phone: string;
   business_name: string | null;
+}
+
+interface ReplyRow {
+  id: string;
+  from_phone: string;
+  to_phone: string;
+  body: string;
+  received_at: string;
+  matched_user_id: string | null;
+  is_reply: boolean;
+  display_name: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  is_dealer: number | null;
+  business_name: string | null;
+  instagram_handle: string | null;
+}
+
+function RepliesTab() {
+  const [rows, setRows] = useState<ReplyRow[] | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<"all" | "buyer" | "dealer" | "unknown">("all");
+
+  useEffect(() => {
+    void (async () => {
+      setLoading(true);
+      const params = filter === "all" ? "" : `?filter=${filter}`;
+      const res = await apiFetch(`/api/admin/responses${params}`);
+      if (res.ok) setRows(await res.json());
+      setLoading(false);
+    })();
+  }, [filter]);
+
+  if (loading) return <div className="flex justify-center py-12"><span className="eb-spinner" /></div>;
+  if (!rows) return <div className="eb-empty"><p>Couldn{"’"}t load replies.</p></div>;
+
+  return (
+    <section className="px-5 py-6 space-y-4">
+      <div>
+        <h2 className="text-eb-title font-bold uppercase tracking-wider text-eb-black">
+          SMS replies
+        </h2>
+        <p className="text-eb-meta text-eb-muted mt-1">
+          Every text reply Pingram delivers to our number. New replies
+          land here automatically — no need to log into Pingram.
+        </p>
+      </div>
+
+      <div className="flex gap-2">
+        {(["all", "buyer", "dealer", "unknown"] as const).map((f) => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            className={`px-3 py-1.5 text-eb-micro font-bold uppercase tracking-wider border-2 ${
+              filter === f
+                ? "border-eb-black bg-eb-black text-white"
+                : "border-eb-border text-eb-muted"
+            }`}
+          >
+            {f}
+          </button>
+        ))}
+      </div>
+
+      {rows.length === 0 ? (
+        <div className="eb-empty">
+          <p>No replies yet.</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {rows.map((r) => {
+            const fullName =
+              r.display_name ||
+              [r.first_name, r.last_name].filter(Boolean).join(" ") ||
+              null;
+            const audience =
+              r.matched_user_id == null
+                ? "unknown"
+                : r.is_dealer === 1
+                  ? "dealer"
+                  : "buyer";
+            return (
+              <div key={r.id} className="border-2 border-eb-border p-4">
+                <div className="flex items-baseline justify-between gap-3 mb-2">
+                  <div className="min-w-0">
+                    <span className="text-eb-caption font-bold text-eb-black">
+                      {fullName || "Unknown sender"}
+                    </span>
+                    {r.business_name && (
+                      <span className="text-eb-micro text-eb-muted ml-2">
+                        {r.business_name}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span
+                      className={`text-eb-micro font-bold uppercase px-1.5 py-0.5 ${
+                        audience === "dealer"
+                          ? "text-eb-pop bg-eb-pop-light"
+                          : audience === "buyer"
+                            ? "text-eb-text bg-eb-border/40"
+                            : "text-eb-muted bg-eb-border/30"
+                      }`}
+                    >
+                      {audience}
+                    </span>
+                    <span className="text-eb-micro text-eb-muted tabular-nums">
+                      {timeAgo(r.received_at)}
+                    </span>
+                  </div>
+                </div>
+                <div className="text-eb-micro text-eb-muted mb-2 tabular-nums">
+                  {formatPhone(r.from_phone)}
+                </div>
+                <div className="text-eb-caption text-eb-text whitespace-pre-wrap">
+                  {r.body}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </section>
+  );
 }
 
 function FeedbackTab() {
