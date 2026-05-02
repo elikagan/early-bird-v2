@@ -144,36 +144,27 @@ export async function POST(request: Request) {
     });
 
     if (testItem.rows.length === 0) {
-      // Pick a market — prefer live, fall back to the soonest upcoming
-      const marketResult = await db.execute(
-        `SELECT id FROM markets
-         ORDER BY
-           CASE status WHEN 'live' THEN 0 WHEN 'upcoming' THEN 1 ELSE 2 END,
-           drop_at ASC
-         LIMIT 1`
-      );
-      if (marketResult.rows.length > 0) {
-        const marketId = marketResult.rows[0].id as string;
-        await db.execute({
-          sql: `INSERT INTO items
-                  (id, dealer_id, market_id, title, description, price, price_firm, status)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-          args: [
-            TEST_ITEM_ID,
-            dealerId,
-            marketId,
-            "QA Test Item — Mid-century Walnut Chair",
-            "Seeded by the QA review dev-login endpoint. Used to render the Item Detail (as Owner) page for the test dealer. Feel free to delete — it will be re-created on next dev-login.",
-            275,
-            1,
-            "live",
-          ],
-        });
-        await db.execute({
-          sql: `INSERT INTO item_photos (id, item_id, url, position) VALUES (?, ?, ?, ?)`,
-          args: [newId(), TEST_ITEM_ID, "/promo/2.webp", 0],
-        });
-      }
+      // Items don't carry market_id under the persistent-booth model;
+      // the test item joins the dealer's persistent catalog the same
+      // way real items do.
+      await db.execute({
+        sql: `INSERT INTO items
+                (id, dealer_id, title, description, price, price_firm, status)
+              VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        args: [
+          TEST_ITEM_ID,
+          dealerId,
+          "QA Test Item — Mid-century Walnut Chair",
+          "Seeded by the QA review dev-login endpoint. Used to render the Item Detail (as Owner) page for the test dealer. Feel free to delete — it will be re-created on next dev-login.",
+          275,
+          1,
+          "live",
+        ],
+      });
+      await db.execute({
+        sql: `INSERT INTO item_photos (id, item_id, url, position) VALUES (?, ?, ?, ?)`,
+        args: [newId(), TEST_ITEM_ID, "/promo/2.webp", 0],
+      });
     } else {
       // Item exists — make sure dealer_id is current (in case test dealer was reseeded)
       await db.execute({
