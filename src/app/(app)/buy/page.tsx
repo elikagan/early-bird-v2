@@ -25,7 +25,7 @@ export default async function BuyPage({
     userAgent: h.get("user-agent"),
     userId: me?.id ?? null,
   });
-  if (!marketId) redirect("/home");
+  if (!marketId) redirect("/");
 
   const [marketRes, itemsRes] = await Promise.all([
     db.execute({

@@ -5,9 +5,9 @@ import { SignInLink } from "./sign-in-link";
 
 interface MastheadProps {
   /**
-   * Link destination for the h1. Defaults to "/home".
+   * Link destination for the h1. Defaults to "/".
    * Pass `null` for pages where the logo should not link
-   * (landing, onboarding, home itself).
+   * (home itself, onboarding).
    */
   href?: string | null;
   /**
@@ -24,12 +24,12 @@ interface MastheadProps {
  * Replaces ~16 inline `<header className="eb-masthead">` blocks.
  *
  * Usage:
- *   <Masthead />                       — default: links to /home, shows SignInLink
+ *   <Masthead />                       — default: links to /, shows SignInLink
  *   <Masthead href={null} />           — no link (home page, onboarding)
  *   <Masthead right={null} />          — no right content
- *   <Masthead right={<MyToggle />} />  — custom right slot (landing)
+ *   <Masthead right={<MyToggle />} />  — custom right slot
  */
-export function Masthead({ href = "/home", right }: MastheadProps) {
+export function Masthead({ href = "/", right }: MastheadProps) {
   const rightContent = right === undefined ? <SignInLink /> : right;
 
   const title = <h1>EARLY BIRD</h1>;

@@ -36,7 +36,7 @@ function VerifyContent() {
         // Store token in localStorage as backup (cookie is primary)
         try { localStorage.setItem("eb_token", data.session_token); } catch {}
 
-        let dest = "/home";
+        let dest = "/";
         // Highest priority: explicit `?to=` query param. Used by the
         // inquiry confirmation SMS so the buyer lands back on the item
         // they were looking at. Must start with "/" to prevent an

@@ -132,7 +132,7 @@ function OnboardingContent() {
     if (isDealerSignup) {
       setSubmitted(true);
     } else {
-      router.replace("/home");
+      router.replace("/");
     }
   };
 
@@ -168,7 +168,7 @@ function OnboardingContent() {
         <footer className="px-5 py-6 border-t-2 border-eb-black">
           <button
             className="eb-cta"
-            onClick={() => router.replace("/home")}
+            onClick={() => router.replace("/")}
           >
             START BROWSING
           </button>

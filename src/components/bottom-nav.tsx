@@ -142,7 +142,7 @@ export function BottomNav({ active }: { active: Tab }) {
 
   return (
     <nav className="eb-bnav">
-      <Link href="/home">
+      <Link href="/">
         <span className={active === "buy" ? "eb-active" : ""}>Buy</span>
       </Link>
       <Link href="/watching">

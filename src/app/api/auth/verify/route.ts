@@ -305,7 +305,7 @@ export async function POST(request: Request) {
   // Pending-invite check: if an admin created a dealer invite bound to
   // this phone but the dealer hasn't redeemed yet, surface the code so
   // the client can route them to /invite/[code] to finish setup
-  // instead of landing on /home as a plain buyer. Prevents the
+  // instead of landing on / as a plain buyer. Prevents the
   // "admin invited me but I somehow signed in the front door"
   // customer-service footgun.
   let pendingInviteCode: string | null = null;
