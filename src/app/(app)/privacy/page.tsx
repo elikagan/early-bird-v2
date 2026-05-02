@@ -54,7 +54,6 @@ export default function PrivacyPage() {
           </p>
           <ul className="list-disc pl-5 space-y-1">
             <li>Sign-in links (one-time, to log you in)</li>
-            <li>Drop alerts (when a market&apos;s items go live)</li>
             <li>Price drop notifications (when watched items get cheaper)</li>
             <li>Inquiry updates (when a buyer or dealer contacts you)</li>
             <li>Account notifications (dealer approval, hold/sold receipts)</li>

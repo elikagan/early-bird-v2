@@ -12,7 +12,8 @@ import { BottomNav } from "@/components/bottom-nav";
 import { DealerApplyDrawer } from "@/components/dealer-apply-drawer";
 import { InstagramInput } from "@/components/instagram-input";
 import { Masthead } from "@/components/masthead";
-import { SHOWS, type ShowName, marketReminderKey } from "@/lib/shows";
+// (SHOWS, ShowName, marketReminderKey: retired along with the
+//  per-market reminder UI on this page.)
 
 interface UserProfile {
   id: string;
@@ -25,10 +26,8 @@ interface UserProfile {
   dealer_id: string | null;
   business_name: string | null;
   instagram_handle: string | null;
-  market_follows: Array<{ market_id: string; market_name: string }>;
   notification_preferences: Array<{ key: string; enabled: number }>;
   payment_methods?: Array<{ method: string; enabled: number }>;
-  market_subscriptions?: string[];
   watching_count: number;
   inquiries_count: number;
   bought_count: number;
@@ -202,31 +201,9 @@ export default function AccountPage() {
     [profile]
   );
 
-  const toggleShow = useCallback(
-    async (show: ShowName) => {
-      if (!profile) return;
-      const current = profile.market_subscriptions || [];
-      const isOn = current.includes(show);
-      const next = isOn ? current.filter((s) => s !== show) : [...current, show];
-
-      // Prevent unchecking all — must leave at least one.
-      if (next.length === 0) return;
-
-      // Optimistic update
-      setProfile((p) => (p ? { ...p, market_subscriptions: next } : p));
-
-      const res = await apiFetch("/api/users/me", {
-        method: "PATCH",
-        body: JSON.stringify({ market_subscriptions: next }),
-      });
-
-      // Revert on failure
-      if (!res.ok) {
-        setProfile((p) => (p ? { ...p, market_subscriptions: current } : p));
-      }
-    },
-    [profile]
-  );
+  // (toggleShow + the dealer "shows I usually do" UI retired with the
+  //  drop-era plumbing. Past booth_settings history powers the
+  //  weekly /sell prompt's pre-fill instead.)
 
   const toggleNotif = useCallback(
     async (key: string) => {
@@ -343,50 +320,7 @@ export default function AccountPage() {
     return p ? p.enabled === 1 : false;
   };
 
-  // Market-reminder toggle — must be declared ABOVE any early return
-  // so React sees the same hook count on every render (React logs a
-  // hook-order violation otherwise).
-  const toggleMarketReminder = useCallback(
-    async (show: ShowName) => {
-      const key = marketReminderKey(show);
-      const current = (() => {
-        const p = profile?.notification_preferences?.find(
-          (n) => n.key === key
-        );
-        return p?.enabled === 1;
-      })();
-      const next = !current;
-
-      setProfile((p) => {
-        if (!p) return p;
-        const prefs = (p.notification_preferences || []).map((n) =>
-          n.key === key ? { ...n, enabled: next ? 1 : 0 } : n
-        );
-        if (!prefs.find((n) => n.key === key)) {
-          prefs.push({ key, enabled: next ? 1 : 0 });
-        }
-        return { ...p, notification_preferences: prefs };
-      });
-
-      const res = await apiFetch("/api/users/me", {
-        method: "PATCH",
-        body: JSON.stringify({
-          notification_preferences: [{ key, enabled: next }],
-        }),
-      });
-
-      if (!res.ok) {
-        setProfile((p) => {
-          if (!p) return p;
-          const prefs = (p.notification_preferences || []).map((n) =>
-            n.key === key ? { ...n, enabled: current ? 1 : 0 } : n
-          );
-          return { ...p, notification_preferences: prefs };
-        });
-      }
-    },
-    [profile]
-  );
+  // (toggleMarketReminder retired with the per-show reminder UI.)
 
   if (loading || !profile) {
     return (
@@ -427,14 +361,7 @@ export default function AccountPage() {
 
   const notifItems = isDealer ? DEALER_NOTIFS : BUYER_NOTIFS;
 
-  // Market-reminder opt-in: one notification_preferences row per show
-  // (key = market_reminder_<slug>). Explicit-opt-in default so we
-  // don't text someone unless they ticked the box here or elsewhere.
-  const getMarketReminderPref = (show: ShowName): boolean => {
-    const key = marketReminderKey(show);
-    const p = profile.notification_preferences?.find((n) => n.key === key);
-    return p?.enabled === 1;
-  };
+  // (getMarketReminderPref retired with the per-show reminder UI.)
 
   return (
     <>
@@ -707,39 +634,10 @@ export default function AccountPage() {
 
       <div className="border-t border-eb-border mx-5" />
 
-      {/* Dealer: Shows you sell at */}
-      {isDealer && (
-        <>
-          <section className="px-5 py-5">
-            <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-1">
-              Shows You Sell At
-            </div>
-            <div className="text-eb-micro text-eb-muted mb-3 leading-relaxed max-w-[22rem]">
-              We{"\u2019"}ll only text you about shows you{"\u2019"}re subscribed to.
-            </div>
-            {SHOWS.map((show, i) => {
-              const on = profile?.market_subscriptions?.includes(show) ?? false;
-              return (
-                <label
-                  key={show}
-                  className={`flex items-center gap-3 py-3 cursor-pointer${i < SHOWS.length - 1 ? " border-b border-eb-border" : ""}`}
-                >
-                  <input
-                    type="checkbox"
-                    checked={on}
-                    onChange={() => toggleShow(show)}
-                    className="eb-check"
-                  />
-                  <div className="text-eb-body font-bold text-eb-black">
-                    {show}
-                  </div>
-                </label>
-              );
-            })}
-          </section>
-          <div className="border-t border-eb-border mx-5" />
-        </>
-      )}
+      {/* (Dealer "Shows You Sell At" picker retired with the drop-era
+          plumbing. The weekly /sell prompt now pre-fills from past
+          booth_settings history \u2014 dealers don't have to maintain a
+          separate list.) */}
 
       {/* Dealer: Payment methods */}
       {isDealer && (
@@ -807,35 +705,10 @@ export default function AccountPage() {
           Dealers selling at a show are auto-subscribed via their
           market subscriptions; this section is the explicit opt-in
           path everyone else gets. */}
-      <section className="px-5 py-5">
-        <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-1">
-          Market Reminders
-        </div>
-        <div className="text-eb-micro text-eb-muted mb-3 leading-relaxed max-w-[22rem]">
-          Text me before each show to see what top dealers are bringing.
-        </div>
-        {SHOWS.map((show, i) => {
-          const on = getMarketReminderPref(show);
-          return (
-            <label
-              key={show}
-              className={`flex items-center gap-3 py-3 cursor-pointer${i < SHOWS.length - 1 ? " border-b border-eb-border" : ""}`}
-            >
-              <input
-                type="checkbox"
-                checked={on}
-                onChange={() => toggleMarketReminder(show)}
-                className="eb-check"
-              />
-              <div className="text-eb-body font-bold text-eb-black">
-                {show}
-              </div>
-            </label>
-          );
-        })}
-      </section>
-
-      <div className="border-t border-eb-border mx-5" />
+      {/* (Per-market reminder opt-in retired with the drop concept.
+          Buyers no longer subscribe to scheduled per-show reminders;
+          if we add a marketing reminder later it'll be a global
+          opt-out, not a per-show pick.) */}
 
       {/* Buyer: Become a seller */}
       {!isDealer && (

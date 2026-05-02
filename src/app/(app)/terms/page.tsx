@@ -70,7 +70,7 @@ export default function TermsPage() {
             out. Reply HELP for help.
           </p>
           <p className="pt-2">
-            These messages include sign-in links, drop alerts, price drop
+            These messages include sign-in links, price drop
             notifications, inquiry updates, and account notifications
             (dealer approval, hold/sold receipts). You can manage which
             notifications you receive from your Account page at any time.

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 import { getInitialUser } from "@/lib/auth";
 import { logPageView } from "@/lib/track";
+import { getFeaturedMarket } from "@/lib/markets";
 import DealerView, {
   type DealerProfile,
   type Market,
@@ -10,21 +11,19 @@ import DealerView, {
 } from "./dealer-view";
 
 /**
- * Server Component shell for the dealer profile page. Picks a market
- * (explicit ?market wins, else the earliest upcoming non-archived
- * market), then fetches dealer row + market row + dealer's items +
- * all items at that market, all in parallel. Favorites remain a
- * client-side fetch since they're per-user.
+ * Dealer profile. Under the persistent-booth model the page shows the
+ * dealer's full live catalog — no market filter. The "where to find
+ * them in person" line ("At Rose Bowl, Sun 5.10 · Booth 503") shows
+ * only when the dealer is attending the featured upcoming market.
+ *
+ * The legacy ?market=X query param is ignored.
  */
 export default async function DealerPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ market?: string }>;
 }) {
   const { id: dealerId } = await params;
-  const { market: queryMarket } = await searchParams;
   const [me, h] = await Promise.all([getInitialUser(), headers()]);
   logPageView({
     path: `/d/${dealerId}`,
@@ -33,18 +32,7 @@ export default async function DealerPage({
     userId: me?.id ?? null,
   });
 
-  // Resolve marketId: explicit query wins, otherwise the earliest upcoming
-  // non-archived market (matches the prior client-side behavior).
-  let marketId = queryMarket ?? null;
-  if (!marketId) {
-    const mRes = await db.execute({
-      sql: `SELECT id, status FROM markets
-            WHERE COALESCE(archived, 0) = 0
-            ORDER BY drop_at ASC
-            LIMIT 1`,
-    });
-    marketId = (mRes.rows[0]?.id as string | undefined) ?? null;
-  }
+  const featured = await getFeaturedMarket();
 
   const dealerQ = db.execute({
     sql: `
@@ -56,24 +44,11 @@ export default async function DealerPage({
     args: [dealerId],
   });
 
-  const boothQ = marketId
+  const featuredBoothQ = featured
     ? db.execute({
-        sql: `SELECT booth_number FROM booth_settings WHERE dealer_id = ? AND market_id = ?`,
-        args: [dealerId, marketId],
-      })
-    : Promise.resolve({ rows: [] as Record<string, unknown>[] });
-
-  const countQ = marketId
-    ? db.execute({
-        sql: `SELECT COUNT(*) as count FROM items WHERE dealer_id = ? AND market_id = ? AND status != 'deleted'`,
-        args: [dealerId, marketId],
-      })
-    : Promise.resolve({ rows: [{ count: 0 }] });
-
-  const marketQ = marketId
-    ? db.execute({
-        sql: `SELECT id, name, starts_at, status FROM markets WHERE id = ?`,
-        args: [marketId],
+        sql: `SELECT booth_number FROM booth_settings
+              WHERE dealer_id = ? AND market_id = ? AND declined = false`,
+        args: [dealerId, featured.id],
       })
     : Promise.resolve({ rows: [] as Record<string, unknown>[] });
 
@@ -88,49 +63,52 @@ export default async function DealerPage({
     JOIN dealers d ON d.id = i.dealer_id
   `;
 
-  const ownItemsQ = marketId
-    ? db.execute({
-        sql: `${itemsBaseSql} WHERE i.market_id = ? AND i.dealer_id = ? AND i.status != 'deleted' ORDER BY i.created_at DESC`,
-        args: [marketId, dealerId],
-      })
-    : Promise.resolve({ rows: [] as Record<string, unknown>[] });
+  // Dealer's full live catalog. Sold/held items show alongside, just
+  // visually de-emphasized — same way the dealer's own /sell page
+  // treats them.
+  const ownItemsQ = db.execute({
+    sql: `${itemsBaseSql} WHERE i.dealer_id = ? AND i.status != 'deleted' ORDER BY i.created_at DESC`,
+    args: [dealerId],
+  });
 
-  const allItemsQ = marketId
-    ? db.execute({
-        sql: `${itemsBaseSql} WHERE i.market_id = ? AND i.status != 'deleted' ORDER BY i.created_at DESC`,
-        args: [marketId],
-      })
-    : Promise.resolve({ rows: [] as Record<string, unknown>[] });
-
-  const [dealerRes, boothRes, countRes, marketRes, ownRes, allRes] =
-    await Promise.all([dealerQ, boothQ, countQ, marketQ, ownItemsQ, allItemsQ]);
+  const [dealerRes, featuredBoothRes, ownRes] = await Promise.all([
+    dealerQ,
+    featuredBoothQ,
+    ownItemsQ,
+  ]);
 
   if (dealerRes.rows.length === 0) notFound();
 
+  const featuredBoothNumber =
+    (featuredBoothRes.rows[0] as Record<string, unknown> | undefined)
+      ?.booth_number as string | null | undefined;
+
   const dealer = {
     ...(dealerRes.rows[0] as Record<string, unknown>),
-    booth_number:
-      (boothRes.rows[0] as Record<string, unknown> | undefined)?.booth_number ??
-      null,
-    item_count: Number(
-      (countRes.rows[0] as Record<string, unknown>)?.count ?? 0
-    ),
+    booth_number: featuredBoothNumber ?? null,
+    item_count: ownRes.rows.length,
   } as unknown as DealerProfile;
 
-  const market = (marketRes.rows[0] as unknown as Market | undefined) ?? null;
+  // The dealer-view component still expects a `market` prop. Pass
+  // featured if the dealer is attending it; otherwise null.
+  const market: Market | null =
+    featured && featuredBoothRes.rows.length > 0
+      ? {
+          id: featured.id,
+          name: featured.name,
+          starts_at: featured.starts_at,
+          status: featured.status,
+        }
+      : null;
 
   const ownItems = ownRes.rows as unknown as Item[];
-  const ownIds = new Set(ownItems.map((i) => i.id));
-  const otherItems = (allRes.rows as unknown as Item[]).filter(
-    (i) => !ownIds.has(i.id)
-  );
 
   return (
     <DealerView
       dealer={dealer}
       market={market}
       initialOwnItems={ownItems}
-      initialOtherItems={otherItems}
+      initialOtherItems={[]}
       dealerId={dealerId}
     />
   );

@@ -19,8 +19,6 @@ interface FavItem {
   original_price: number | null;
   status: string;
   dealer_name: string;
-  market_name: string;
-  market_id: string;
   photo_url: string | null;
   thumb_url: string | null;
   my_inquiry_message: string | null;
