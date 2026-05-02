@@ -3,9 +3,14 @@ import { headers } from "next/headers";
 import { getInitialUser } from "@/lib/auth";
 import { logPageView } from "@/lib/track";
 import { getFeaturedMarket } from "@/lib/markets";
-import HomeView, { type Market, type PreviewItem } from "./home-view";
+import HomeView, {
+  type Market,
+  type PreviewItem,
+  type StreamItem,
+} from "./home-view";
 
 const MAX_PROMO_ITEMS = 8;
+const STREAM_PAGE_SIZE = 30;
 
 /**
  * Single home page for everyone. Anon visitors see a landing-flavored
@@ -25,7 +30,7 @@ export default async function HomePage() {
     userId: me?.id ?? null,
   });
 
-  const [featured, marketsRes, pendingApp] = await Promise.all([
+  const [featured, marketsRes, pendingApp, streamRes] = await Promise.all([
     getFeaturedMarket(),
     db.execute(`
       SELECT
@@ -46,6 +51,22 @@ export default async function HomePage() {
           args: [me.id],
         })
       : Promise.resolve({ rows: [] as Record<string, unknown>[] }),
+    // The full FB-Marketplace-style stream — every dealer's live
+    // inventory, no attendance filter. Promo grid above is curated
+    // (attending only); this is the "browse everything" surface that
+    // lives on the home page below the editorial chrome.
+    db.execute(`
+      SELECT
+        i.id, i.title, i.price, i.status,
+        d.business_name as dealer_name,
+        (SELECT url FROM item_photos p WHERE p.item_id = i.id ORDER BY p.position LIMIT 1) as photo_url,
+        (SELECT thumb_url FROM item_photos p WHERE p.item_id = i.id ORDER BY p.position LIMIT 1) as thumb_url
+      FROM items i
+      JOIN dealers d ON d.id = i.dealer_id
+      WHERE i.status = 'live'
+      ORDER BY i.created_at DESC
+      LIMIT ${STREAM_PAGE_SIZE}
+    `),
   ]);
 
   const markets = marketsRes.rows as unknown as Market[];
@@ -83,6 +104,7 @@ export default async function HomePage() {
       featured={featured as unknown as Market | null}
       initialMarkets={markets}
       initialFeaturedItems={featuredItems}
+      initialStreamItems={streamRes.rows as unknown as StreamItem[]}
     />
   );
 }

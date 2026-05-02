@@ -47,18 +47,33 @@ export interface PreviewItem {
   dealer_name: string;
 }
 
+// StreamItem is the same shape — kept as a separate type so the home
+// page server fetch + the home view stay aligned without one mutating
+// the promo type accidentally.
+export interface StreamItem {
+  id: string;
+  title: string;
+  price: number;
+  status: string;
+  photo_url: string | null;
+  thumb_url: string | null;
+  dealer_name: string;
+}
+
 export default function HomeView({
   signedIn,
   pendingApp,
   featured,
   initialMarkets,
   initialFeaturedItems,
+  initialStreamItems,
 }: {
   signedIn: boolean;
   pendingApp: boolean;
   featured: Market | null;
   initialMarkets: Market[];
   initialFeaturedItems: PreviewItem[];
+  initialStreamItems: StreamItem[];
 }) {
   const [showSignIn, setShowSignIn] = useState(false);
   const featuredItems = initialFeaturedItems;
@@ -171,7 +186,7 @@ export default function HomeView({
 
           {/* Coming up — editorial rows */}
           {comingUp.length > 0 && (
-            <section className={`pt-6 ${signedIn ? "pb-24" : "pb-2 border-b border-eb-border"}`}>
+            <section className="pt-6 pb-2 border-b border-eb-border">
               <div className="px-5 text-eb-micro uppercase tracking-widest text-eb-muted mb-2">
                 Coming up
               </div>
@@ -213,6 +228,67 @@ export default function HomeView({
           <p className="text-eb-caption text-eb-muted mt-3 leading-relaxed">
             Next market hasn{"’"}t been announced yet. Check back soon.
           </p>
+        </section>
+      )}
+
+      {/* Full catalog stream — every dealer's live inventory, no
+          attendance filter. The "FB Marketplace" surface that lives
+          below the editorial promo. Caps at 30 here; "Browse all"
+          links to /buy for unbounded infinite scroll. */}
+      {initialStreamItems.length > 0 && (
+        <section className="pt-6">
+          <div className="px-5 text-eb-micro uppercase tracking-widest text-eb-muted mb-3">
+            Browse all items
+          </div>
+          <div className="eb-grid">
+            {initialStreamItems.map((item) => {
+              const isSold = item.status === "sold";
+              const isHeld = item.status === "hold";
+              return (
+                <Link
+                  key={item.id}
+                  href={`/item/${item.id}`}
+                  className={`eb-grid-card${isSold ? " eb-sold" : ""}`}
+                >
+                  {item.photo_url ? (
+                    <Image
+                      src={item.thumb_url || item.photo_url}
+                      alt={item.title}
+                      width={400}
+                      height={400}
+                      sizes="(max-width: 430px) 50vw, 215px"
+                      className="eb-photo"
+                    />
+                  ) : (
+                    <div className="eb-photo bg-eb-border" />
+                  )}
+                  <div className="eb-body">
+                    <div className="eb-title">{item.title}</div>
+                    <div className="flex items-center gap-2">
+                      <div className="eb-price">{formatPrice(item.price)}</div>
+                      {isHeld && <span className="eb-tag-hold">HELD</span>}
+                    </div>
+                    <div className="eb-dealer">
+                      <span className="eb-avatar eb-avatar-sm">
+                        {getInitials(item.dealer_name)}
+                      </span>
+                      <span className="eb-dealer-name">
+                        {item.dealer_name}
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+          <div className={`px-5 pt-4 ${signedIn ? "pb-24" : "pb-6"}`}>
+            <Link
+              href="/buy"
+              className="eb-btn block text-center"
+            >
+              Browse all {"→"}
+            </Link>
+          </div>
         </section>
       )}
 

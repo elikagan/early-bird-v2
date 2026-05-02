@@ -35,12 +35,12 @@ export default function BuyView({
   initialMarket,
   initialItems,
 }: {
-  initialMarket: Market;
+  initialMarket: Market | null;
   initialItems: Item[];
 }) {
   const { user } = useAuth();
-  const marketId = initialMarket.id;
   const market = initialMarket;
+  const marketId = initialMarket?.id ?? null;
 
   const [favMap, setFavMap] = useState<Map<string, string>>(new Map());
 
@@ -55,7 +55,8 @@ export default function BuyView({
   }, [user]);
 
   // Paginated items — seeded with the server's first page; subsequent
-  // pages fetched client-side as the user scrolls.
+  // pages fetched client-side as the user scrolls. When no market is
+  // set, /api/items returns the full unfiltered catalog.
   const {
     items,
     hasMore,
@@ -63,7 +64,9 @@ export default function BuyView({
     sentinelRef,
   } = useInfiniteItems<Item>(
     (offset, limit) =>
-      `/api/items?market_id=${marketId}&limit=${limit}&offset=${offset}`,
+      marketId
+        ? `/api/items?market_id=${marketId}&limit=${limit}&offset=${offset}`
+        : `/api/items?limit=${limit}&offset=${offset}`,
     undefined,
     [marketId],
     initialItems
@@ -110,9 +113,11 @@ export default function BuyView({
     <>
       <Masthead />
 
-      {/* Market header — matches /d/[id] and /early/[id] patterns:
-          muted eyebrow + big display name + date/location + stats. */}
+      {/* Header. Market mode = "Items at [name] · date". Unfiltered
+          mode = "Browsing · all dealers". */}
       <section className="px-5 pt-5 pb-5 border-b border-eb-border">
+        {market ? (
+        <>
         <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-1">
           Items at
         </div>
@@ -125,6 +130,20 @@ export default function BuyView({
             ? ` \u00b7 ${market.dealer_count} dealers selling`
             : ""}
         </div>
+        </>
+        ) : (
+        <>
+        <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-1">
+          Browsing
+        </div>
+        <h1 className="text-eb-display font-bold text-eb-black uppercase tracking-wider leading-tight">
+          All Items
+        </h1>
+        <div className="text-eb-meta text-eb-muted mt-2">
+          Every dealer{"\u2019"}s live inventory
+        </div>
+        </>
+        )}
       </section>
 
       <main className="pb-24">
@@ -203,9 +222,19 @@ export default function BuyView({
           <div className="eb-empty">
             <div className="eb-icon">{"\u25cb"}</div>
             <p>
-              Nothing posted to this market yet.
-              <br />
-              Check back soon.
+              {market ? (
+                <>
+                  Nothing posted to this market yet.
+                  <br />
+                  Check back soon.
+                </>
+              ) : (
+                <>
+                  No items live right now.
+                  <br />
+                  Check back soon.
+                </>
+              )}
             </p>
           </div>
         )}
