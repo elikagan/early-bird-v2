@@ -1656,11 +1656,12 @@ function DealersTab() {
           )}
           {!inviteUrl && inviteMode === "universal" && (
             <p className="text-eb-micro text-eb-muted leading-relaxed mb-3">
-              One link any dealer can use {"\u2014"} share it in IG bio,
-              dealer group DMs, etc. Stays valid until you revoke it. The
-              public earlybird.la/become-a-dealer route auto-points at the
-              most recent universal link, so you can also share that URL
-              directly.
+              Generates one link any dealer can use {"\u2014"} share it in IG
+              bio, dealer group DMs, etc. The code in the URL is the
+              secret; don{"\u2019"}t post it anywhere you wouldn{"\u2019"}t
+              want strangers signing up from. Stays valid until you
+              revoke it (just generate a new one and disable the old in
+              Supabase, or ask Claude to add a revoke button).
             </p>
           )}
 

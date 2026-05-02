@@ -102,15 +102,15 @@ export default function DealerLandingPage() {
           Ready to join?
         </div>
         <p className="text-eb-caption text-eb-muted leading-relaxed mb-5">
-          Set up your booth in about 60 seconds. Phone number, business
-          name, and you{"\u2019"}re live.
+          Early Bird is invite-only while we grow. Tell us a little about
+          your booth and we{"\u2019"}ll get you onboarded.
         </p>
-        <Link
-          href="/become-a-dealer"
+        <a
+          href="mailto:hi@earlybird.la?subject=Listing%20on%20Early%20Bird&body=Hi%20Early%20Bird%2C%0A%0AI%27d%20like%20to%20list%20on%20Early%20Bird.%20Here%27s%20a%20bit%20about%20me%3A%0A%0A-%20My%20business%3A%20%0A-%20Markets%20I%20sell%20at%3A%20%0A-%20Instagram%3A%20%0A-%20Phone%3A%20%0A%0AThanks"
           className="eb-btn text-center block"
         >
-          Set up my booth
-        </Link>
+          Email us
+        </a>
       </section>
 
       {/* Footer — brand, contact, legal */}
