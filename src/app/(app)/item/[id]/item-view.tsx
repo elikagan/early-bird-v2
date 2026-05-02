@@ -14,12 +14,9 @@ import {
   formatPhone,
   timeAgo,
 } from "@/lib/format";
-import {
-  SHOWS,
-  type ShowName,
-  marketReminderKey,
-  showForMarket,
-} from "@/lib/shows";
+// Market-followups + market-reminder opt-in plumbing retired with the
+// drop concept. The auto-subscribe flow on inquiry confirmation is
+// gone — buyers no longer get drop alerts.
 import { BottomNav, adjustNavCount } from "@/components/bottom-nav";
 import { useBodyScrollLock } from "@/lib/use-body-scroll-lock";
 
@@ -29,12 +26,16 @@ export interface Photo {
   position: number;
 }
 
-export interface Market {
-  id: string;
-  name: string;
-  location: string;
+/**
+ * The "where to find this dealer in person" line shown on the item
+ * page — only when the dealer has said yes to the featured market.
+ * Server-computed in page.tsx via getFeaturedMarket() + booth_settings.
+ */
+export interface FeaturedBooth {
+  market_id: string;
+  market_name: string;
   starts_at: string;
-  status: string;
+  booth_number: string | null;
 }
 
 export interface ItemDetail {
@@ -56,9 +57,7 @@ export interface ItemDetail {
   view_count: number;
   watcher_count: number;
   inquiry_count: number;
-  booth_number: string | null;
   photos: Photo[];
-  market: Market | null;
   is_favorited?: boolean;
   favorite_id?: string;
   my_inquiry_status?: string | null;
@@ -89,7 +88,13 @@ interface NewPhotoSlot {
 const MAX_PHOTOS = 5;
 const ACCEPTED_TYPES = "image/jpeg,image/png,image/webp,image/heic,image/heif";
 
-export default function ItemView({ initialItem }: { initialItem: ItemDetail }) {
+export default function ItemView({
+  initialItem,
+  featuredBooth,
+}: {
+  initialItem: ItemDetail;
+  featuredBooth: FeaturedBooth | null;
+}) {
   const id = initialItem.id;
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -236,87 +241,23 @@ export default function ItemView({ initialItem }: { initialItem: ItemDetail }) {
     false
   );
 
-  // Shows the buyer has opted into pre-market reminder SMS for.
-  // Seeded when the drawer enters "confirmed" state — we auto-sub
-  // them to the show they just inquired on (that's the consent
-  // signal). Extra shows are explicit-opt-in via checkbox.
-  const [subscribedShows, setSubscribedShows] = useState<Set<ShowName>>(
-    new Set()
-  );
-  const autoSubscribedRef = useRef(false);
+  // (Drop-era market-reminder subscriptions retired with the drop
+  //  concept. The auto-subscribe-on-inquiry flow + per-show toggle UI
+  //  are gone.)
 
   // When verify redirects us here with ?sent=1, open the drawer in
   // "confirmed" state. Then strip the query param via replaceState so
-  // browser Back from this page goes to the user's previous page
-  // (their listings grid), not a stale ?sent=1 URL.
+  // browser Back goes to the user's previous page, not a stale ?sent=1.
   useEffect(() => {
     if (searchParams.get("sent") !== "1") return;
     setShowInquiry(true);
     setAnonSent("confirmed");
-    // Clean the URL in-place without adding a history entry
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
       url.searchParams.delete("sent");
       window.history.replaceState({}, "", url.pathname + url.search);
     }
   }, [searchParams]);
-
-  // When the drawer enters "confirmed" state with an item loaded,
-  // auto-subscribe the buyer to pre-market reminders for the show
-  // they just inquired on. The inquiry itself is the consent signal;
-  // the UI lets them uncheck or add other shows from there.
-  // autoSubscribedRef guards against double-running when the user
-  // toggles back into the drawer.
-  useEffect(() => {
-    if (anonSent !== "confirmed") return;
-    if (!item?.market?.name) return;
-    if (autoSubscribedRef.current) return;
-    const show = showForMarket(item.market.name);
-    if (!show) return;
-
-    autoSubscribedRef.current = true;
-    setSubscribedShows((prev) => {
-      const next = new Set(prev);
-      next.add(show);
-      return next;
-    });
-    // Fire-and-forget PATCH to persist. If this fails, the local
-    // state still reflects the intent; the user can toggle to retry.
-    fetch("/api/users/me", {
-      method: "PATCH",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        notification_preferences: [
-          { key: marketReminderKey(show), enabled: true },
-        ],
-      }),
-    }).catch(() => {});
-  }, [anonSent, item]);
-
-  const toggleShowSubscription = useCallback(async (show: ShowName) => {
-    const key = marketReminderKey(show);
-    let nextEnabled = false;
-    setSubscribedShows((prev) => {
-      const next = new Set(prev);
-      if (next.has(show)) {
-        next.delete(show);
-        nextEnabled = false;
-      } else {
-        next.add(show);
-        nextEnabled = true;
-      }
-      return next;
-    });
-    await fetch("/api/users/me", {
-      method: "PATCH",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        notification_preferences: [{ key, enabled: nextEnabled }],
-      }),
-    }).catch(() => {});
-  }, []);
 
   // Confirm drawer (dealer-own)
   const [confirmInquiry, setConfirmInquiry] = useState<Inquiry | null>(null);
@@ -682,8 +623,16 @@ export default function ItemView({ initialItem }: { initialItem: ItemDetail }) {
     }
   }, [id, router, isOwner]);
 
-  const marketDate = item.market ? formatDate(item.market.starts_at) : "";
-  const boothStr = item.booth_number ? `Booth ${item.booth_number}` : null;
+  // Featured-market booth line ("At Rose Bowl, Sun 5.10 · Booth 503")
+  // shown on the dealer card when the dealer is at the featured upcoming
+  // market. Computed server-side, passed as a prop.
+  const featuredBoothLine = featuredBooth
+    ? `At ${featuredBooth.market_name}, ${formatDate(featuredBooth.starts_at)}${
+        featuredBooth.booth_number
+          ? ` · Booth ${featuredBooth.booth_number}`
+          : ""
+      }`
+    : null;
 
   // Edit mode: compute visible photos
   const keptPhotos = editing
@@ -697,17 +646,17 @@ export default function ItemView({ initialItem }: { initialItem: ItemDetail }) {
       <div className="flex items-center justify-between px-5 py-3 border-b border-eb-border">
         <button
           onClick={() => {
-            if (editing) { cancelEdit(); return; }
+            if (editing) {
+              cancelEdit();
+              return;
+            }
             // router.back() doesn't work when the user arrived via the
             // SMS inquiry-confirmation flow (the /v/[token] page was
-            // replaced out of history). Route explicitly based on who
-            // this is: dealer-owner → their /sell page for the item's
-            // market; signed-in buyer → /buy grid; anon → /early.
-            const marketId = item?.market?.id;
+            // replaced out of history). Route explicitly: dealer-owner
+            // → their /sell page (their full catalog); everyone else →
+            // home catalog.
             if (isOwner) {
-              router.push(marketId ? `/sell?market=${marketId}` : "/sell");
-            } else if (marketId) {
-              router.push(user ? `/buy?market=${marketId}` : `/early/${marketId}`);
+              router.push("/sell");
             } else {
               router.push("/");
             }
@@ -1153,7 +1102,7 @@ export default function ItemView({ initialItem }: { initialItem: ItemDetail }) {
       {/* Dealer card — links to dealer page (logged-in only) */}
       {!isOwner && !editing && user && (
         <Link
-          href={`/d/${item.dealer_ref}${item.market ? `?market=${item.market.id}&from=item` : "?from=item"}`}
+          href={`/d/${item.dealer_ref}?from=item`}
           className="mx-5 mb-5 p-4 border border-eb-border flex gap-3 items-center"
         >
           <span className="eb-avatar eb-avatar-lg">
@@ -1166,10 +1115,11 @@ export default function ItemView({ initialItem }: { initialItem: ItemDetail }) {
               </div>
               <span className="text-eb-meta text-eb-muted">{"\u2192"}</span>
             </div>
-            <div className="text-eb-meta text-eb-muted mt-0.5">
-              {boothStr ? `${boothStr} ${"\u00b7"} ` : ""}
-              {item.market?.name} {"\u00b7"} {marketDate}
-            </div>
+            {featuredBoothLine && (
+              <div className="text-eb-meta text-eb-muted mt-0.5">
+                {featuredBoothLine}
+              </div>
+            )}
             {item.dealer_instagram && (
               <div className="text-eb-meta text-eb-muted mt-0.5">
                 @{item.dealer_instagram.replace("@", "")}
@@ -1180,31 +1130,9 @@ export default function ItemView({ initialItem }: { initialItem: ItemDetail }) {
       )}
 
       {/* Market context — hidden in edit mode */}
-      {!editing && item.market && (
-        <section className="px-5 py-4">
-          <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-2">
-            {isOwner ? "Listed In" : "Available At"}
-          </div>
-          <div className="border border-eb-border p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-eb-body font-bold text-eb-black">
-                  {item.market.name}
-                </div>
-                <div className="text-eb-meta text-eb-muted mt-0.5">
-                  {marketDate} {"\u00b7"}{" "}
-                  {isOwner && boothStr ? boothStr : item.market.location}
-                </div>
-              </div>
-              {item.market.status === "live" && (
-                <span className="text-eb-micro uppercase tracking-wider text-eb-green">
-                  LIVE
-                </span>
-              )}
-            </div>
-          </div>
-        </section>
-      )}
+      {/* (Item-level "Available At" section retired with the persistent
+          booth model. The dealer-card line above shows where to find
+          this dealer in person if they're at the featured market.) */}
 
       {/* Dealer-browsing alert */}
       {isDealerBrowsing && !editing && (
@@ -1490,43 +1418,9 @@ export default function ItemView({ initialItem }: { initialItem: ItemDetail }) {
                   {"\u2019"}ll text you directly.
                 </p>
 
-                {/* Market reminders — show they just inquired on is
-                    auto-checked (inquiry = consent for that show).
-                    They can uncheck or add others. */}
-                <div className="mt-6 pt-5 border-t border-eb-border">
-                  <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-1">
-                    Market Reminders
-                  </div>
-                  <p className="text-eb-meta text-eb-muted leading-relaxed mb-3">
-                    Text me before each show to see what top dealers are
-                    bringing.
-                  </p>
-                  <div className="space-y-2">
-                    {SHOWS.map((show) => {
-                      const on = subscribedShows.has(show);
-                      return (
-                        <label
-                          key={show}
-                          className={`flex items-center gap-3 p-3 border-2 cursor-pointer ${
-                            on
-                              ? "border-eb-black bg-eb-white"
-                              : "border-eb-border"
-                          }`}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={on}
-                            onChange={() => toggleShowSubscription(show)}
-                            className="eb-check"
-                          />
-                          <div className="text-eb-body font-bold flex-1">
-                            {show}
-                          </div>
-                        </label>
-                      );
-                    })}
-                  </div>
-                </div>
+                {/* (Per-show market-reminder opt-in retired with the
+                    drop concept. Buyers no longer receive scheduled
+                    reminders.) */}
 
                 <button
                   className="eb-btn mt-5"
@@ -1536,9 +1430,6 @@ export default function ItemView({ initialItem }: { initialItem: ItemDetail }) {
                     setAnonName("");
                     setAnonPhone("");
                     setInquiryMsg("");
-                    // Reset the auto-subscribe guard so a fresh
-                    // inquiry next time can auto-subscribe again.
-                    autoSubscribedRef.current = false;
                   }}
                 >
                   Keep browsing

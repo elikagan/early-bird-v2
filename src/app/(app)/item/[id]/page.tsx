@@ -3,14 +3,21 @@ import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 import { getInitialUser } from "@/lib/auth";
 import { logPageView } from "@/lib/track";
-import ItemView, { type ItemDetail } from "./item-view";
+import { getFeaturedMarket } from "@/lib/markets";
+import ItemView, {
+  type ItemDetail,
+  type FeaturedBooth,
+} from "./item-view";
 
 /**
- * Server Component shell. Fetches the public item payload on the
- * server so the initial HTML ships with item data already in it —
- * kills the client-side render waterfall. Per-user bits (favorited,
- * my inquiry status) still fetch from /api/items/[id]/me after
- * mount inside the client <ItemView>.
+ * Server Component shell. Fetches the item + dealer payload, plus the
+ * dealer's "where to find them this week" booth (if any) — a single
+ * line shown on the dealer card when the dealer is at the featured
+ * upcoming market.
+ *
+ * Items no longer carry market_id under the persistent-booth model;
+ * the dealer-card market line comes from booth_settings + the
+ * featured-market helper, not from the item itself.
  */
 export default async function ItemPage({
   params,
@@ -39,13 +46,11 @@ export default async function ItemPage({
         u.id as dealer_user_id,
         (SELECT COUNT(*) FROM favorites f WHERE f.item_id = i.id) as watcher_count,
         (SELECT COUNT(*) FROM inquiries q WHERE q.item_id = i.id) as inquiry_count,
-        bs.booth_number,
         buyer.display_name as sold_to_name,
         buyer.avatar_url as sold_to_avatar
       FROM items i
       JOIN dealers d ON d.id = i.dealer_id
       JOIN users u ON u.id = d.user_id
-      LEFT JOIN booth_settings bs ON bs.dealer_id = d.id AND bs.market_id = i.market_id
       LEFT JOIN users buyer ON buyer.id = i.sold_to
       WHERE i.id = ?
     `,
@@ -56,33 +61,56 @@ export default async function ItemPage({
 
   const item = result.rows[0] as Record<string, unknown>;
 
-  const [photosRes, marketRes, methodsRes] = await Promise.all([
+  const [photosRes, methodsRes, featured] = await Promise.all([
     db.execute({
       sql: `SELECT id, url, thumb_url, position FROM item_photos WHERE item_id = ? ORDER BY position`,
       args: [id],
     }),
     db.execute({
-      sql: `SELECT id, name, location, drop_at, starts_at, status FROM markets WHERE id = ?`,
-      args: [item.market_id as string],
-    }),
-    db.execute({
       sql: `SELECT method, enabled FROM dealer_payment_methods WHERE dealer_id = ?`,
       args: [item.dealer_ref as string],
     }),
+    getFeaturedMarket(),
   ]);
 
-  item.photos = photosRes.rows;
-  item.market = marketRes.rows[0] || null;
-  item.dealer_payment_methods = methodsRes.rows;
+  // Dealer's featured-market booth — the "At Rose Bowl 5.10 · Booth 503"
+  // line shown on the item page. Only set if the dealer said yes to
+  // the featured market.
+  let featuredBooth: FeaturedBooth | null = null;
+  if (featured) {
+    const boothRes = await db.execute({
+      sql: `SELECT booth_number FROM booth_settings
+            WHERE dealer_id = ? AND market_id = ? AND declined = false`,
+      args: [item.dealer_ref as string, featured.id],
+    });
+    if (boothRes.rows.length > 0) {
+      featuredBooth = {
+        market_id: featured.id,
+        market_name: featured.name,
+        starts_at: featured.starts_at,
+        booth_number:
+          (boothRes.rows[0] as Record<string, unknown>).booth_number as
+            | string
+            | null,
+      };
+    }
+  }
 
-  // Fire-and-forget view-count increment. Same semantics as
-  // /api/items/[id] GET: always increments, including dealer
-  // self-views. Acceptable rounding error; see route.ts for details.
+  item.photos = photosRes.rows;
+  item.dealer_payment_methods = methodsRes.rows;
+  // (item.market intentionally not set — items have no market.)
+
+  // Fire-and-forget view-count increment.
   db.execute({
     sql: `UPDATE items SET view_count = view_count + 1 WHERE id = ?`,
     args: [id],
   }).catch(() => {});
   item.view_count = ((item.view_count as number) || 0) + 1;
 
-  return <ItemView initialItem={item as unknown as ItemDetail} />;
+  return (
+    <ItemView
+      initialItem={item as unknown as ItemDetail}
+      featuredBooth={featuredBooth}
+    />
+  );
 }
