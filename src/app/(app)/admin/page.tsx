@@ -2478,7 +2478,7 @@ interface BlastPreview {
 }
 
 const DEFAULT_BLAST_TEMPLATE =
-  "Early Bird — from Eli + Dave. Downtown Modernism is this Sunday 4/26. We're starting to send buyers to the app Thursday to pre-shop, it would be amazing if you could post at least 3 pieces today (one photo, a title and a price for each is all you need to do): {link}";
+  "Early Bird — from Eli + Dave. The Rose Bowl is this Sunday 5.10. Buyers will start browsing the app Thursday — it would be amazing if you could post at least 3 pieces today (one photo, title, and price each is all you need): {link}";
 
 function BlastTab() {
   const [preview, setPreview] = useState<BlastPreview | null>(null);

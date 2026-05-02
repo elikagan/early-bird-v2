@@ -135,8 +135,8 @@ export default function InvitePage() {
               You&apos;re Invited
             </h1>
             <p className="text-eb-meta text-eb-muted leading-relaxed mb-6">
-              Set up your seller account on Early Bird — the pre-shopping
-              preview for LA flea markets.
+              Set up your seller account on Early Bird — the marketplace
+              for LA flea market dealers.
             </p>
 
             <div className="space-y-4">

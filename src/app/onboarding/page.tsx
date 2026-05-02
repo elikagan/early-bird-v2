@@ -10,25 +10,17 @@ import { processImage } from "@/lib/image-processing";
 import { formatPhone, getInitials } from "@/lib/format";
 import { InstagramInput } from "@/components/instagram-input";
 import { Masthead } from "@/components/masthead";
-// (SHOWS, marketReminderKey: retired along with per-market reminder UI.)
-
-interface Market {
-  id: string;
-  name: string;
-  starts_at: string;
-}
+// (SHOWS, marketReminderKey: retired along with per-market reminder UI.
+//  Market list fetch is gone too — onboarding no longer asks the user
+//  to pick shows up front.)
 
 function OnboardingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, loading: authLoading, refreshUser } = useAuth();
   const [displayName, setDisplayName] = useState("");
-  const [markets, setMarkets] = useState<Market[]>([]);
-  // (followedMarkets retired with the per-market follow UI.)
   // Notification preferences captured during onboarding. `price_drops`
   // is default-on (watched-item alert — non-marketing, high value).
-  // Market-reminder opt-ins are per-show (keys like
-  // `market_reminder_rose_bowl`) and default-off — explicit consent.
   const [notifPrefs, setNotifPrefs] = useState<Record<string, boolean>>({
     price_drops: true,
   });
@@ -61,22 +53,6 @@ function OnboardingContent() {
       }
     }
   }, [authLoading, user, router]);
-
-  // Fetch available markets
-  useEffect(() => {
-    async function load() {
-      const res = await apiFetch("/api/markets");
-      if (res.ok) {
-        const data = await res.json();
-        setMarkets(data);
-        // No default selections. Explicit opt-in only — we don't
-        // auto-subscribe users to shows they didn't ask for.
-      }
-    }
-    load();
-  }, []);
-
-  // (toggleMarket retired with the per-market follow UI.)
 
   const toggleNotif = (key: string) => {
     setNotifPrefs((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -383,14 +359,6 @@ function OnboardingContent() {
         </section>
       )}
 
-      {/* Markets */}
-      {/* Per-market follow checkboxes used to live here and wrote to
-          buyer_market_follows with drop_alerts_enabled=true. That was
-          the drop-era design. The drop cron is retired now, so those
-          rows are inert. Per-show opt-in is the real feature and lives
-          below in "Market Reminders". Keeping onboarding to one section
-          per concept. */}
-
       {/* Notifications */}
       <section className="px-5 py-5 border-t border-eb-border">
         <div className="flex items-baseline gap-3 mb-3">
@@ -423,8 +391,6 @@ function OnboardingContent() {
             </div>
           </label>
         </div>
-
-        {/* (Per-market reminder opt-in retired with the drop concept.) */}
       </section>
 
       {/* Dealer: Terms */}

@@ -51,6 +51,11 @@ export function triggersForDays(days: number): BlastKind[] {
 /**
  * Default text the admin sees pre-filled. Placeholder `{link}` gets
  * swapped for each recipient's personalized URL at send time.
+ *
+ * Copy is grounded in the booth model: dealers confirm they're selling
+ * via the weekly /sell prompt and post inventory; buyers browse what
+ * dealers are bringing. We don't say "pre-shop" anymore — the catalog
+ * is always open, the show is just where you go pick things up.
  */
 export function defaultCopy(
   kind: BlastKind,
@@ -59,11 +64,11 @@ export function defaultCopy(
 ): string {
   switch (kind) {
     case "dealer_monday":
-      return `Early Bird: ${marketName} is this Sunday ${shortDate}. We're starting to send buyers to the app Thursday to pre-shop — please post at least 3 pieces by then (one photo, title, and price each is all you need): {link}`;
+      return `Early Bird: ${marketName} is Sunday ${shortDate}. Confirm you're selling there and post at least 3 items by Thursday — that's when buyers start browsing for the show (one photo, title, and price each is all you need): {link}`;
     case "dealer_thursday":
-      return `Early Bird: ${marketName} is Sunday ${shortDate}. Buyers are pre-shopping the app now. Make sure your items are posted: {link}`;
+      return `Early Bird: ${marketName} is Sunday ${shortDate}. Buyers are browsing for the show now — make sure your items are up: {link}`;
     case "buyer_thursday":
-      return `Early Bird: ${marketName} is this Sunday ${shortDate}. Start pre-shopping now: {link}`;
+      return `Early Bird: ${marketName} is Sunday ${shortDate}. See what dealers are bringing: {link}`;
   }
 }
 
