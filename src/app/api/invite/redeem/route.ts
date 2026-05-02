@@ -6,17 +6,21 @@ import { nanoid } from "nanoid";
 import { SESSION_COOKIE_NAME, SESSION_MAX_AGE, sessionCookieDomain } from "@/lib/auth";
 import { logEvent, EVT } from "@/lib/system-events";
 import { normalizeUSPhone } from "@/lib/phone";
-import { isValidShow } from "@/lib/shows";
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const { code, phone: bodyPhone, name, business_name, market_subscriptions } = body;
+  const { code, phone: bodyPhone, name, business_name } = body;
 
   // ── Validate code ──
   if (!code) return error("Invalid invite link");
 
+  // Multi-use invites stay valid forever; single-use go 410 once
+  // used_at is set. Either way, look up the row and read multi_use to
+  // decide whether to mark it used at the end.
   const invite = await db.execute({
-    sql: `SELECT id, phone FROM dealer_invites WHERE code = ? AND used_at IS NULL`,
+    sql: `SELECT id, phone, multi_use FROM dealer_invites
+          WHERE code = ?
+            AND (multi_use = true OR used_at IS NULL)`,
     args: [code],
   });
   if (invite.rows.length === 0) {
@@ -25,6 +29,7 @@ export async function POST(request: Request) {
   const inviteRow = invite.rows[0] as Record<string, unknown>;
   const inviteId = inviteRow.id as string;
   const invitePhone = (inviteRow.phone as string) || null;
+  const isMultiUse = inviteRow.multi_use === true;
 
   // ── Validate name + business_name ──
   if (!name || typeof name !== "string" || name.trim().length < 1 || name.trim().length > 60) {
@@ -39,18 +44,9 @@ export async function POST(request: Request) {
     return error("Business name is required (max 60 characters)");
   }
 
-  // ── Validate market_subscriptions: required, min 1, all from the
-  //    canonical show list. Dedupe to be safe. ──
-  if (!Array.isArray(market_subscriptions) || market_subscriptions.length === 0) {
-    return error("Pick at least one show you typically sell at");
-  }
-  const shows = Array.from(new Set(market_subscriptions.filter(isValidShow)));
-  if (shows.length === 0) {
-    return error("Pick at least one show you typically sell at");
-  }
-
-  // ── Resolve phone: admin-bound invite uses invite.phone (dealer
-  // can't override); legacy invite without phone uses body.phone. ──
+  // ── Resolve phone: admin-bound single-use invite uses invite.phone
+  //    (dealer can't override); multi-use invites are never bound to a
+  //    phone so the dealer enters their own. ──
   let normalizedPhone: string;
   if (invitePhone) {
     normalizedPhone = invitePhone;
@@ -93,16 +89,15 @@ export async function POST(request: Request) {
     args: [dealerId, userId, business_name.trim()],
   });
 
-  // (Old code wrote dealer_market_subscriptions here. The table is
-  //  retired — under the persistent-booth model the weekly /sell
-  //  prompt pre-fills from past booth_settings history instead.)
-  void shows;
-
-  // ── Mark invite as used ──
-  await db.execute({
-    sql: `UPDATE dealer_invites SET used_at = now(), used_by = ? WHERE id = ?`,
-    args: [userId, inviteId],
-  });
+  // ── Mark invite as used (single-use only) ──
+  // Multi-use invites stay open. Per-redemption tracking happens via
+  // the system_event we log below — that's the audit trail.
+  if (!isMultiUse) {
+    await db.execute({
+      sql: `UPDATE dealer_invites SET used_at = now(), used_by = ? WHERE id = ?`,
+      args: [userId, inviteId],
+    });
+  }
 
   // ── Create session directly — no magic-link SMS step. Invite code
   //    was the authorization artifact; phone was admin-verified; we
@@ -120,7 +115,12 @@ export async function POST(request: Request) {
     entity_type: "dealer",
     entity_id: dealerId,
     message: `Dealer redeemed invite and went live: ${business_name.trim()}`,
-    payload: { user_id: userId, invite_id: inviteId, admin_bound: !!invitePhone, shows },
+    payload: {
+      user_id: userId,
+      invite_id: inviteId,
+      admin_bound: !!invitePhone,
+      multi_use: isMultiUse,
+    },
   });
 
   const res = NextResponse.json({

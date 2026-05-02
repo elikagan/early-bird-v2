@@ -1155,12 +1155,16 @@ function DealersTab() {
   const [appFilter, setAppFilter] = useState<"pending" | "approved" | "rejected">("pending");
   const [approving, setApproving] = useState<string | null>(null);
 
-  // Invite link
+  // Invite link. `inviteMode` toggles between single-use (the existing
+  // path: phone-bound or bare, used once) and universal (multi-use, no
+  // phone, the same link works for every dealer who taps it).
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
   const [inviteGenerating, setInviteGenerating] = useState(false);
   const [inviteCopied, setInviteCopied] = useState(false);
   const [invitePhone, setInvitePhone] = useState("");
   const [invitePhoneSent, setInvitePhoneSent] = useState(false);
+  const [inviteIsMultiUse, setInviteIsMultiUse] = useState(false);
+  const [inviteMode, setInviteMode] = useState<"single" | "universal">("single");
   const [inviteError, setInviteError] = useState<string | null>(null);
 
   const loadUsers = async () => {
@@ -1268,20 +1272,25 @@ function DealersTab() {
     setApproving(null);
   };
 
-  const generateInvite = async (phoneInput?: string) => {
+  const generateInvite = async (
+    phoneInput?: string,
+    opts: { multiUse?: boolean } = {}
+  ) => {
     setInviteGenerating(true);
     setInviteCopied(false);
     setInviteError(null);
     const body: Record<string, unknown> = {};
     if (phoneInput) body.phone = phoneInput;
+    if (opts.multiUse) body.multi_use = true;
     const res = await apiFetch("/api/admin/invite-link", {
       method: "POST",
       body: JSON.stringify(body),
     });
     if (res.ok) {
-      const { url } = await res.json();
+      const { url, multi_use } = await res.json();
       setInviteUrl(url);
       setInvitePhoneSent(!!phoneInput);
+      setInviteIsMultiUse(!!multi_use);
     } else {
       const data = await res.json().catch(() => ({}));
       setInviteError(data.error || "Couldn't create invite");
@@ -1614,17 +1623,55 @@ function DealersTab() {
           <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-2">
             Invite a Dealer
           </div>
-          <p className="text-eb-micro text-eb-muted leading-relaxed mb-3">
-            Enter the dealer&apos;s phone number. They get an SMS with the
-            invite link and land directly in their booth after entering
-            their name and business. Leave phone blank to generate a
-            bare link you share manually.
-          </p>
+
+          {/* Mode toggle - single (existing) vs universal (new). */}
+          {!inviteUrl && (
+            <div className="flex gap-2 mb-3">
+              {(["single", "universal"] as const).map((m) => (
+                <button
+                  key={m}
+                  onClick={() => {
+                    setInviteMode(m);
+                    setInviteError(null);
+                  }}
+                  className={`py-2 px-4 text-eb-caption font-bold uppercase tracking-wider border-2 ${
+                    inviteMode === m
+                      ? "border-eb-black bg-eb-black text-white"
+                      : "border-eb-border text-eb-muted"
+                  }`}
+                >
+                  {m === "single" ? "One Dealer" : "Universal Link"}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {!inviteUrl && inviteMode === "single" && (
+            <p className="text-eb-micro text-eb-muted leading-relaxed mb-3">
+              Enter the dealer&apos;s phone. They get an SMS with the invite
+              link and land in their booth after entering their name and
+              business. Leave phone blank to generate a one-time link you
+              share manually. Each link works for one dealer.
+            </p>
+          )}
+          {!inviteUrl && inviteMode === "universal" && (
+            <p className="text-eb-micro text-eb-muted leading-relaxed mb-3">
+              One link any dealer can use {"\u2014"} share it in IG bio,
+              dealer group DMs, etc. Stays valid until you revoke it. The
+              public earlybird.la/become-a-dealer route auto-points at the
+              most recent universal link, so you can also share that URL
+              directly.
+            </p>
+          )}
 
           {inviteUrl ? (
             <div>
               <div className="text-eb-micro text-eb-green font-bold uppercase tracking-wider mb-2">
-                {invitePhoneSent ? "\u2713 Invite text sent" : "\u2713 Link ready"}
+                {inviteIsMultiUse
+                  ? "\u2713 Universal link ready"
+                  : invitePhoneSent
+                    ? "\u2713 Invite text sent"
+                    : "\u2713 Link ready"}
               </div>
               <div className="eb-input text-eb-micro break-all mb-2 select-all">
                 {inviteUrl}
@@ -1645,6 +1692,7 @@ function DealersTab() {
                     setInviteUrl(null);
                     setInvitePhone("");
                     setInvitePhoneSent(false);
+                    setInviteIsMultiUse(false);
                   }}
                   className="py-2 px-4 text-eb-caption font-bold border-2 border-eb-border text-eb-muted uppercase tracking-wider"
                 >
@@ -1652,7 +1700,7 @@ function DealersTab() {
                 </button>
               </div>
             </div>
-          ) : (
+          ) : inviteMode === "single" ? (
             <div className="space-y-2">
               <input
                 type="tel"
@@ -1685,6 +1733,21 @@ function DealersTab() {
                       : "Generate Link Only"}
                 </button>
               </div>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {inviteError && (
+                <p className="text-eb-meta text-eb-red">{inviteError}</p>
+              )}
+              <button
+                onClick={() => generateInvite(undefined, { multiUse: true })}
+                disabled={inviteGenerating}
+                className="py-2 px-4 text-eb-caption font-bold bg-eb-black text-white uppercase tracking-wider"
+              >
+                {inviteGenerating
+                  ? "Generating\u2026"
+                  : "Generate Universal Link"}
+              </button>
             </div>
           )}
         </div>

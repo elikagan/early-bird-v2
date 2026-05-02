@@ -16,10 +16,18 @@ export async function POST(request: Request) {
 
   const body = await request.json().catch(() => ({}));
   const rawPhone: string | undefined = body?.phone;
+  const multiUse = body?.multi_use === true;
 
-  // Phone is optional for back-compat — admins can still generate
-  // "bare" invite links to share manually. But when a phone IS
-  // provided, we pre-bind it to the invite and SMS the dealer.
+  // Multi-use invites can't be pre-bound to a phone. The whole point
+  // of multi-use is "anyone with this link," and a phone-bound invite
+  // would lock it to one person.
+  if (multiUse && rawPhone && String(rawPhone).trim()) {
+    return error("Universal invite links can't be tied to a phone");
+  }
+
+  // Single-use phone is optional for back-compat — admins can still
+  // generate "bare" single-use links to share manually. When a phone
+  // IS provided, we pre-bind it to the invite and SMS the dealer.
   let normalizedPhone: string | null = null;
   if (rawPhone && String(rawPhone).trim()) {
     const result = normalizeUSPhone(rawPhone);
@@ -31,8 +39,8 @@ export async function POST(request: Request) {
   const id = newId();
 
   await db.execute({
-    sql: `INSERT INTO dealer_invites (id, code, phone) VALUES (?, ?, ?)`,
-    args: [id, code, normalizedPhone],
+    sql: `INSERT INTO dealer_invites (id, code, phone, multi_use) VALUES (?, ?, ?, ?)`,
+    args: [id, code, normalizedPhone, multiUse],
   });
 
   const url = `${getBaseUrl(request)}/invite/${code}`;
@@ -48,5 +56,5 @@ export async function POST(request: Request) {
     });
   }
 
-  return json({ code, url, phone: normalizedPhone });
+  return json({ code, url, phone: normalizedPhone, multi_use: multiUse });
 }

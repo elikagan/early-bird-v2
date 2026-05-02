@@ -13,8 +13,12 @@ export async function GET(request: Request) {
 
   if (!code) return error("Missing code", 400);
 
+  // Multi-use invites stay valid forever (used_at is never set on
+  // them); single-use invites stay valid only until used_at is set.
   const result = await db.execute({
-    sql: `SELECT id, phone FROM dealer_invites WHERE code = ? AND used_at IS NULL`,
+    sql: `SELECT id, phone, multi_use FROM dealer_invites
+          WHERE code = ?
+            AND (multi_use = true OR used_at IS NULL)`,
     args: [code],
   });
 
@@ -24,7 +28,8 @@ export async function GET(request: Request) {
 
   const row = result.rows[0] as Record<string, unknown>;
   // Phone is returned so the invite page can pre-fill it read-only
-  // (new-style admin-bound invites). Null for legacy invites where the
-  // dealer still enters their own phone.
+  // for admin-bound single-use invites. Multi-use invites are never
+  // pre-bound to a phone (the same link is shared with many dealers),
+  // so phone comes back null for those and the dealer enters it.
   return json({ valid: true, phone: (row.phone as string) || null });
 }
