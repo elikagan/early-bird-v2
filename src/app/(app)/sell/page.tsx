@@ -1,15 +1,14 @@
 "use client";
 
-import { useEffect, useState, useCallback, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRequireAuth } from "@/lib/require-auth";
 import { apiFetch } from "@/lib/api-client";
-import { useBodyScrollLock } from "@/lib/use-body-scroll-lock";
-import { formatPrice, formatDate, formatShortDate } from "@/lib/format";
+import { formatPrice } from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
 import { Masthead } from "@/components/masthead";
+import { MarketAttendancePrompt } from "@/components/market-attendance-prompt";
 
 interface Item {
   id: string;
@@ -25,115 +24,27 @@ interface Item {
   sold_to: string | null;
 }
 
-interface Market {
-  id: string;
-  name: string;
-  starts_at: string;
-  drop_at: string;
-  status: string;
-  item_count: number;
-}
-
 function SellContent() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
   const { user } = useRequireAuth();
   const [items, setItems] = useState<Item[]>([]);
-  const [market, setMarket] = useState<Market | null>(null);
   const [loading, setLoading] = useState(true);
-  const [boothNumber, setBoothNumber] = useState("");
-  const [boothSaving, setBoothSaving] = useState(false);
-  const [boothSaved, setBoothSaved] = useState(false);
-  const [boothSaveError, setBoothSaveError] = useState<string | null>(null);
   const [linkCopied, setLinkCopied] = useState(false);
-  // All markets the app knows about — powers the show-switcher drawer.
-  // The currently-selected market is `market` above; this list also
-  // includes upcoming / past markets so the dealer can see what's
-  // coming even though those aren't open for inventory yet.
-  const [allMarkets, setAllMarkets] = useState<Market[]>([]);
-  const [showSwitcher, setShowSwitcher] = useState(false);
-  const [showBoothEditor, setShowBoothEditor] = useState(false);
-
-  useBodyScrollLock(showSwitcher || showBoothEditor);
-  const [boothEditDraft, setBoothEditDraft] = useState("");
   // When true, the items grid is filtered to only items with an open
   // inquiry. Toggled by tapping the Inquiries stat tile.
   const [inquiryFilter, setInquiryFilter] = useState(false);
-
-  const marketId = searchParams.get("market");
 
   useEffect(() => {
     if (!user?.dealer_id) return;
 
     async function load() {
-      let mktId = marketId;
-
-      // Always fetch the markets list — used to pick the default
-      // market AND to populate the show-switcher drawer.
-      const marketsRes = await apiFetch("/api/markets");
-      let markets: Market[] = [];
-      if (marketsRes.ok) {
-        markets = await marketsRes.json();
-        setAllMarkets(markets);
-      }
-
-      if (!mktId && markets.length > 0) {
-        const live = markets.find((m: Market) => m.status === "live");
-        mktId = (live || markets[0]).id;
-      }
-
-      if (!mktId) {
-        setLoading(false);
-        return;
-      }
-
-      const [itemsRes, marketRes] = await Promise.all([
-        apiFetch(`/api/items?market_id=${mktId}&dealer_id=${user!.dealer_id}`),
-        apiFetch(`/api/markets/${mktId}`),
-      ]);
-
+      const itemsRes = await apiFetch(
+        `/api/items?dealer_id=${user!.dealer_id}`
+      );
       if (itemsRes.ok) setItems(await itemsRes.json());
-      if (marketRes.ok) setMarket(await marketRes.json());
-
-      // Load booth number
-      const boothRes = await apiFetch(`/api/booth/${mktId}`);
-      if (boothRes.ok) {
-        const boothData = await boothRes.json();
-        setBoothNumber(boothData.booth_number || "");
-      }
-
       setLoading(false);
     }
-    load();
-  }, [marketId, user]);
-
-  const saveBooth = useCallback(
-    async (value: string) => {
-      if (!market) return;
-      const previous = boothNumber;
-      // Optimistic update — revert below if the server rejects.
-      setBoothNumber(value);
-      setBoothSaving(true);
-      setBoothSaveError(null);
-      const res = await apiFetch("/api/booth", {
-        method: "POST",
-        body: JSON.stringify({
-          market_id: market.id,
-          booth_number: value.trim() || null,
-        }),
-      });
-      setBoothSaving(false);
-      if (res.ok) {
-        setBoothSaved(true);
-        setTimeout(() => setBoothSaved(false), 1500);
-      } else {
-        setBoothNumber(previous);
-        setBoothSaveError("Couldn't save booth number — try again.");
-        setTimeout(() => setBoothSaveError(null), 3500);
-      }
-    },
-    [market, boothNumber]
-  );
+    void load();
+  }, [user]);
 
   if (loading) {
     return (
@@ -152,10 +63,6 @@ function SellContent() {
     (s, i) => s + (i.inquiry_count || 0),
     0
   );
-  // Filter honors sold vs open — we count sold inquiries in the stat
-  // header but hide sold items from the filtered grid, since the
-  // filter's job is "where do I need to act?" and a sold item doesn't
-  // need action.
   const visibleItems = inquiryFilter
     ? items.filter((i) => i.status !== "sold" && i.inquiry_count > 0)
     : items;
@@ -163,6 +70,11 @@ function SellContent() {
   return (
     <>
       <Masthead right={null} />
+
+      {/* Weekly attendance prompt — appears when there's a featured
+          market the dealer hasn't answered for yet, collapses to a
+          confirmation badge once they have. */}
+      <MarketAttendancePrompt />
 
       {/* Stats. The Inquiries tile is the only one that's actually
           actionable — tapping it filters the grid to just items with
@@ -195,197 +107,24 @@ function SellContent() {
         </button>
       </div>
 
-      {/* Previously: "FINISH SETUP — Tell us which shows you sell at"
-          banner that linked to /account when dealer_market_subscriptions
-          was empty. Removed: it implied setup was blocking when it
-          wasn't, and the subscription data is only used by the
-          scheduled reminder crons (not the primary send path). If a
-          dealer needs to pick shows, the picker lives in /account. */}
-
-      {/* Header — two columns on one row. Each value IS the button.
-          Market on the left, booth on the right.  */}
-      {market && (
-        <div className="px-5 py-4 border-b border-eb-border">
-          {boothSaveError && (
-            <p className="text-eb-meta text-eb-red mb-2" role="alert">
-              {boothSaveError}
-            </p>
-          )}
-          <div className="flex items-start justify-between gap-5">
-            <div className="flex-1 min-w-0">
-              <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-0.5 truncate">
-                Your booth
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowSwitcher(true)}
-                className="text-eb-title font-bold text-eb-black truncate max-w-full text-left underline decoration-eb-pop decoration-2 underline-offset-4 active:opacity-60 transition-opacity"
-              >
-                {market.name}
-                <span className="text-eb-meta font-normal text-eb-muted ml-2 tabular-nums no-underline">
-                  {formatShortDate(market.starts_at)}
-                </span>
-              </button>
-            </div>
-            <div className="shrink-0 text-right">
-              <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-0.5">
-                Booth #
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setBoothEditDraft(boothNumber);
-                  setShowBoothEditor(true);
-                }}
-                className={`text-eb-title font-bold tabular-nums underline decoration-eb-pop decoration-2 underline-offset-4 active:opacity-60 transition-opacity ${
-                  boothNumber ? "text-eb-black" : "text-eb-pop"
-                }`}
-              >
-                {boothNumber || "Set"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Booth editor drawer — 16px input so iOS doesn't auto-zoom,
-          and focus/dismiss are clean. */}
-      {showBoothEditor && (
-        <>
-          <div
-            className="fixed inset-0 bg-black/40 z-40"
-            onClick={() => setShowBoothEditor(false)}
-          />
-          <div className="fixed bottom-0 left-0 right-0 max-w-[430px] mx-auto bg-white rounded-t-2xl border-t border-eb-border z-50 px-5 pt-3 pb-6">
-            <div className="w-12 h-1 bg-eb-border rounded-full mx-auto mb-4" />
-            <h3 className="text-eb-title font-bold uppercase tracking-widest text-eb-black">
-              Booth number
-            </h3>
-            <p className="text-eb-caption text-eb-muted mt-1 mb-5 leading-relaxed">
-              Buyers see this on your listings so they can find you at{" "}
-              {market?.name}.
-            </p>
-            <input
-              type="text"
-              className="eb-input tabular-nums"
-              style={{ fontSize: "16px" }}
-              value={boothEditDraft}
-              onChange={(e) =>
-                setBoothEditDraft(
-                  // Allow letters, digits, dash, slash — real booth
-                  // numbers include formats like "A-12" or "B/4".
-                  e.target.value.replace(/[^a-zA-Z0-9\-/]/g, "").slice(0, 10)
-                )
-              }
-              placeholder="A12"
-              inputMode="text"
-              autoFocus
-            />
-            <div className="flex gap-2 mt-4">
-              <button
-                onClick={() => setShowBoothEditor(false)}
-                className="shrink-0 px-5 py-3 text-eb-caption font-bold uppercase tracking-wider border border-eb-border text-eb-text"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={async () => {
-                  setShowBoothEditor(false);
-                  await saveBooth(boothEditDraft);
-                }}
-                className="flex-1 py-3 text-eb-caption font-bold uppercase tracking-wider bg-eb-black text-white"
-              >
-                Save
-              </button>
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* Show-switcher drawer */}
-      {showSwitcher && (
-        <>
-          <div
-            className="fixed inset-0 bg-black/40 z-40"
-            onClick={() => setShowSwitcher(false)}
-          />
-          <div className="fixed bottom-0 left-0 right-0 max-w-[430px] mx-auto bg-white rounded-t-2xl border-t border-eb-border z-50 px-5 pt-3 pb-6">
-            <div className="w-12 h-1 bg-eb-border rounded-full mx-auto mb-4" />
-            <h3 className="text-eb-title font-bold uppercase tracking-widest text-eb-black">
-              Switch show
-            </h3>
-            <p className="text-eb-caption text-eb-muted mt-1 mb-4 leading-relaxed">
-              You can pre-shop any upcoming show once inventory opens
-              for dealers.
-            </p>
-            <div className="divide-y divide-eb-border border-y border-eb-border">
-              {allMarkets.map((m) => {
-                const isCurrent = m.id === market?.id;
-                // Dealers can switch between any non-archived upcoming or
-                // live market they're participating in. The drop mechanic
-                // is retired — there's no "pre-shop" gate anymore.
-                const canSwitch = !isCurrent && m.status !== "closed";
-                return (
-                  <button
-                    key={m.id}
-                    type="button"
-                    disabled={!canSwitch}
-                    onClick={() => {
-                      if (!canSwitch) return;
-                      setShowSwitcher(false);
-                      router.push(`/sell?market=${m.id}`);
-                    }}
-                    className={`w-full flex items-start justify-between gap-4 px-1 py-3 text-left ${
-                      canSwitch
-                        ? "active:bg-eb-border/40"
-                        : "cursor-not-allowed opacity-50"
-                    }`}
-                  >
-                    <div className="min-w-0">
-                      <div className="text-eb-body font-bold text-eb-black truncate">
-                        {m.name}
-                        {isCurrent && (
-                          <span className="ml-2 text-eb-micro uppercase tracking-widest text-eb-pop font-bold">
-                            Current
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-eb-meta text-eb-muted mt-1">
-                        {new Date(m.starts_at).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </div>
-                    </div>
-                    {canSwitch && (
-                      <span className="shrink-0 text-eb-caption text-eb-muted mt-0.5">
-                        {"\u2192"}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* Share your booth */}
-      {market && user?.dealer_id && (
+      {/* Share your booth — links to the dealer's persistent profile
+          page so the link works forever, not just for one market. */}
+      {user?.dealer_id && (
         <div className="px-5 py-4 border-b border-eb-border">
           <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-2">
             Share your booth
           </div>
           <p className="text-eb-caption text-eb-muted mb-3 leading-relaxed">
-            Post this link so buyers can see everything you{"\u2019"}re bringing.
+            Post this link on Instagram so buyers can browse everything
+            you{"’"}re selling.
           </p>
           <div className="flex gap-2 items-stretch">
             <div className="flex-1 flex items-center py-3 px-4 bg-white border-2 border-eb-border text-eb-caption text-eb-text truncate">
-              earlybird.la/d/{user.dealer_id}?market={market.id}
+              earlybird.la/d/{user.dealer_id}
             </div>
             <button
               onClick={async () => {
-                const url = `${window.location.origin}/d/${user.dealer_id}?market=${market.id}`;
+                const url = `${window.location.origin}/d/${user.dealer_id}`;
                 await navigator.clipboard.writeText(url);
                 setLinkCopied(true);
                 setTimeout(() => setLinkCopied(false), 2000);
@@ -398,14 +137,9 @@ function SellContent() {
         </div>
       )}
 
-      {/* Add listing — big obvious button above the grid so it's
-          the first thing a dealer sees after their booth header.
-          Pairs with the FAB for scroll-away reachability. */}
+      {/* Add listing — big obvious button above the grid */}
       <div className="px-5 py-4 border-b border-eb-border">
-        <Link
-          href={`/sell/add${market ? `?market=${market.id}` : ""}`}
-          className="eb-btn block text-center"
-        >
+        <Link href="/sell/add" className="eb-btn block text-center">
           + Add a new item
         </Link>
       </div>
@@ -430,74 +164,78 @@ function SellContent() {
               </div>
             )}
             <div className="eb-grid mt-3">
-            {visibleItems.map((item) => {
-              const isSold = item.status === "sold";
-              const isHeld = item.status === "hold";
-              const isDeleted = item.status === "deleted";
-              const hasInquiries = !isSold && item.inquiry_count > 0;
-              return (
-                <Link
-                  key={item.id}
-                  href={`/item/${item.id}`}
-                  className={`eb-grid-card${isSold || isDeleted ? " eb-sold" : ""}${hasInquiries ? " eb-grid-card-inquiry" : ""}`}
-                >
-                  {item.photo_url ? (
-                    <Image
-                      src={item.thumb_url || item.photo_url}
-                      alt={item.title}
-                      width={400}
-                      height={400}
-                      sizes="(max-width: 430px) 50vw, 215px"
-                      className="eb-photo"
-                    />
-                  ) : (
-                    <div className="eb-photo bg-eb-border" />
-                  )}
-                  <div className="eb-body">
-                    <div className="eb-title">{item.title}</div>
-                    <div className="eb-price">
-                      {formatPrice(item.price)}
-                      {item.original_price && (
-                        <span className="eb-price-was">
-                          {formatPrice(item.original_price)}
-                        </span>
-                      )}
-                    </div>
-                    {hasInquiries && (
-                      <div className="mt-2">
-                        <span className="eb-tag-inquiry">
-                          {item.inquiry_count}{" "}
-                          {item.inquiry_count === 1 ? "Inquiry" : "Inquiries"}{" "}
-                          {"\u2192"}
-                        </span>
-                      </div>
+              {visibleItems.map((item) => {
+                const isSold = item.status === "sold";
+                const isHeld = item.status === "hold";
+                const isDeleted = item.status === "deleted";
+                const hasInquiries = !isSold && item.inquiry_count > 0;
+                return (
+                  <Link
+                    key={item.id}
+                    href={`/item/${item.id}`}
+                    className={`eb-grid-card${
+                      isSold || isDeleted ? " eb-sold" : ""
+                    }${hasInquiries ? " eb-grid-card-inquiry" : ""}`}
+                  >
+                    {item.photo_url ? (
+                      <Image
+                        src={item.thumb_url || item.photo_url}
+                        alt={item.title}
+                        width={400}
+                        height={400}
+                        sizes="(max-width: 430px) 50vw, 215px"
+                        className="eb-photo"
+                      />
+                    ) : (
+                      <div className="eb-photo bg-eb-border" />
                     )}
-                    {!isSold &&
-                      !hasInquiries &&
-                      item.watcher_count > 0 && (
+                    <div className="eb-body">
+                      <div className="eb-title">{item.title}</div>
+                      <div className="eb-price">
+                        {formatPrice(item.price)}
+                        {item.original_price && (
+                          <span className="eb-price-was">
+                            {formatPrice(item.original_price)}
+                          </span>
+                        )}
+                      </div>
+                      {hasInquiries && (
+                        <div className="mt-2">
+                          <span className="eb-tag-inquiry">
+                            {item.inquiry_count}{" "}
+                            {item.inquiry_count === 1
+                              ? "Inquiry"
+                              : "Inquiries"}{" "}
+                            {"→"}
+                          </span>
+                        </div>
+                      )}
+                      {!isSold && !hasInquiries && item.watcher_count > 0 && (
                         <div className="text-eb-meta text-eb-muted mt-1 truncate">
                           {item.watcher_count} watchers
                         </div>
                       )}
-                    {isSold && (
-                      <div className="text-eb-meta text-eb-muted mt-2">
-                        Sold
-                      </div>
-                    )}
-                    {isHeld && (
-                      <div className="mt-2">
-                        <span className="eb-tag-hold inline-block">HELD</span>
-                      </div>
-                    )}
-                    {isDeleted && (
-                      <div className="text-eb-meta text-eb-muted mt-2">
-                        Removed
-                      </div>
-                    )}
-                  </div>
-                </Link>
-              );
-            })}
+                      {isSold && (
+                        <div className="text-eb-meta text-eb-muted mt-2">
+                          Sold
+                        </div>
+                      )}
+                      {isHeld && (
+                        <div className="mt-2">
+                          <span className="eb-tag-hold inline-block">
+                            HELD
+                          </span>
+                        </div>
+                      )}
+                      {isDeleted && (
+                        <div className="text-eb-meta text-eb-muted mt-2">
+                          Removed
+                        </div>
+                      )}
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           </>
         ) : (
@@ -508,20 +246,14 @@ function SellContent() {
               <br />
               Add your first listing to get started.
             </p>
-            <Link
-              href={`/sell/add${market ? `?market=${market.id}` : ""}`}
-            >
-              Add a listing →
-            </Link>
+            <Link href="/sell/add">Add a listing →</Link>
           </div>
         )}
       </main>
 
-      {/* FAB — sits above the bottom nav (which is z-10 per globals
-          .eb-bnav). bottom-24 clears the nav + iOS safe-area even on
-          notched phones. */}
+      {/* FAB */}
       <Link
-        href={`/sell/add${market ? `?market=${market.id}` : ""}`}
+        href="/sell/add"
         aria-label="Add a new item"
         className="fixed bottom-24 right-4 w-14 h-14 rounded-full bg-eb-black text-white flex items-center justify-center text-2xl font-bold shadow-lg z-20"
         style={{ bottom: "calc(5rem + env(safe-area-inset-bottom, 0px))" }}
