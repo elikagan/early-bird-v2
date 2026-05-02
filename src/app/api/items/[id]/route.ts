@@ -29,13 +29,11 @@ export async function GET(
         u.id as dealer_user_id,
         (SELECT COUNT(*) FROM favorites f WHERE f.item_id = i.id) as watcher_count,
         (SELECT COUNT(*) FROM inquiries q WHERE q.item_id = i.id) as inquiry_count,
-        bs.booth_number,
         buyer.display_name as sold_to_name,
         buyer.avatar_url as sold_to_avatar
       FROM items i
       JOIN dealers d ON d.id = i.dealer_id
       JOIN users u ON u.id = d.user_id
-      LEFT JOIN booth_settings bs ON bs.dealer_id = d.id AND bs.market_id = i.market_id
       LEFT JOIN users buyer ON buyer.id = i.sold_to
       WHERE i.id = ?
     `,
@@ -46,14 +44,15 @@ export async function GET(
 
   const item = result.rows[0] as Record<string, unknown>;
 
-  const [photosRes, marketRes, methodsRes] = await Promise.all([
+  // Items no longer reference a market directly. The featured-market
+  // booth (if any) is computed by the page that needs it — see
+  // src/lib/markets.ts#getFeaturedMarket and the per-item booth
+  // resolver. The /api/items/[id] payload here just covers the item
+  // and dealer; market context is layered on at the page level.
+  const [photosRes, methodsRes] = await Promise.all([
     db.execute({
       sql: `SELECT id, url, thumb_url, position FROM item_photos WHERE item_id = ? ORDER BY position`,
       args: [id],
-    }),
-    db.execute({
-      sql: `SELECT id, name, location, drop_at, starts_at, status FROM markets WHERE id = ?`,
-      args: [item.market_id as string],
     }),
     db.execute({
       sql: `SELECT method, enabled FROM dealer_payment_methods WHERE dealer_id = ?`,
@@ -62,7 +61,6 @@ export async function GET(
   ]);
 
   (item as Record<string, unknown>).photos = photosRes.rows;
-  (item as Record<string, unknown>).market = marketRes.rows[0] || null;
   (item as Record<string, unknown>).dealer_payment_methods = methodsRes.rows;
 
   // Fire-and-forget view-count increment. Can't gate on is-owner here
@@ -242,27 +240,22 @@ export async function PATCH(
   after(async () => {
     try {
       async function getReceiptContext() {
+        // Sold-receipt SMS only uses dealer business_name + item title
+        // (composeSoldReceipt's signature). The original helper joined
+        // markets via items.market_id, which no longer exists. Now
+        // it's just the dealer name.
         const ctx = await db.execute({
           sql: `
-            SELECT d.business_name, bs.booth_number, m.name as market_name, m.starts_at
+            SELECT d.business_name
             FROM items i
             JOIN dealers d ON d.id = i.dealer_id
-            LEFT JOIN booth_settings bs ON bs.dealer_id = d.id AND bs.market_id = i.market_id
-            JOIN markets m ON m.id = i.market_id
             WHERE i.id = ?
           `,
           args: [id],
         });
         const row = ctx.rows[0] as Record<string, unknown>;
-        const startDate = new Date(row.starts_at as string);
-        const dateStr = startDate.toLocaleDateString("en-US", {
-          weekday: "short", month: "short", day: "numeric",
-        });
         return {
           dealerName: row.business_name as string,
-          boothNumber: row.booth_number as string | null,
-          marketName: row.market_name as string,
-          marketDate: dateStr,
         };
       }
 

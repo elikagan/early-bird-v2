@@ -8,9 +8,9 @@ import BuyView, { type Market, type Item } from "./buy-view";
 const PAGE_SIZE = 30;
 
 /**
- * Server Component shell. Fetches the market row and the first page
- * of items server-side so they ship in the initial HTML (no post-
- * hydrate round-trip). Favorites + infinite scroll stay client-side.
+ * Strict-filter view. ?market=X narrows the catalog to "items by
+ * dealers who said yes to this market" (booth_settings, declined=false).
+ * Favorites + infinite scroll stay client-side.
  */
 export default async function BuyPage({
   searchParams,
@@ -31,9 +31,9 @@ export default async function BuyPage({
     db.execute({
       sql: `
         SELECT
-          m.*,
-          (SELECT COUNT(*) FROM booth_settings bs WHERE bs.market_id = m.id) as dealer_count,
-          (SELECT COUNT(*) FROM items i WHERE i.market_id = m.id) as item_count
+          m.id, m.name, m.location, m.starts_at, m.drop_at, m.status, m.archived,
+          (SELECT COUNT(DISTINCT bs.dealer_id) FROM booth_settings bs
+            WHERE bs.market_id = m.id AND bs.declined = false) as dealer_count
         FROM markets m
         WHERE m.id = ?
       `,
@@ -53,7 +53,11 @@ export default async function BuyPage({
         FROM items i
         JOIN dealers d ON d.id = i.dealer_id
         JOIN users u ON u.id = d.user_id
-        WHERE i.market_id = ? AND i.status != 'deleted'
+        WHERE i.dealer_id IN (
+          SELECT bs.dealer_id FROM booth_settings bs
+          WHERE bs.market_id = ? AND bs.declined = false
+        )
+        AND i.status != 'deleted'
         ORDER BY i.created_at DESC
         LIMIT ${PAGE_SIZE}
       `,

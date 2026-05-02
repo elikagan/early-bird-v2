@@ -3,17 +3,17 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { getInitialUser } from "@/lib/auth";
 import { logPageView } from "@/lib/track";
+import { getFeaturedMarket } from "@/lib/markets";
 import LandingView, { type Market, type PreviewItem } from "./landing-view";
 
 const MAX_PROMO_ITEMS = 8;
 
 /**
- * Public landing page. Server-fetches markets + the featured market's
- * first page of items so the HTML Instagram's in-app browser lands on
- * has everything already in it — no client-side fetch to fail.
+ * Public landing page. Shows the featured market as editorial lead +
+ * a catalog of every live item, with attending-dealer items first
+ * and non-attending items mixed in below for freshness.
  *
- * Signed-in users redirect server-side to /home (their personalized
- * feed). No spinner flash on the way.
+ * Signed-in users redirect to /home.
  */
 export default async function HomePage() {
   const me = await getInitialUser();
@@ -26,20 +26,20 @@ export default async function HomePage() {
   });
   if (me) redirect("/home");
 
-  const marketsRes = await db.execute({
-    sql: `
+  const [featured, marketsRes] = await Promise.all([
+    getFeaturedMarket(),
+    db.execute(`
       SELECT
-        m.*,
-        (SELECT COUNT(*) FROM booth_settings bs WHERE bs.market_id = m.id) as dealer_count,
-        (SELECT COUNT(*) FROM items i WHERE i.market_id = m.id) as item_count
+        m.id, m.name, m.location, m.starts_at, m.drop_at, m.status, m.archived,
+        (SELECT COUNT(DISTINCT bs.dealer_id) FROM booth_settings bs
+          WHERE bs.market_id = m.id AND bs.declined = false) as dealer_count
       FROM markets m
       WHERE COALESCE(m.archived, 0) = 0
-      ORDER BY m.drop_at ASC
-    `,
-  });
+      ORDER BY m.starts_at ASC
+    `),
+  ]);
 
   const markets = marketsRes.rows as unknown as Market[];
-  const featured = markets[0];
 
   let featuredItems: PreviewItem[] = [];
   if (featured) {
@@ -50,11 +50,14 @@ export default async function HomePage() {
           d.id as dealer_ref,
           d.business_name as dealer_name,
           (SELECT url FROM item_photos p WHERE p.item_id = i.id ORDER BY p.position LIMIT 1) as photo_url,
-          (SELECT thumb_url FROM item_photos p WHERE p.item_id = i.id ORDER BY p.position LIMIT 1) as thumb_url
+          (SELECT thumb_url FROM item_photos p WHERE p.item_id = i.id ORDER BY p.position LIMIT 1) as thumb_url,
+          CASE WHEN bs.dealer_id IS NOT NULL THEN 1 ELSE 0 END as at_featured
         FROM items i
         JOIN dealers d ON d.id = i.dealer_id
-        WHERE i.market_id = ? AND i.status != 'deleted'
-        ORDER BY i.created_at DESC
+        LEFT JOIN booth_settings bs
+          ON bs.dealer_id = d.id AND bs.market_id = ? AND bs.declined = false
+        WHERE i.status = 'live'
+        ORDER BY at_featured DESC, i.created_at DESC
         LIMIT ${MAX_PROMO_ITEMS}
       `,
       args: [featured.id],
@@ -64,6 +67,7 @@ export default async function HomePage() {
 
   return (
     <LandingView
+      featured={featured as unknown as Market | null}
       initialMarkets={markets}
       initialFeaturedItems={featuredItems}
     />

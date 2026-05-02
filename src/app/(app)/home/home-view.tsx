@@ -10,8 +10,7 @@ import {
   formatPrice,
   formatShortDate,
   getInitials,
-  marketEyebrow,
-  daysUntilLabel,
+  daysUntilShort,
 } from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
 import { Masthead } from "@/components/masthead";
@@ -20,12 +19,11 @@ export interface Market {
   id: string;
   name: string;
   location: string | null;
-  drop_at: string;
+  drop_at: string | null;
   starts_at: string;
   status: string;
   archived?: number;
   dealer_count: number;
-  item_count: number;
 }
 
 export interface PreviewItem {
@@ -39,9 +37,11 @@ export interface PreviewItem {
 }
 
 export default function HomeView({
+  featured,
   initialMarkets,
   initialFeaturedItems,
 }: {
+  featured: Market | null;
   initialMarkets: Market[];
   initialFeaturedItems: PreviewItem[];
 }) {
@@ -50,8 +50,10 @@ export default function HomeView({
   const [pendingApp, setPendingApp] = useState(false);
 
   const isDealer = user?.is_dealer === 1;
-  const markets = initialMarkets;
   const featuredItems = initialFeaturedItems;
+  const comingUp = featured
+    ? initialMarkets.filter((m) => m.id !== featured.id)
+    : initialMarkets;
 
   // /home is the signed-in landing. Signed-out users belong on /.
   useEffect(() => {
@@ -81,9 +83,6 @@ export default function HomeView({
     );
   }
 
-  const featured = markets[0] ?? null;
-  const comingUp = markets.slice(1);
-
   return (
     <>
       <Masthead href={null} right={null} />
@@ -108,19 +107,17 @@ export default function HomeView({
               eyebrow (date + location) then display name then stats. */}
           <section className="px-5 pt-5 pb-5 border-b border-eb-border">
             <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-1">
-              {marketEyebrow(featured.starts_at)} {"\u00b7"}{" "}
-              {formatShortDate(featured.starts_at)}
-              {featured.location ? <> {"\u00b7"} {featured.location}</> : null}
+              This week
             </div>
             <h1 className="text-eb-display font-bold text-eb-black uppercase tracking-wider leading-tight">
               {featured.name}
             </h1>
-            {(featured.dealer_count > 0 || featured.item_count > 0) && (
-              <div className="text-eb-meta text-eb-muted mt-2">
-                {featured.item_count} items {"\u00b7"} {featured.dealer_count}{" "}
-                dealers
-              </div>
-            )}
+            <div className="text-eb-meta text-eb-muted mt-2">
+              {formatShortDate(featured.starts_at)}
+              {featured.dealer_count > 0
+                ? ` \u00b7 ${featured.dealer_count} dealers selling`
+                : ""}
+            </div>
           </section>
 
           {/* Promo grid — 2-wide, first N items of the featured market. */}
@@ -174,7 +171,7 @@ export default function HomeView({
               href={`/buy?market=${featured.id}`}
               className="eb-btn block text-center"
             >
-              Browse all {featured.item_count} items {"\u2192"}
+              Browse {featured.name} {"\u2192"}
             </Link>
           </div>
 
@@ -197,12 +194,11 @@ export default function HomeView({
                       </div>
                       <div className="text-eb-meta text-eb-muted mt-1 tabular-nums">
                         {formatShortDate(m.starts_at)}
-                        {m.location ? <> {"\u00b7"} {m.location}</> : null}
                       </div>
                     </div>
                     <div className="shrink-0 text-right">
                       <div className="text-eb-micro uppercase tracking-widest text-eb-muted">
-                        {daysUntilLabel(m.starts_at)}
+                        {daysUntilShort(m.starts_at)}
                       </div>
                     </div>
                   </Link>

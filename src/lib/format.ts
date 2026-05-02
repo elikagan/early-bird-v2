@@ -54,11 +54,13 @@ export function daysUntil(iso: string): number {
 }
 
 /**
- * Calendar-day diff label for market "coming up" rows. Uses UTC
- * calendar days so a show tomorrow at 8am still reads as "Opens
- * tomorrow" even at 11:59pm tonight.
+ * Calendar-day diff label for market "Coming up" rows. The drop-era
+ * "Opens" framing is gone — the catalog is always open. We just
+ * tell the buyer when the physical show is.
+ *
+ * "TODAY" / "TOMORROW" / "IN 3 DAYS" / "IN 11 DAYS"
  */
-export function daysUntilLabel(iso: string): string {
+export function daysUntilShort(iso: string): string {
   const now = new Date();
   const start = new Date(iso);
   const nowDay = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
@@ -68,29 +70,9 @@ export function daysUntilLabel(iso: string): string {
     start.getDate()
   );
   const days = Math.round((startDay - nowDay) / (1000 * 60 * 60 * 24));
-  if (days <= 0) return "Open today";
-  if (days === 1) return "Opens tomorrow";
-  return `Opens in ${days} days`;
-}
-
-export function heroCountdown(iso: string): string {
-  const diff = new Date(iso).getTime() - Date.now();
-  if (diff <= 0) return "NOW";
-  const d = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
-  const m = Math.floor((diff / (1000 * 60)) % 60);
-  return `${String(d).padStart(2, "0")}D ${String(h).padStart(2, "0")}H ${String(m).padStart(2, "0")}M`;
-}
-
-// Eyebrow for a market listed on the home / browse surfaces. "Open now" was
-// previously hardcoded, which lied next to a future date. This returns the
-// accurate state: the physical show is "Open now" only when starts_at is
-// within a day, otherwise buyers are pre-shopping online.
-export function marketEyebrow(startsAtIso: string): string {
-  const msUntilStart = new Date(startsAtIso).getTime() - Date.now();
-  const ONE_DAY_MS = 24 * 60 * 60 * 1000;
-  if (msUntilStart < ONE_DAY_MS) return "Open now";
-  return "Pre-shopping now";
+  if (days <= 0) return "Today";
+  if (days === 1) return "Tomorrow";
+  return `In ${days} days`;
 }
 
 export function timeAgo(iso: string): string {

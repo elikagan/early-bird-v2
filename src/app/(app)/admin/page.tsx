@@ -6,7 +6,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { useRequireAuth } from "@/lib/require-auth";
 import { apiFetch } from "@/lib/api-client";
-import { formatPhone, formatDate, formatPrice, heroCountdown, timeAgo } from "@/lib/format";
+import { formatPhone, formatDate, formatPrice, timeAgo } from "@/lib/format";
 import { Masthead } from "@/components/masthead";
 import { ConfirmDrawer } from "@/components/confirm-drawer";
 import { SHOWS } from "@/lib/shows";
@@ -280,9 +280,8 @@ function DashboardTab({ setTab }: { setTab: (t: Tab) => void }) {
                 {formatDate(data.next_market.starts_at)} · {data.next_market.item_count} items · {data.next_market.dealer_count} dealers
               </div>
             </div>
-            <div className="text-eb-body font-bold text-eb-pop">
-              {heroCountdown(data.next_market.drop_at)}
-            </div>
+            {/* (Drop-era countdown removed — there's no drop event anymore.
+                The market starts at starts_at and that's already shown above.) */}
           </div>
         </div>
       )}

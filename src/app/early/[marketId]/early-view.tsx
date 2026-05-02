@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
-import { formatPrice, formatShortDate, getInitials, marketEyebrow } from "@/lib/format";
+import { formatPrice, formatShortDate, getInitials } from "@/lib/format";
 import {
   getAnonFavorites,
   addAnonFavorite,
@@ -34,7 +34,6 @@ export interface Market {
   status: string;
   archived?: number;
   dealer_count: number;
-  item_count: number;
 }
 
 /**
@@ -185,21 +184,20 @@ export default function EarlyView({
     <>
       <Masthead />
 
-      {/* Market hero */}
+      {/* Strict-filter view header. Same shape as /buy. */}
       <section className="px-5 pt-5 pb-5 border-b border-eb-border">
         <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-1">
-          {marketEyebrow(market.starts_at)} {"\u00b7"}{" "}
-          {formatShortDate(market.starts_at)}
-          {market.location ? <> {"\u00b7"} {market.location}</> : null}
+          Items at
         </div>
         <h1 className="text-eb-display font-bold text-eb-black uppercase tracking-wider leading-tight">
           {market.name}
         </h1>
-        {(market.dealer_count > 0 || market.item_count > 0) && (
-          <div className="text-eb-meta text-eb-muted mt-1">
-            {market.item_count} items {"\u00b7"} {market.dealer_count} dealers
-          </div>
-        )}
+        <div className="text-eb-meta text-eb-muted mt-1">
+          {formatShortDate(market.starts_at)}
+          {market.dealer_count > 0
+            ? ` \u00b7 ${market.dealer_count} dealers selling`
+            : ""}
+        </div>
       </section>
 
       <main className="pb-24">

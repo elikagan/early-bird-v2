@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
-import { getInitials, formatPrice, formatShortDate, marketEyebrow } from "@/lib/format";
+import { getInitials, formatPrice, formatShortDate } from "@/lib/format";
 import { BottomNav, adjustNavCount } from "@/components/bottom-nav";
 import { Masthead } from "@/components/masthead";
 import { useInfiniteItems } from "@/lib/use-infinite-items";
@@ -25,11 +25,10 @@ export interface Market {
   id: string;
   name: string;
   location: string | null;
-  drop_at: string;
+  drop_at: string | null;
   starts_at: string;
   status: string;
   dealer_count: number;
-  item_count: number;
 }
 
 export default function BuyView({
@@ -115,18 +114,17 @@ export default function BuyView({
           muted eyebrow + big display name + date/location + stats. */}
       <section className="px-5 pt-5 pb-5 border-b border-eb-border">
         <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-1">
-          {marketEyebrow(market.starts_at)} {"\u00b7"}{" "}
-          {formatShortDate(market.starts_at)}
-          {market.location ? <> {"\u00b7"} {market.location}</> : null}
+          Items at
         </div>
         <h1 className="text-eb-display font-bold text-eb-black uppercase tracking-wider leading-tight">
           {market.name}
         </h1>
-        {(market.dealer_count > 0 || market.item_count > 0) && (
-          <div className="text-eb-meta text-eb-muted mt-2">
-            {market.item_count} items {"\u00b7"} {market.dealer_count} dealers
-          </div>
-        )}
+        <div className="text-eb-meta text-eb-muted mt-2">
+          {formatShortDate(market.starts_at)}
+          {market.dealer_count > 0
+            ? ` \u00b7 ${market.dealer_count} dealers selling`
+            : ""}
+        </div>
       </section>
 
       <main className="pb-24">

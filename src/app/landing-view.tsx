@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { formatPrice, formatShortDate, getInitials, marketEyebrow, daysUntilLabel } from "@/lib/format";
+import { formatPrice, formatShortDate, getInitials, daysUntilShort } from "@/lib/format";
 import { Masthead } from "@/components/masthead";
 import { SignupDrawer } from "@/components/signup-drawer";
 
@@ -11,12 +11,11 @@ export interface Market {
   id: string;
   name: string;
   location: string | null;
-  drop_at: string;
+  drop_at: string | null;
   starts_at: string;
   status: string;
   archived?: number;
   dealer_count: number;
-  item_count: number;
 }
 
 export interface PreviewItem {
@@ -31,17 +30,19 @@ export interface PreviewItem {
 }
 
 export default function LandingView({
+  featured,
   initialMarkets,
   initialFeaturedItems,
 }: {
+  featured: Market | null;
   initialMarkets: Market[];
   initialFeaturedItems: PreviewItem[];
 }) {
   const [showSignIn, setShowSignIn] = useState(false);
-  const markets = initialMarkets;
   const featuredItems = initialFeaturedItems;
-  const featured = markets[0] ?? null;
-  const comingUp = markets.slice(1);
+  const comingUp = featured
+    ? initialMarkets.filter((m) => m.id !== featured.id)
+    : initialMarkets;
 
   return (
     <>
@@ -68,19 +69,17 @@ export default function LandingView({
               display name then stats. */}
           <section className="px-5 pt-5 pb-5 border-b border-eb-border">
             <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-1">
-              {marketEyebrow(featured.starts_at)} {"\u00b7"}{" "}
-              {formatShortDate(featured.starts_at)}
-              {featured.location ? <> {"\u00b7"} {featured.location}</> : null}
+              This week
             </div>
             <h1 className="text-eb-display font-bold text-eb-black uppercase tracking-wider leading-tight">
               {featured.name}
             </h1>
-            {(featured.dealer_count > 0 || featured.item_count > 0) && (
-              <div className="text-eb-meta text-eb-muted mt-2">
-                {featured.item_count} items {"\u00b7"} {featured.dealer_count}{" "}
-                dealers
-              </div>
-            )}
+            <div className="text-eb-meta text-eb-muted mt-2">
+              {formatShortDate(featured.starts_at)}
+              {featured.dealer_count > 0
+                ? ` \u00b7 ${featured.dealer_count} dealers selling`
+                : ""}
+            </div>
           </section>
 
           {/* Promo grid */}
@@ -131,10 +130,10 @@ export default function LandingView({
           {/* Browse-all CTA */}
           <div className="px-5 pt-4 pb-6 border-b border-eb-border">
             <Link
-              href={`/early/${featured.id}`}
+              href={`/buy?market=${featured.id}`}
               className="eb-btn block text-center"
             >
-              Browse all {featured.item_count} items {"\u2192"}
+              Browse {featured.name} {"\u2192"}
             </Link>
           </div>
 
@@ -149,7 +148,7 @@ export default function LandingView({
                 {comingUp.map((m) => (
                   <Link
                     key={m.id}
-                    href={`/early/${m.id}`}
+                    href={`/buy?market=${m.id}`}
                     className="flex items-start justify-between gap-4 px-5 py-4 active:bg-eb-border/20"
                   >
                     <div className="min-w-0">
@@ -158,12 +157,11 @@ export default function LandingView({
                       </div>
                       <div className="text-eb-meta text-eb-muted mt-1 tabular-nums">
                         {formatShortDate(m.starts_at)}
-                        {m.location ? <> {"\u00b7"} {m.location}</> : null}
                       </div>
                     </div>
                     <div className="shrink-0 text-right">
                       <div className="text-eb-micro uppercase tracking-widest text-eb-muted">
-                        {daysUntilLabel(m.starts_at)}
+                        {daysUntilShort(m.starts_at)}
                       </div>
                     </div>
                   </Link>
@@ -193,9 +191,10 @@ export default function LandingView({
           About
         </div>
         <p className="text-eb-caption text-eb-muted leading-relaxed mb-6">
-          Early Bird is a tool built by a group of LA flea market dealers.
-          They post what they{"\u2019"}re bringing so you can pre-shop their
-          booths online before the event opens.
+          Early Bird is a marketplace built by a group of LA flea market
+          dealers. They post their inventory online so you can shop
+          anytime {"\u2014"} before a show, during a show, or between
+          shows.
         </p>
 
         <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-4 pt-4 border-t border-eb-border">
@@ -207,9 +206,9 @@ export default function LandingView({
               What is Early Bird?
             </h3>
             <p className="text-eb-meta text-eb-muted leading-relaxed">
-              A tool a group of LA flea market dealers built together so
-              buyers could pre-shop their booths online before the event
-              opens.
+              A marketplace a group of LA flea market dealers built
+              together. They post their inventory online so buyers can
+              browse anytime and reach out about pieces they want.
             </p>
           </div>
           <div>
