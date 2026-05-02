@@ -43,6 +43,10 @@ export default async function HomePage() {
 
   let featuredItems: PreviewItem[] = [];
   if (featured) {
+    // Strict: only items from dealers attending the featured market.
+    // Non-attending dealers' items stay in the catalog at /buy without
+    // a market filter, but the home page promo grid is reserved for
+    // "this is what's at the upcoming show."
     const itemsRes = await db.execute({
       sql: `
         SELECT
@@ -50,14 +54,13 @@ export default async function HomePage() {
           d.id as dealer_ref,
           d.business_name as dealer_name,
           (SELECT url FROM item_photos p WHERE p.item_id = i.id ORDER BY p.position LIMIT 1) as photo_url,
-          (SELECT thumb_url FROM item_photos p WHERE p.item_id = i.id ORDER BY p.position LIMIT 1) as thumb_url,
-          CASE WHEN bs.dealer_id IS NOT NULL THEN 1 ELSE 0 END as at_featured
+          (SELECT thumb_url FROM item_photos p WHERE p.item_id = i.id ORDER BY p.position LIMIT 1) as thumb_url
         FROM items i
         JOIN dealers d ON d.id = i.dealer_id
-        LEFT JOIN booth_settings bs
+        JOIN booth_settings bs
           ON bs.dealer_id = d.id AND bs.market_id = ? AND bs.declined = false
         WHERE i.status = 'live'
-        ORDER BY at_featured DESC, i.created_at DESC
+        ORDER BY i.created_at DESC
         LIMIT ${MAX_PROMO_ITEMS}
       `,
       args: [featured.id],
