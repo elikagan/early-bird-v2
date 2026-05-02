@@ -41,6 +41,9 @@ function SellContent() {
   // When true, the items grid is filtered to only items with an open
   // inquiry. Toggled by tapping the Inquiries stat tile.
   const [inquiryFilter, setInquiryFilter] = useState(false);
+  // Sold + deleted items live in a collapsed "Sold" section at the
+  // bottom so they don't crowd what the dealer is actively selling.
+  const [archiveOpen, setArchiveOpen] = useState(false);
 
   useEffect(() => {
     if (!user?.dealer_id) return;
@@ -74,15 +77,92 @@ function SellContent() {
   const views7d = stats?.views ?? 0;
   const watchers7d = stats?.watchers ?? 0;
   const inquiries7d = stats?.inquiries ?? 0;
-  // Inquiry-tile filter still runs against the full grid (tap to see
-  // every item with an open inquiry, regardless of when it came in).
+  // Inquiry-tile filter still runs against the live grid only — sold
+  // items can't have open inquiries by definition. The badge count is
+  // computed from items so a stale open inquiry doesn't get hidden.
   const totalInquiries = items.reduce(
     (s, i) => s + (i.inquiry_count || 0),
     0
   );
-  const visibleItems = inquiryFilter
-    ? items.filter((i) => i.status !== "sold" && i.inquiry_count > 0)
-    : items;
+  // Split items: live (live + held — anything the dealer is actively
+  // managing) vs archived (sold + soft-deleted). Held items stay with
+  // the live work because they're an active in-flight state.
+  const liveItems = items.filter(
+    (i) => i.status !== "sold" && i.status !== "deleted"
+  );
+  const archivedItems = items.filter(
+    (i) => i.status === "sold" || i.status === "deleted"
+  );
+  const visibleLive = inquiryFilter
+    ? liveItems.filter((i) => i.inquiry_count > 0)
+    : liveItems;
+
+  // Single card renderer used by both the live grid and the sold
+  // archive grid. Sold + deleted items get the eb-sold treatment so
+  // they read as past-tense at a glance.
+  const renderItemCard = (item: Item) => {
+    const isSold = item.status === "sold";
+    const isHeld = item.status === "hold";
+    const isDeleted = item.status === "deleted";
+    const hasInquiries = !isSold && item.inquiry_count > 0;
+    return (
+      <Link
+        key={item.id}
+        href={`/item/${item.id}`}
+        className={`eb-grid-card${
+          isSold || isDeleted ? " eb-sold" : ""
+        }${hasInquiries ? " eb-grid-card-inquiry" : ""}`}
+      >
+        {item.photo_url ? (
+          <Image
+            src={item.thumb_url || item.photo_url}
+            alt={item.title}
+            width={400}
+            height={400}
+            sizes="(max-width: 430px) 50vw, 215px"
+            className="eb-photo"
+          />
+        ) : (
+          <div className="eb-photo bg-eb-border" />
+        )}
+        <div className="eb-body">
+          <div className="eb-title">{item.title}</div>
+          <div className="eb-price">
+            {formatPrice(item.price)}
+            {item.original_price && (
+              <span className="eb-price-was">
+                {formatPrice(item.original_price)}
+              </span>
+            )}
+          </div>
+          {hasInquiries && (
+            <div className="mt-2">
+              <span className="eb-tag-inquiry">
+                {item.inquiry_count}{" "}
+                {item.inquiry_count === 1 ? "Inquiry" : "Inquiries"} {"→"}
+              </span>
+            </div>
+          )}
+          {!isSold && !hasInquiries && item.watcher_count > 0 && (
+            <div className="text-eb-meta text-eb-muted mt-1 truncate">
+              {item.watcher_count} watchers
+            </div>
+          )}
+          {isSold && (
+            <div className="text-eb-meta text-eb-muted mt-2">Sold</div>
+          )}
+          {isHeld && (
+            <div className="mt-2">
+              <span className="eb-tag-hold inline-block">HELD</span>
+            </div>
+          )}
+          {isDeleted && (
+            <div className="text-eb-meta text-eb-muted mt-2">Removed</div>
+          )}
+        </div>
+      </Link>
+    );
+  };
 
   return (
     <>
@@ -169,15 +249,17 @@ function SellContent() {
         </Link>
       </div>
 
-      {/* Items grid */}
+      {/* Items grid. Live (and held) items render at the top; sold +
+          soft-deleted items live in a collapsible "Sold" section below
+          so they don't crowd active inventory. */}
       <main className="pb-32">
-        {items.length > 0 ? (
+        {liveItems.length > 0 ? (
           <>
             {inquiryFilter && (
               <div className="px-5 pt-3 pb-1 flex items-center justify-between gap-3">
                 <div className="text-eb-meta text-eb-muted">
-                  Showing {visibleItems.length} of {items.length} — items with
-                  open inquiries
+                  Showing {visibleLive.length} of {liveItems.length} — items
+                  with open inquiries
                 </div>
                 <button
                   type="button"
@@ -189,81 +271,10 @@ function SellContent() {
               </div>
             )}
             <div className="eb-grid mt-3">
-              {visibleItems.map((item) => {
-                const isSold = item.status === "sold";
-                const isHeld = item.status === "hold";
-                const isDeleted = item.status === "deleted";
-                const hasInquiries = !isSold && item.inquiry_count > 0;
-                return (
-                  <Link
-                    key={item.id}
-                    href={`/item/${item.id}`}
-                    className={`eb-grid-card${
-                      isSold || isDeleted ? " eb-sold" : ""
-                    }${hasInquiries ? " eb-grid-card-inquiry" : ""}`}
-                  >
-                    {item.photo_url ? (
-                      <Image
-                        src={item.thumb_url || item.photo_url}
-                        alt={item.title}
-                        width={400}
-                        height={400}
-                        sizes="(max-width: 430px) 50vw, 215px"
-                        className="eb-photo"
-                      />
-                    ) : (
-                      <div className="eb-photo bg-eb-border" />
-                    )}
-                    <div className="eb-body">
-                      <div className="eb-title">{item.title}</div>
-                      <div className="eb-price">
-                        {formatPrice(item.price)}
-                        {item.original_price && (
-                          <span className="eb-price-was">
-                            {formatPrice(item.original_price)}
-                          </span>
-                        )}
-                      </div>
-                      {hasInquiries && (
-                        <div className="mt-2">
-                          <span className="eb-tag-inquiry">
-                            {item.inquiry_count}{" "}
-                            {item.inquiry_count === 1
-                              ? "Inquiry"
-                              : "Inquiries"}{" "}
-                            {"→"}
-                          </span>
-                        </div>
-                      )}
-                      {!isSold && !hasInquiries && item.watcher_count > 0 && (
-                        <div className="text-eb-meta text-eb-muted mt-1 truncate">
-                          {item.watcher_count} watchers
-                        </div>
-                      )}
-                      {isSold && (
-                        <div className="text-eb-meta text-eb-muted mt-2">
-                          Sold
-                        </div>
-                      )}
-                      {isHeld && (
-                        <div className="mt-2">
-                          <span className="eb-tag-hold inline-block">
-                            HELD
-                          </span>
-                        </div>
-                      )}
-                      {isDeleted && (
-                        <div className="text-eb-meta text-eb-muted mt-2">
-                          Removed
-                        </div>
-                      )}
-                    </div>
-                  </Link>
-                );
-              })}
+              {visibleLive.map(renderItemCard)}
             </div>
           </>
-        ) : (
+        ) : archivedItems.length === 0 ? (
           <div className="eb-empty">
             <div className="eb-icon">○</div>
             <p>
@@ -272,6 +283,42 @@ function SellContent() {
               Add your first listing to get started.
             </p>
             <Link href="/sell/add">Add a listing →</Link>
+          </div>
+        ) : (
+          <div className="eb-empty">
+            <div className="eb-icon">○</div>
+            <p>
+              Nothing live right now.
+              <br />
+              Your sold items are below.
+            </p>
+            <Link href="/sell/add">Add a new listing →</Link>
+          </div>
+        )}
+
+        {/* Sold archive — collapsed by default. Hidden when the
+            inquiry filter is on so the dealer's view stays focused on
+            open questions. */}
+        {archivedItems.length > 0 && !inquiryFilter && (
+          <div className="mt-6 border-t border-eb-border">
+            <button
+              type="button"
+              onClick={() => setArchiveOpen((v) => !v)}
+              aria-expanded={archiveOpen}
+              className="w-full px-5 py-4 flex items-center justify-between gap-3 min-h-[44px]"
+            >
+              <span className="text-eb-meta uppercase tracking-widest text-eb-muted">
+                Sold ({archivedItems.length})
+              </span>
+              <span className="text-eb-meta text-eb-pop font-bold uppercase tracking-wider">
+                {archiveOpen ? "Hide" : "Show"}
+              </span>
+            </button>
+            {archiveOpen && (
+              <div className="eb-grid">
+                {archivedItems.map(renderItemCard)}
+              </div>
+            )}
           </div>
         )}
       </main>
