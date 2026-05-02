@@ -76,10 +76,12 @@ export async function GET(request: Request) {
     sql += ` AND i.dealer_id = ?`;
     args.push(dealerId);
   } else {
-    // Public callers don't see deleted items. The dealer-self-view
-    // path passes dealer_id, so they keep seeing their soft-deleted
-    // items in the same UI today.
-    sql += ` AND i.status != 'deleted'`;
+    // Public catalog: only live + held items. Sold items disappear
+    // from buyer-facing browse — they take up grid space and aren't
+    // actionable. Sold items are still reachable on individual item
+    // pages (so buyer receipts and old links still resolve) and on
+    // the dealer's own /sell page archive (which uses ?dealer_id=).
+    sql += ` AND i.status IN ('live', 'hold')`;
   }
 
   const limit = Math.min(

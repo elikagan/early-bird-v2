@@ -70,7 +70,7 @@ export default async function BuyPage({
           FROM items i
           JOIN dealers d ON d.id = i.dealer_id
           JOIN users u ON u.id = d.user_id
-          WHERE i.status != 'deleted'
+          WHERE i.status IN ('live', 'hold')
           ORDER BY at_market DESC, i.created_at DESC
           LIMIT ${PAGE_SIZE}
         `,
@@ -105,7 +105,7 @@ export default async function BuyPage({
       FROM items i
       JOIN dealers d ON d.id = i.dealer_id
       JOIN users u ON u.id = d.user_id
-      WHERE i.status != 'deleted'
+      WHERE i.status IN ('live', 'hold')
       ORDER BY i.created_at DESC
       LIMIT ${PAGE_SIZE}
     `,
