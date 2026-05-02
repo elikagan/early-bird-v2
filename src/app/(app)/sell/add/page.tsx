@@ -1,21 +1,12 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useState, useCallback, useRef, Suspense } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { apiFetch } from "@/lib/api-client";
 import { useRequireAuth } from "@/lib/require-auth";
 import { processImage, createThumbnail } from "@/lib/image-processing";
-import { formatDate } from "@/lib/format";
 import { BottomNav, adjustNavCount } from "@/components/bottom-nav";
-
-interface Market {
-  id: string;
-  name: string;
-  starts_at: string;
-  drop_at: string;
-  status: string;
-}
 
 interface PhotoSlot {
   id: string;
@@ -41,12 +32,9 @@ const ACCEPTED_TYPES = "image/*";
 
 function AddItemContent() {
   useRequireAuth();
-  const searchParams = useSearchParams();
   const router = useRouter();
-  const marketId = searchParams.get("market");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [market, setMarket] = useState<Market | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
@@ -54,15 +42,6 @@ function AddItemContent() {
   const [photos, setPhotos] = useState<PhotoSlot[]>([]);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!marketId) return;
-    async function load() {
-      const res = await apiFetch(`/api/markets/${marketId}`);
-      if (res.ok) setMarket(await res.json());
-    }
-    load();
-  }, [marketId]);
 
   const uploadOne = useCallback(async (file: File, slotId: string) => {
     // Process (resize, compress, EXIF correct)
@@ -189,7 +168,7 @@ function AddItemContent() {
     !saving;
 
   const submit = useCallback(async () => {
-    if (!canSubmit || !marketId) return;
+    if (!canSubmit) return;
 
     const priceNum = Math.round(parseFloat(price) * 100);
     if (priceNum < 100) {
@@ -204,7 +183,7 @@ function AddItemContent() {
       const res = await apiFetch("/api/items", {
         method: "POST",
         body: JSON.stringify({
-          market_id: marketId,
+          // No market_id \u2014 items belong to the dealer, not a market.
           title: title.trim(),
           description: description.trim() || undefined,
           price: priceNum,
@@ -219,28 +198,22 @@ function AddItemContent() {
       }
 
       adjustNavCount("sell", +1);
-      // Invalidate any cached /sell data so the new item shows up
-      // immediately on the redirect target, without requiring a
-      // manual page reload.
       router.refresh();
-      router.push(`/sell?market=${marketId}`);
+      router.push("/sell");
     } catch (err) {
       setFormError(err instanceof Error ? err.message : "Something went wrong");
       setSaving(false);
     }
-  }, [canSubmit, marketId, title, description, price, priceFirm, photos, router]);
+  }, [canSubmit, title, description, price, priceFirm, photos, router]);
 
-  const ctaText =
-    market?.status === "live"
-      ? "Live instantly \u00b7 Watchers get notified"
-      : "Visible to buyers once you post";
+  const ctaText = "Visible to buyers once you post";
 
   return (
     <>
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-3 border-b border-eb-border">
         <Link
-          href={`/sell${marketId ? `?market=${marketId}` : ""}`}
+          href="/sell"
           className="text-eb-caption text-eb-muted"
         >
           {"\u2190"} Back to my booth
