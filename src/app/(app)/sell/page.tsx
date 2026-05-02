@@ -24,9 +24,18 @@ interface Item {
   sold_to: string | null;
 }
 
+interface SellStats {
+  range_days: number;
+  listed: number;
+  views: number;
+  watchers: number;
+  inquiries: number;
+}
+
 function SellContent() {
   const { user } = useRequireAuth();
   const [items, setItems] = useState<Item[]>([]);
+  const [stats, setStats] = useState<SellStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [linkCopied, setLinkCopied] = useState(false);
   // When true, the items grid is filtered to only items with an open
@@ -37,10 +46,12 @@ function SellContent() {
     if (!user?.dealer_id) return;
 
     async function load() {
-      const itemsRes = await apiFetch(
-        `/api/items?dealer_id=${user!.dealer_id}`
-      );
+      const [itemsRes, statsRes] = await Promise.all([
+        apiFetch(`/api/items?dealer_id=${user!.dealer_id}`),
+        apiFetch(`/api/sell/stats`),
+      ]);
       if (itemsRes.ok) setItems(await itemsRes.json());
+      if (statsRes.ok) setStats(await statsRes.json());
       setLoading(false);
     }
     void load();
@@ -57,8 +68,14 @@ function SellContent() {
     );
   }
 
-  const totalViews = items.reduce((s, i) => s + (i.view_count || 0), 0);
-  const totalWatchers = items.reduce((s, i) => s + (i.watcher_count || 0), 0);
+  // Stats are trailing-7-day numbers from /api/sell/stats. While the
+  // payload's loading we show 0s rather than yanking the tiles in/out.
+  const listed7d = stats?.listed ?? 0;
+  const views7d = stats?.views ?? 0;
+  const watchers7d = stats?.watchers ?? 0;
+  const inquiries7d = stats?.inquiries ?? 0;
+  // Inquiry-tile filter still runs against the full grid (tap to see
+  // every item with an open inquiry, regardless of when it came in).
   const totalInquiries = items.reduce(
     (s, i) => s + (i.inquiry_count || 0),
     0
@@ -76,35 +93,43 @@ function SellContent() {
           confirmation badge once they have. */}
       <MarketAttendancePrompt />
 
-      {/* Stats. The Inquiries tile is the only one that's actually
-          actionable — tapping it filters the grid to just items with
-          open inquiries. When there are inquiries we make the tile
-          orange so the dealer's eye finds it first. */}
-      <div className="eb-stats border-b border-eb-border">
-        <div className="eb-stat eb-stat-inert">
-          <div className="eb-stat-num">{items.length}</div>
-          <div className="eb-stat-label">Listed</div>
+      {/* Stats — trailing 7 days. Eyebrow above the bar makes the
+          window explicit; we don't want a dealer mistaking these for
+          all-time numbers. The Inquiries tile is the only actionable
+          one (tap to filter the grid). When there are open inquiries
+          on ANY item the tile glows orange — that filter is all-time,
+          not 7-day-scoped, so a dealer never misses an open question
+          even on an older item. */}
+      <div className="border-b border-eb-border">
+        <div className="px-5 pt-4 pb-1 text-eb-meta uppercase tracking-widest text-eb-muted">
+          Last 7 days
         </div>
-        <div className="eb-stat eb-stat-inert">
-          <div className="eb-stat-num">{totalViews}</div>
-          <div className="eb-stat-label">Views</div>
+        <div className="eb-stats">
+          <div className="eb-stat eb-stat-inert">
+            <div className="eb-stat-num">{listed7d}</div>
+            <div className="eb-stat-label">Listed</div>
+          </div>
+          <div className="eb-stat eb-stat-inert">
+            <div className="eb-stat-num">{views7d}</div>
+            <div className="eb-stat-label">Views</div>
+          </div>
+          <div className="eb-stat eb-stat-inert">
+            <div className="eb-stat-num">{watchers7d}</div>
+            <div className="eb-stat-label">Watchers</div>
+          </div>
+          <button
+            type="button"
+            onClick={() => totalInquiries > 0 && setInquiryFilter((v) => !v)}
+            disabled={totalInquiries === 0}
+            aria-pressed={inquiryFilter}
+            className={`eb-stat eb-stat-button ${
+              totalInquiries > 0 ? "eb-stat-urgent" : ""
+            } ${inquiryFilter ? "eb-stat-active" : ""}`}
+          >
+            <div className="eb-stat-num">{inquiries7d}</div>
+            <div className="eb-stat-label">Inquiries</div>
+          </button>
         </div>
-        <div className="eb-stat eb-stat-inert">
-          <div className="eb-stat-num">{totalWatchers}</div>
-          <div className="eb-stat-label">Watchers</div>
-        </div>
-        <button
-          type="button"
-          onClick={() => totalInquiries > 0 && setInquiryFilter((v) => !v)}
-          disabled={totalInquiries === 0}
-          aria-pressed={inquiryFilter}
-          className={`eb-stat eb-stat-button ${
-            totalInquiries > 0 ? "eb-stat-urgent" : ""
-          } ${inquiryFilter ? "eb-stat-active" : ""}`}
-        >
-          <div className="eb-stat-num">{totalInquiries}</div>
-          <div className="eb-stat-label">Inquiries</div>
-        </button>
       </div>
 
       {/* Share your booth — links to the dealer's persistent profile
