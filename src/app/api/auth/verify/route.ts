@@ -230,57 +230,10 @@ export async function POST(request: Request) {
     );
   }
 
-  // ── Early-access flow: buyer tapped a pre-shop share link and
-  //    requested SMS verification. On redemption we grant them access
-  //    to the specified market and return it so the client can route
-  //    into /buy?market=[id]. ──
+  // (Early-access flow retired — dropped along with the "drop" model.
+  //  Any old early_access tokens still in the wild are unredeemable.)
   if (tokenType === "early_access") {
-    const userId = authToken.user_id as string;
-    const marketId = authToken.market_id as string;
-    if (!userId || !marketId) {
-      return error("Invalid early-access token", 400);
-    }
-
-    // Idempotent grant
-    await db.execute({
-      sql: `INSERT INTO buyer_market_early_access (id, user_id, market_id, source)
-            VALUES (?, ?, ?, 'share')
-            ON CONFLICT(user_id, market_id) DO NOTHING`,
-      args: [newId(), userId, marketId],
-    });
-
-    const user = await db.execute({
-      sql: `
-        SELECT u.*, d.id as dealer_id
-        FROM users u
-        LEFT JOIN dealers d ON d.user_id = u.id
-        WHERE u.id = ?
-      `,
-      args: [userId],
-    });
-    if (user.rows.length === 0) return error("User not found", 404);
-    const userRow = user.rows[0] as Record<string, unknown>;
-
-    const sessionToken = nanoid(32);
-    const expiresAt = new Date(Date.now() + SESSION_MAX_AGE * 1000).toISOString();
-    await db.execute({
-      sql: `INSERT INTO sessions (id, user_id, token, expires_at) VALUES (?, ?, ?, ?)`,
-      args: [newId(), userId, sessionToken, expiresAt],
-    });
-
-    return jsonWithCookie({
-      session_token: sessionToken,
-      early_access_market_id: marketId,
-      user: {
-        id: userRow.id,
-        phone: userRow.phone,
-        first_name: userRow.first_name,
-        last_name: userRow.last_name,
-        display_name: userRow.display_name,
-        is_dealer: userRow.is_dealer,
-        needs_onboarding: false,
-      },
-    }, sessionToken, request);
+    return error("This link is no longer supported", 410);
   }
 
   // ── Dealer invite flow ──

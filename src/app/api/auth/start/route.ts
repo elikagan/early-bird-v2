@@ -56,15 +56,11 @@ export async function POST(request: Request) {
     userId = (existing.rows[0] as Record<string, unknown>).id as string;
   }
 
-  // Record SMS marketing consent as notification preference
-  if (typeof sms_consent === "boolean") {
-    await db.execute({
-      sql: `INSERT INTO notification_preferences (id, user_id, key, enabled)
-            VALUES (?, ?, 'drop_alerts', ?)
-            ON CONFLICT(user_id, key) DO UPDATE SET enabled = excluded.enabled`,
-      args: [newId(), userId, sms_consent ? 1 : 0],
-    });
-  }
+  // (Old code recorded sms_consent into a 'drop_alerts' notification
+  //  preference. The drop concept is retired; we no longer write that
+  //  key. SMS marketing consent is implied by sign-up itself, governed
+  //  by the buyer's general notification preferences and STOP keyword.)
+  void sms_consent;
 
   // Generate magic link token (URL-safe, 16 chars — short so SMS link fits on one line)
   const token = nanoid(16);

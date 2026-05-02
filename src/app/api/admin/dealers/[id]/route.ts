@@ -16,7 +16,7 @@ export async function GET(
 
   const { id } = await params;
 
-  const [userRow, items, actions, subs] = await Promise.all([
+  const [userRow, items, actions] = await Promise.all([
     db.execute({
       sql: `SELECT u.id, u.phone, u.display_name, u.avatar_url, u.is_dealer, u.created_at,
               d.id as dealer_id, d.business_name, d.instagram_handle, d.verified
@@ -26,12 +26,15 @@ export async function GET(
       args: [id],
     }),
     db.execute({
+      // Items no longer carry market_id under the persistent-booth model;
+      // LEFT JOIN markets so legacy rows that still have an id work,
+      // and current rows just have no market_name.
       sql: `SELECT i.id, i.title, i.price, i.status, i.created_at,
               m.name as market_name,
               (SELECT url FROM item_photos WHERE item_id = i.id ORDER BY position LIMIT 1) as photo_url
             FROM items i
             JOIN dealers d ON d.id = i.dealer_id
-            JOIN markets m ON m.id = i.market_id
+            LEFT JOIN markets m ON m.id = i.market_id
             WHERE d.user_id = ? AND i.status != 'deleted'
             ORDER BY i.created_at DESC
             LIMIT 50`,
@@ -44,13 +47,6 @@ export async function GET(
             LIMIT 20`,
       args: [id],
     }),
-    db.execute({
-      sql: `SELECT show_name FROM dealer_market_subscriptions s
-            JOIN dealers d ON d.id = s.dealer_id
-            WHERE d.user_id = ?
-            ORDER BY show_name`,
-      args: [id],
-    }),
   ]);
 
   if (userRow.rows.length === 0) return error("User not found", 404);
@@ -59,7 +55,8 @@ export async function GET(
     ...userRow.rows[0],
     items: items.rows,
     actions: actions.rows,
-    market_subscriptions: subs.rows.map((r) => r.show_name as string),
+    // dealer_market_subscriptions retired with the persistent-booth model.
+    market_subscriptions: [],
   });
 }
 
@@ -129,33 +126,9 @@ export async function PATCH(
     await logAdminAction(user.phone, "edit_user", "user", id, body);
   }
 
-  // Market subscriptions — admin can override. Full replace. Unlike
-  // the dealer-self-serve path, admin IS allowed to clear all (useful
-  // if dealer quit the circuit — admin can null out subs so they don't
-  // get blast texts).
-  if (Array.isArray(body.market_subscriptions)) {
-    const shows = Array.from(
-      new Set((body.market_subscriptions as unknown[]).filter(isValidShow))
-    );
-    const dealer = await db.execute({
-      sql: `SELECT id FROM dealers WHERE user_id = ?`,
-      args: [id],
-    });
-    if (dealer.rows.length > 0) {
-      const dealerId = (dealer.rows[0] as { id: string }).id;
-      await db.execute({
-        sql: `DELETE FROM dealer_market_subscriptions WHERE dealer_id = ?`,
-        args: [dealerId],
-      });
-      for (const show of shows) {
-        await db.execute({
-          sql: `INSERT INTO dealer_market_subscriptions (id, dealer_id, show_name) VALUES (?, ?, ?)`,
-          args: [newId(), dealerId, show],
-        });
-      }
-      await logAdminAction(user.phone, "set_subscriptions", "user", id, { shows });
-    }
-  }
+  // (dealer_market_subscriptions retired with the persistent-booth
+  //  model. Admin no longer manages a dealer's "shows I usually do"
+  //  list — past booth_settings history powers the weekly prompt.)
 
   // Fetch updated user
   const result = await db.execute({

@@ -2,25 +2,12 @@ import db from "@/lib/db";
 import { json, error } from "@/lib/api";
 import { getSession } from "@/lib/auth";
 import { newId } from "@/lib/id";
-import { isValidShow } from "@/lib/shows";
 
 export async function GET(request: Request) {
   const user = await getSession(request);
   if (!user) return error("Unauthorized", 401);
 
   const result: Record<string, unknown> = { ...user };
-
-  // Market follows
-  const follows = await db.execute({
-    sql: `
-      SELECT bmf.market_id, bmf.drop_alerts_enabled, m.name as market_name
-      FROM buyer_market_follows bmf
-      JOIN markets m ON m.id = bmf.market_id
-      WHERE bmf.buyer_id = ?
-    `,
-    args: [user.id],
-  });
-  result.market_follows = follows.rows;
 
   // Notification preferences
   const prefs = await db.execute({
@@ -29,19 +16,13 @@ export async function GET(request: Request) {
   });
   result.notification_preferences = prefs.rows;
 
-  // If dealer, include payment methods + market subscriptions
+  // If dealer, include payment methods
   if (user.dealer_id) {
     const methods = await db.execute({
       sql: `SELECT method, enabled FROM dealer_payment_methods WHERE dealer_id = ?`,
       args: [user.dealer_id],
     });
     result.payment_methods = methods.rows;
-
-    const subs = await db.execute({
-      sql: `SELECT show_name FROM dealer_market_subscriptions WHERE dealer_id = ? ORDER BY show_name`,
-      args: [user.dealer_id],
-    });
-    result.market_subscriptions = subs.rows.map((r) => r.show_name as string);
   }
 
   // Buyer stats
@@ -62,14 +43,6 @@ export async function GET(request: Request) {
     args: [user.id],
   });
   result.bought_count = Number(boughtRes.rows[0]?.count ?? 0);
-
-  // Early-access grants — let the client bypass the pre-drop countdown
-  // for markets this buyer has already unlocked.
-  const grants = await db.execute({
-    sql: `SELECT market_id FROM buyer_market_early_access WHERE user_id = ?`,
-    args: [user.id],
-  });
-  result.early_access_market_ids = grants.rows.map((r) => r.market_id as string);
 
   return json(result);
 }
@@ -155,28 +128,6 @@ export async function PATCH(request: Request) {
         });
       }
     }
-
-    // Market subscriptions — full replace. Pass an array of show names
-    // (strings from the SHOWS constant); we wipe existing rows and
-    // insert the new set. Must leave at least one — enforced here.
-    if (Array.isArray(body.market_subscriptions)) {
-      const shows = Array.from(
-        new Set(body.market_subscriptions.filter(isValidShow))
-      );
-      if (shows.length === 0) {
-        return error("Pick at least one show you sell at");
-      }
-      await db.execute({
-        sql: `DELETE FROM dealer_market_subscriptions WHERE dealer_id = ?`,
-        args: [user.dealer_id],
-      });
-      for (const show of shows) {
-        await db.execute({
-          sql: `INSERT INTO dealer_market_subscriptions (id, dealer_id, show_name) VALUES (?, ?, ?)`,
-          args: [newId(), user.dealer_id, show],
-        });
-      }
-    }
   }
 
   // ── Notification preferences ──
@@ -187,28 +138,6 @@ export async function PATCH(request: Request) {
               VALUES (?, ?, ?, ?)
               ON CONFLICT(user_id, key) DO UPDATE SET enabled = excluded.enabled`,
         args: [newId(), user.id, pref.key, pref.enabled ? 1 : 0],
-      });
-    }
-  }
-
-  // ── Market follows ──
-  if (Array.isArray(body.market_follows)) {
-    const followedIds = body.market_follows.map(
-      (f: { market_id: string }) => f.market_id
-    );
-    if (followedIds.length > 0) {
-      const placeholders = followedIds.map(() => "?").join(",");
-      await db.execute({
-        sql: `DELETE FROM buyer_market_follows WHERE buyer_id = ? AND market_id NOT IN (${placeholders})`,
-        args: [user.id, ...followedIds],
-      });
-    }
-    for (const follow of body.market_follows) {
-      await db.execute({
-        sql: `INSERT INTO buyer_market_follows (id, buyer_id, market_id, drop_alerts_enabled)
-              VALUES (?, ?, ?, ?)
-              ON CONFLICT(buyer_id, market_id) DO UPDATE SET drop_alerts_enabled = excluded.drop_alerts_enabled`,
-        args: [newId(), user.id, follow.market_id, follow.drop_alerts_enabled ? 1 : 0],
       });
     }
   }

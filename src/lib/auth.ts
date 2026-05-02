@@ -14,9 +14,7 @@ export interface SessionUser {
   instagram_handle: string | null;
 }
 
-export interface InitialUser extends SessionUser {
-  early_access_market_ids: string[];
-}
+export interface InitialUser extends SessionUser {}
 
 /** Session cookie config — single source of truth */
 export const SESSION_COOKIE_NAME = "eb_session";
@@ -112,15 +110,5 @@ export async function getInitialUser(): Promise<InitialUser | null> {
     args: [token],
   });
   if (sessionRes.rows.length === 0) return null;
-  const user = sessionRes.rows[0] as unknown as SessionUser;
-
-  const grantsRes = await db.execute({
-    sql: `SELECT market_id FROM buyer_market_early_access WHERE user_id = ?`,
-    args: [user.id],
-  });
-  const early_access_market_ids = grantsRes.rows.map(
-    (r) => r.market_id as string
-  );
-
-  return { ...user, early_access_market_ids };
+  return sessionRes.rows[0] as unknown as InitialUser;
 }

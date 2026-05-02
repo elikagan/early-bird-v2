@@ -23,7 +23,8 @@ export interface User {
   // Markets this buyer has been granted pre-drop access to via the
   // /early/[market-id] flow. Lets /buy and item pages skip the
   // pre-drop countdown for these markets.
-  early_access_market_ids?: string[];
+  // (early_access_market_ids was removed when the drop / pre-shop
+  //  flow was retired.)
 }
 
 interface AuthContextType {

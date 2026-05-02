@@ -93,13 +93,10 @@ export async function POST(request: Request) {
     args: [dealerId, userId, business_name.trim()],
   });
 
-  // ── Insert market subscriptions ──
-  for (const show of shows) {
-    await db.execute({
-      sql: `INSERT INTO dealer_market_subscriptions (id, dealer_id, show_name) VALUES (?, ?, ?)`,
-      args: [newId(), dealerId, show],
-    });
-  }
+  // (Old code wrote dealer_market_subscriptions here. The table is
+  //  retired — under the persistent-booth model the weekly /sell
+  //  prompt pre-fills from past booth_settings history instead.)
+  void shows;
 
   // ── Mark invite as used ──
   await db.execute({

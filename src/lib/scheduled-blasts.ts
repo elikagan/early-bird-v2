@@ -107,18 +107,12 @@ export async function resolveRecipients(
   if (!showName) return [];
 
   if (kind === "dealer_monday" || kind === "dealer_thursday") {
-    const res = await db.execute({
-      sql: `SELECT DISTINCT u.id AS user_id, u.phone
-            FROM users u
-            JOIN dealers d ON d.user_id = u.id
-            JOIN dealer_market_subscriptions dms ON dms.dealer_id = d.id
-            WHERE dms.show_name = ? AND u.phone IS NOT NULL`,
-      args: [showName],
-    });
-    return res.rows.map((r) => ({
-      phone: r.phone as string,
-      user_id: r.user_id as string,
-    }));
+    // dealer_market_subscriptions retired with the persistent-booth model.
+    // For now scheduled dealer blasts have no recipient list — manual
+    // admin blasts cover the use case. If we revive scheduled dealer
+    // blasts later, scope by booth_settings history for this show name.
+    void showName;
+    return [];
   }
 
   const key = marketReminderKey(showName);
