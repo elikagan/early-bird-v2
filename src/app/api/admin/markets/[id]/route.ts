@@ -14,6 +14,15 @@ export async function GET(
 
   const { id } = await params;
 
+  // Stats and items are scoped to attending dealers (booth_settings
+  // declined=false) under the persistent-booth model. The legacy
+  // `items.market_id` column is NULL on every item now, so the old
+  // queries here returned all zeros / empty lists.
+  const attendingSubquery = `
+    SELECT bs.dealer_id FROM booth_settings bs
+    WHERE bs.market_id = ? AND bs.declined = false
+  `;
+
   const [market, stats, items, blasts, actions] = await Promise.all([
     db.execute({
       sql: `SELECT * FROM markets WHERE id = ?`,
@@ -21,11 +30,20 @@ export async function GET(
     }),
     db.execute({
       sql: `SELECT
-              (SELECT COUNT(*) FROM items WHERE market_id = ? AND status != 'deleted') as total_items,
-              (SELECT COUNT(*) FROM items WHERE market_id = ? AND status = 'live') as live_items,
-              (SELECT COUNT(*) FROM items WHERE market_id = ? AND status = 'sold') as sold_items,
-              (SELECT COUNT(*) FROM items WHERE market_id = ? AND status = 'hold') as hold_items,
-              (SELECT COUNT(*) FROM booth_settings WHERE market_id = ?) as dealer_count`,
+              (SELECT COUNT(*) FROM items
+                 WHERE status != 'deleted'
+                   AND dealer_id IN (${attendingSubquery})) as total_items,
+              (SELECT COUNT(*) FROM items
+                 WHERE status = 'live'
+                   AND dealer_id IN (${attendingSubquery})) as live_items,
+              (SELECT COUNT(*) FROM items
+                 WHERE status = 'sold'
+                   AND dealer_id IN (${attendingSubquery})) as sold_items,
+              (SELECT COUNT(*) FROM items
+                 WHERE status = 'hold'
+                   AND dealer_id IN (${attendingSubquery})) as hold_items,
+              (SELECT COUNT(*) FROM booth_settings
+                 WHERE market_id = ? AND declined = false) as dealer_count`,
       args: [id, id, id, id, id],
     }),
     db.execute({
@@ -34,7 +52,8 @@ export async function GET(
               (SELECT url FROM item_photos WHERE item_id = i.id ORDER BY position LIMIT 1) as photo_url
             FROM items i
             JOIN dealers d ON d.id = i.dealer_id
-            WHERE i.market_id = ? AND i.status != 'deleted'
+            WHERE i.status != 'deleted'
+              AND i.dealer_id IN (${attendingSubquery})
             ORDER BY i.created_at DESC
             LIMIT 50`,
       args: [id],
@@ -121,14 +140,21 @@ export async function DELETE(
 
   const { id } = await params;
 
-  // Check for items
-  const items = await db.execute({
-    sql: `SELECT COUNT(*) as count FROM items WHERE market_id = ?`,
+  // Block delete when dealers have committed to this market via the
+  // weekly /sell prompt. Items don't carry market_id under the
+  // persistent-booth model, so the old `items.market_id` check was a
+  // no-op safety net. Booth_settings is the real binding now.
+  const attendees = await db.execute({
+    sql: `SELECT COUNT(*) as count FROM booth_settings
+          WHERE market_id = ? AND declined = false`,
     args: [id],
   });
 
-  if (Number(items.rows[0]?.count) > 0) {
-    return error("Cannot delete market with items. Archive it instead.", 409);
+  if (Number(attendees.rows[0]?.count) > 0) {
+    return error(
+      "Cannot delete market with attending dealers. Archive it instead.",
+      409
+    );
   }
 
   await db.execute({

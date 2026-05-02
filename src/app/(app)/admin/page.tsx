@@ -751,11 +751,12 @@ function MarketsTab() {
   const [loading, setLoading] = useState(true);
   const [showArchived, setShowArchived] = useState(false);
 
-  // Create form
+  // Create form. The drop_at column still exists on markets but is
+  // defunct under the persistent-booth model — backend defaults it to
+  // starts_at when not provided, so we don't expose the field here.
   const [formName, setFormName] = useState("");
   const [formLocation, setFormLocation] = useState("");
   const [formDate, setFormDate] = useState("");
-  const [formDrop, setFormDrop] = useState("");
   const [formTest, setFormTest] = useState(false);
   const [creating, setCreating] = useState(false);
 
@@ -764,7 +765,6 @@ function MarketsTab() {
   const [editName, setEditName] = useState("");
   const [editLocation, setEditLocation] = useState("");
   const [editDate, setEditDate] = useState("");
-  const [editDrop, setEditDrop] = useState("");
   const [editStatus, setEditStatus] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -794,10 +794,6 @@ function MarketsTab() {
       setCreateError("Market date is required");
       return;
     }
-    if (!formDrop) {
-      setCreateError("Listings-open date is required");
-      return;
-    }
     setCreating(true);
     const res = await apiFetch("/api/admin/markets", {
       method: "POST",
@@ -805,7 +801,6 @@ function MarketsTab() {
         name: formName,
         location: formLocation || null,
         starts_at: new Date(formDate).toISOString(),
-        drop_at: new Date(formDrop).toISOString(),
         is_test: formTest,
       }),
     });
@@ -813,7 +808,6 @@ function MarketsTab() {
       setFormName("");
       setFormLocation("");
       setFormDate("");
-      setFormDrop("");
       setFormTest(false);
       loadMarkets();
     } else {
@@ -828,7 +822,6 @@ function MarketsTab() {
     setEditName(m.name);
     setEditLocation(m.location || "");
     setEditDate(m.starts_at.slice(0, 16));
-    setEditDrop(m.drop_at.slice(0, 16));
     setEditStatus(m.status);
   };
 
@@ -841,7 +834,6 @@ function MarketsTab() {
         name: editName,
         location: editLocation || null,
         starts_at: new Date(editDate).toISOString(),
-        drop_at: new Date(editDrop).toISOString(),
         status: editStatus,
       }),
     });
@@ -909,25 +901,14 @@ function MarketsTab() {
             value={formLocation}
             onChange={(e) => setFormLocation(e.target.value)}
           />
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="text-eb-micro text-eb-muted block mb-1">Market date</label>
-              <input
-                type="datetime-local"
-                className="eb-input text-eb-caption"
-                value={formDate}
-                onChange={(e) => setFormDate(e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="text-eb-micro text-eb-muted block mb-1">Drop time</label>
-              <input
-                type="datetime-local"
-                className="eb-input text-eb-caption"
-                value={formDrop}
-                onChange={(e) => setFormDrop(e.target.value)}
-              />
-            </div>
+          <div>
+            <label className="text-eb-micro text-eb-muted block mb-1">Market date</label>
+            <input
+              type="datetime-local"
+              className="eb-input text-eb-caption"
+              value={formDate}
+              onChange={(e) => setFormDate(e.target.value)}
+            />
           </div>
           <label className="flex items-center gap-2 py-1">
             <input
@@ -983,20 +964,12 @@ function MarketsTab() {
                         value={editLocation}
                         onChange={(e) => setEditLocation(e.target.value)}
                       />
-                      <div className="grid grid-cols-2 gap-2">
-                        <input
-                          type="datetime-local"
-                          className="eb-input text-eb-caption"
-                          value={editDate}
-                          onChange={(e) => setEditDate(e.target.value)}
-                        />
-                        <input
-                          type="datetime-local"
-                          className="eb-input text-eb-caption"
-                          value={editDrop}
-                          onChange={(e) => setEditDrop(e.target.value)}
-                        />
-                      </div>
+                      <input
+                        type="datetime-local"
+                        className="eb-input text-eb-caption"
+                        value={editDate}
+                        onChange={(e) => setEditDate(e.target.value)}
+                      />
                       <select
                         className="eb-input text-eb-caption"
                         value={editStatus}
@@ -1045,9 +1018,6 @@ function MarketsTab() {
                       <div className="flex gap-4 mt-2 text-eb-micro text-eb-muted">
                         <span>{m.item_count} items</span>
                         <span>{m.dealer_count} dealers</span>
-                        {m.drop_at && (
-                          <span>Drop: {formatDate(m.drop_at)}</span>
-                        )}
                       </div>
 
                       <div className="flex gap-2 mt-3 flex-wrap">
@@ -1891,7 +1861,8 @@ function ItemsTab() {
                       {formatPrice(item.price)}
                     </div>
                     <div className="text-eb-micro text-eb-muted mt-0.5 truncate">
-                      {item.dealer_display_name || item.dealer_name} · {item.market_name}
+                      {item.dealer_display_name || item.dealer_name}
+                      {item.market_name ? ` · ${item.market_name}` : ""}
                     </div>
                   </div>
                 </button>
