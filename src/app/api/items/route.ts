@@ -36,6 +36,23 @@ export async function GET(request: Request) {
     }
   }
 
+  // ?market_id=X is a sort hint, not a strict filter. We return every
+  // live item, but flag rows where the dealer said yes to that market
+  // and surface those first. Non-attending items render below as "ads"
+  // (FB-Marketplace style local search + sponsored). The buy view uses
+  // the at_market flag to render a divider between the two groups.
+  const args: (string | null)[] = [];
+  let atMarketSelect = `0 as at_market`;
+  if (marketId) {
+    atMarketSelect = `CASE WHEN EXISTS (
+      SELECT 1 FROM booth_settings bs
+      WHERE bs.dealer_id = i.dealer_id
+        AND bs.market_id = ?
+        AND bs.declined = false
+    ) THEN 1 ELSE 0 END as at_market`;
+    args.push(marketId);
+  }
+
   let sql = `
     SELECT
       i.*,
@@ -47,23 +64,13 @@ export async function GET(request: Request) {
       (SELECT url FROM item_photos p WHERE p.item_id = i.id ORDER BY p.position LIMIT 1) as photo_url,
       (SELECT thumb_url FROM item_photos p WHERE p.item_id = i.id ORDER BY p.position LIMIT 1) as thumb_url,
       (SELECT COUNT(*) FROM favorites f WHERE f.item_id = i.id) as watcher_count,
-      (SELECT COUNT(*) FROM inquiries q WHERE q.item_id = i.id) as inquiry_count
+      (SELECT COUNT(*) FROM inquiries q WHERE q.item_id = i.id) as inquiry_count,
+      ${atMarketSelect}
     FROM items i
     JOIN dealers d ON d.id = i.dealer_id
     JOIN users u ON u.id = d.user_id
     WHERE 1=1
   `;
-  const args: (string | null)[] = [];
-
-  if (marketId) {
-    // "items by dealers who said yes to this market" under the
-    // persistent-booth model.
-    sql += ` AND i.dealer_id IN (
-      SELECT bs.dealer_id FROM booth_settings bs
-      WHERE bs.market_id = ? AND bs.declined = false
-    )`;
-    args.push(marketId);
-  }
 
   if (dealerId) {
     sql += ` AND i.dealer_id = ?`;
@@ -81,7 +88,11 @@ export async function GET(request: Request) {
   );
   const offset = Math.max(0, Number(url.searchParams.get("offset")) || 0);
 
-  sql += ` ORDER BY i.created_at DESC LIMIT ${limit} OFFSET ${offset}`;
+  // When a market hint is set, attending-dealer items come first.
+  // Otherwise pure chronological.
+  sql += marketId
+    ? ` ORDER BY at_market DESC, i.created_at DESC LIMIT ${limit} OFFSET ${offset}`
+    : ` ORDER BY i.created_at DESC LIMIT ${limit} OFFSET ${offset}`;
 
   const result = await db.execute({ sql, args });
 

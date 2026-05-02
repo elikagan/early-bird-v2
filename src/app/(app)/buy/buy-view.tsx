@@ -19,6 +19,11 @@ export interface Item {
   thumb_url: string | null;
   dealer_name: string;
   dealer_display_name: string | null;
+  // 1 when the item's dealer said yes to the current market filter.
+  // 0 in unfiltered mode or when the dealer didn't attend. Used to
+  // render the "More on Early Bird" divider between attending +
+  // non-attending blocks in market-filtered mode.
+  at_market?: number;
 }
 
 export interface Market {
@@ -147,76 +152,112 @@ export default function BuyView({
       </section>
 
       <main className="pb-24">
+        {(() => {
+          // Single card renderer used by both grids (attending +
+          // non-attending in market mode, or the unfiltered grid).
+          const renderCard = (item: Item) => {
+            const isSold = item.status === "sold";
+            const isHeld = item.status === "hold";
+            const isFav = favMap.has(item.id);
+            return (
+              <Link
+                key={item.id}
+                href={`/item/${item.id}`}
+                className={`eb-grid-card${isSold ? " eb-sold" : ""}`}
+              >
+                {user && (
+                  <button
+                    className="eb-fav"
+                    onClick={(e) => toggleFav(e, item.id)}
+                    aria-label={isFav ? "Remove favorite" : "Add favorite"}
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      className={isFav ? "eb-fav-filled" : "eb-fav-outline"}
+                    >
+                      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                    </svg>
+                  </button>
+                )}
+                {item.photo_url ? (
+                  <Image
+                    src={item.thumb_url || item.photo_url}
+                    alt={item.title}
+                    width={400}
+                    height={400}
+                    sizes="(max-width: 430px) 50vw, 215px"
+                    className="eb-photo"
+                  />
+                ) : (
+                  <div className="eb-photo bg-eb-border" />
+                )}
+                <div className="eb-body">
+                  <div className="eb-title">{item.title}</div>
+                  <div className="flex items-center gap-2">
+                    <div className="eb-price">{formatPrice(item.price)}</div>
+                    {isHeld && <span className="eb-tag-hold">HELD</span>}
+                  </div>
+                  <div className="eb-dealer">
+                    <span className="eb-avatar eb-avatar-sm">
+                      {getInitials(item.dealer_name)}
+                    </span>
+                    <span className="eb-dealer-name">{item.dealer_name}</span>
+                  </div>
+                </div>
+              </Link>
+            );
+          };
+
+          if (items.length === 0) return null;
+
+          // Market mode: split attending vs not, drop a "More on Early
+          // Bird" divider between the two blocks (FB Marketplace local
+          // results + sponsored ads pattern).
+          if (market) {
+            const attending = items.filter((i) => i.at_market === 1);
+            const others = items.filter((i) => i.at_market !== 1);
+            return (
+              <>
+                {attending.length > 0 && (
+                  <div className="eb-grid">{attending.map(renderCard)}</div>
+                )}
+                {others.length > 0 && (
+                  <>
+                    <div className="px-5 pt-6 pb-3 border-t border-eb-border mt-2">
+                      <div className="text-eb-micro uppercase tracking-widest text-eb-muted">
+                        More on Early Bird
+                      </div>
+                      <div className="text-eb-meta text-eb-muted mt-1 leading-relaxed">
+                        Items from dealers not at {market.name} this time.
+                      </div>
+                    </div>
+                    <div className="eb-grid">{others.map(renderCard)}</div>
+                  </>
+                )}
+              </>
+            );
+          }
+
+          // Unfiltered: single grid.
+          return <div className="eb-grid">{items.map(renderCard)}</div>;
+        })()}
+
         {items.length > 0 ? (
           <>
-          <div className="eb-grid">
-            {items.map((item) => {
-              const isSold = item.status === "sold";
-              const isHeld = item.status === "hold";
-              const isFav = favMap.has(item.id);
-              return (
-                <Link
-                  key={item.id}
-                  href={`/item/${item.id}`}
-                  className={`eb-grid-card${isSold ? " eb-sold" : ""}`}
-                >
-                  {user && (
-                    <button
-                      className="eb-fav"
-                      onClick={(e) => toggleFav(e, item.id)}
-                      aria-label={isFav ? "Remove favorite" : "Add favorite"}
-                    >
-                      <svg
-                        viewBox="0 0 24 24"
-                        className={isFav ? "eb-fav-filled" : "eb-fav-outline"}
-                      >
-                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                      </svg>
-                    </button>
-                  )}
-                  {item.photo_url ? (
-                    <Image
-                      src={item.thumb_url || item.photo_url}
-                      alt={item.title}
-                      width={400}
-                      height={400}
-                      sizes="(max-width: 430px) 50vw, 215px"
-                      className="eb-photo"
-                    />
-                  ) : (
-                    <div className="eb-photo bg-eb-border" />
-                  )}
-                  <div className="eb-body">
-                    <div className="eb-title">{item.title}</div>
-                    <div className="flex items-center gap-2">
-                      <div className="eb-price">{formatPrice(item.price)}</div>
-                      {isHeld && <span className="eb-tag-hold">HELD</span>}
-                    </div>
-                    <div className="eb-dealer">
-                      <span className="eb-avatar eb-avatar-sm">
-                        {getInitials(item.dealer_name)}
-                      </span>
-                      <span className="eb-dealer-name">{item.dealer_name}</span>
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-          {hasMore && (
-            <div
-              ref={sentinelRef}
-              className="flex justify-center py-6"
-              aria-hidden="true"
-            >
-              {loadingMore && <span className="eb-spinner" />}
-            </div>
-          )}
-          {!hasMore && items.length > 0 && (
-            <div className="text-eb-meta text-eb-muted text-center py-6">
-              That&apos;s all {items.length} items.
-            </div>
-          )}
+            {hasMore && (
+              <div
+                ref={sentinelRef}
+                className="flex justify-center py-6"
+                aria-hidden="true"
+              >
+                {loadingMore && <span className="eb-spinner" />}
+              </div>
+            )}
+            {!hasMore && (
+              <div className="text-eb-meta text-eb-muted text-center py-6">
+                That{"\u2019"}s all {items.length} items.
+              </div>
+            )}
           </>
         ) : (
           <div className="eb-empty">

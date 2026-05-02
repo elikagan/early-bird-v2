@@ -12,13 +12,15 @@ const PAGE_SIZE = 30;
  *
  *   /buy                — full FB-Marketplace-style stream of every
  *                          live item from every dealer. Infinite scroll.
- *   /buy?market=X       — narrows the same stream to "items by dealers
- *                          attending market X" (booth_settings,
- *                          declined=false). Editorial filter view.
+ *   /buy?market=X       — same stream, but attending-dealer items
+ *                          surface first. Non-attending items render
+ *                          below a "More on Early Bird" divider as
+ *                          "ads" (FB-Marketplace local + sponsored
+ *                          pattern).
  *
  * Items don't disappear from /buy when no one's confirmed attendance —
- * the unfiltered stream always shows everything live. Attendance is a
- * filter, not a gate.
+ * attendance is a sort hint, not a gate. Every live item is reachable
+ * from this page either way.
  */
 export default async function BuyPage({
   searchParams,
@@ -58,16 +60,18 @@ export default async function BuyPage({
             u.display_name as dealer_display_name,
             u.avatar_url as dealer_avatar,
             (SELECT url FROM item_photos p WHERE p.item_id = i.id ORDER BY p.position LIMIT 1) as photo_url,
-            (SELECT thumb_url FROM item_photos p WHERE p.item_id = i.id ORDER BY p.position LIMIT 1) as thumb_url
+            (SELECT thumb_url FROM item_photos p WHERE p.item_id = i.id ORDER BY p.position LIMIT 1) as thumb_url,
+            CASE WHEN EXISTS (
+              SELECT 1 FROM booth_settings bs
+              WHERE bs.dealer_id = i.dealer_id
+                AND bs.market_id = ?
+                AND bs.declined = false
+            ) THEN 1 ELSE 0 END as at_market
           FROM items i
           JOIN dealers d ON d.id = i.dealer_id
           JOIN users u ON u.id = d.user_id
-          WHERE i.dealer_id IN (
-            SELECT bs.dealer_id FROM booth_settings bs
-            WHERE bs.market_id = ? AND bs.declined = false
-          )
-          AND i.status != 'deleted'
-          ORDER BY i.created_at DESC
+          WHERE i.status != 'deleted'
+          ORDER BY at_market DESC, i.created_at DESC
           LIMIT ${PAGE_SIZE}
         `,
         args: [marketId],
