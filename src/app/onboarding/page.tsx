@@ -10,7 +10,7 @@ import { processImage } from "@/lib/image-processing";
 import { formatPhone, getInitials } from "@/lib/format";
 import { InstagramInput } from "@/components/instagram-input";
 import { Masthead } from "@/components/masthead";
-import { SHOWS, marketReminderKey } from "@/lib/shows";
+// (SHOWS, marketReminderKey: retired along with per-market reminder UI.)
 
 interface Market {
   id: string;
@@ -24,9 +24,7 @@ function OnboardingContent() {
   const { user, loading: authLoading, refreshUser } = useAuth();
   const [displayName, setDisplayName] = useState("");
   const [markets, setMarkets] = useState<Market[]>([]);
-  const [followedMarkets, setFollowedMarkets] = useState<Set<string>>(
-    new Set()
-  );
+  // (followedMarkets retired with the per-market follow UI.)
   // Notification preferences captured during onboarding. `price_drops`
   // is default-on (watched-item alert — non-marketing, high value).
   // Market-reminder opt-ins are per-show (keys like
@@ -78,14 +76,7 @@ function OnboardingContent() {
     load();
   }, []);
 
-  const toggleMarket = (id: string) => {
-    setFollowedMarkets((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
+  // (toggleMarket retired with the per-market follow UI.)
 
   const toggleNotif = (key: string) => {
     setNotifPrefs((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -133,10 +124,8 @@ function OnboardingContent() {
       method: "PATCH",
       body: JSON.stringify({
         display_name: displayName,
-        market_follows: Array.from(followedMarkets).map((id) => ({
-          market_id: id,
-          drop_alerts_enabled: true,
-        })),
+        // (market_follows + drop_alerts_enabled retired with the
+        //  drop concept; buyer follow-markets table is gone.)
         notification_preferences: Object.entries(notifPrefs).map(
           ([key, enabled]) => ({ key, enabled })
         ),
@@ -435,39 +424,7 @@ function OnboardingContent() {
           </label>
         </div>
 
-        {/* Market reminders — per-show explicit opt-in. Default off;
-            user picks only the shows they actually want a pre-show
-            text for. */}
-        <div className="mt-6">
-          <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-1">
-            Market Reminders
-          </div>
-          <p className="text-eb-meta text-eb-muted leading-relaxed mb-3">
-            Text me before each show to see what top dealers are bringing.
-          </p>
-          <div className="space-y-2">
-            {SHOWS.map((show) => {
-              const key = marketReminderKey(show);
-              const on = !!notifPrefs[key];
-              return (
-                <label
-                  key={show}
-                  className={`flex items-center gap-3 p-3 border-2 cursor-pointer ${
-                    on ? "border-eb-black bg-eb-white" : "border-eb-border"
-                  }`}
-                >
-                  <input
-                    type="checkbox"
-                    checked={on}
-                    onChange={() => toggleNotif(key)}
-                    className="eb-check"
-                  />
-                  <div className="text-eb-body font-bold flex-1">{show}</div>
-                </label>
-              );
-            })}
-          </div>
-        </div>
+        {/* (Per-market reminder opt-in retired with the drop concept.) */}
       </section>
 
       {/* Dealer: Terms */}

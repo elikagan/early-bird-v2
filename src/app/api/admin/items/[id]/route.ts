@@ -24,7 +24,7 @@ export async function GET(
             FROM items i
             JOIN dealers d ON d.id = i.dealer_id
             JOIN users u ON u.id = d.user_id
-            JOIN markets m ON m.id = i.market_id
+            LEFT JOIN markets m ON m.id = i.market_id
             WHERE i.id = ?`,
       args: [id],
     }),

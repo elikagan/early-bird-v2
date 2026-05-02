@@ -3,6 +3,17 @@ import { json, error } from "@/lib/api";
 import { getSession } from "@/lib/auth";
 import { isAdmin } from "@/lib/admin";
 
+/**
+ * Admin items list. Supports the same query params as before
+ * (?market_id, ?dealer_id, ?status) — but under the persistent-booth
+ * model "items at this market" means "items by dealers attending
+ * this market," not "items with market_id = X."
+ *
+ * The markets join becomes optional (LEFT JOIN) since items don't
+ * carry market_id anymore. The market_name column on the response
+ * stays as a safety net for any legacy rows that still have a
+ * market_id pointed at a non-archived market.
+ */
 export async function GET(request: Request) {
   const user = await getSession(request);
   if (!user) return error("Unauthorized", 401);
@@ -17,7 +28,10 @@ export async function GET(request: Request) {
   const args: unknown[] = [];
 
   if (marketId) {
-    conditions.push("i.market_id = ?");
+    // Items by dealers attending this market under the new model.
+    conditions.push(
+      "i.dealer_id IN (SELECT bs.dealer_id FROM booth_settings bs WHERE bs.market_id = ? AND bs.declined = false)"
+    );
     args.push(marketId);
   }
 
@@ -47,7 +61,7 @@ export async function GET(request: Request) {
           FROM items i
           JOIN dealers d ON d.id = i.dealer_id
           JOIN users u ON u.id = d.user_id
-          JOIN markets m ON m.id = i.market_id
+          LEFT JOIN markets m ON m.id = i.market_id
           ${where}
           ORDER BY i.created_at DESC
           LIMIT 100`,
