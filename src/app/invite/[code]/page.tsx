@@ -1,19 +1,24 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { NotFoundScreen } from "@/components/not-found-screen";
 import { formatPhone } from "@/lib/format";
+import { useAuth } from "@/lib/auth-context";
 
 type Step = "loading" | "form" | "invalid";
 
 export default function InvitePage() {
   const params = useParams();
+  const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
   const code = params.code as string;
 
+  const isAlreadyDealer = !authLoading && user?.is_dealer === 1;
+
   const [step, setStep] = useState<Step>("loading");
-  // invitePhone is set when the admin bound a phone to the invite.
-  // When present, the dealer sees it read-only and can't edit.
+  // invitePhone is set when the admin bound a phone to the invite
+  // (single-use admin-bound case). When present, shown read-only.
   const [invitePhone, setInvitePhone] = useState<string | null>(null);
   const [phone, setPhone] = useState("");
   const [name, setName] = useState("");
@@ -21,8 +26,28 @@ export default function InvitePage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Validate invite code + fetch prefilled phone on load
+  // Already a dealer? Skip the invite form entirely. They probably
+  // tapped a shared universal link without realizing they're already
+  // in. Send them straight to /sell.
   useEffect(() => {
+    if (isAlreadyDealer) {
+      router.replace("/sell");
+    }
+  }, [isAlreadyDealer, router]);
+
+  // Pre-fill name from session for signed-in non-dealers becoming
+  // dealers via the link. They can still edit it before submitting.
+  useEffect(() => {
+    if (authLoading || !user || user.is_dealer === 1) return;
+    if (user.display_name && !name) {
+      setName(user.display_name);
+    }
+  }, [authLoading, user, name]);
+
+  // Validate invite code + fetch prefilled phone on load. Skip if
+  // the user is already a dealer (we're redirecting them away).
+  useEffect(() => {
+    if (isAlreadyDealer) return;
     async function check() {
       try {
         const res = await fetch(`/api/invite/check?code=${encodeURIComponent(code)}`);
@@ -38,17 +63,25 @@ export default function InvitePage() {
       }
     }
     check();
-  }, [code]);
+  }, [code, isAlreadyDealer]);
 
   const submit = useCallback(async () => {
-    // Phone only validated if the dealer is the one entering it
-    // (legacy invites without pre-bound phone).
-    if (!invitePhone) {
+    // Phone resolution priority:
+    //   1. Admin-bound invite phone (server uses invite.phone)
+    //   2. Signed-in session phone (already verified)
+    //   3. User-entered phone (anon flow)
+    let phoneToSend: string | undefined;
+    if (invitePhone) {
+      phoneToSend = undefined; // server uses invite.phone
+    } else if (user?.phone) {
+      phoneToSend = user.phone;
+    } else {
       const digits = phone.replace(/\D/g, "");
       if (digits.length < 10) {
         setError("Enter a valid phone number");
         return;
       }
+      phoneToSend = phone.trim();
     }
     if (!name.trim()) {
       setError("Name is required");
@@ -68,7 +101,7 @@ export default function InvitePage() {
         credentials: "include",
         body: JSON.stringify({
           code,
-          phone: invitePhone ? undefined : phone.trim(),
+          phone: phoneToSend,
           name: name.trim(),
           business_name: biz.trim(),
         }),
@@ -92,7 +125,7 @@ export default function InvitePage() {
     } finally {
       setSubmitting(false);
     }
-  }, [code, phone, invitePhone, name, biz]);
+  }, [code, phone, invitePhone, name, biz, user]);
 
   return (
     <div className="min-h-screen bg-eb-bg flex flex-col">
@@ -103,7 +136,7 @@ export default function InvitePage() {
       </header>
 
       <main className="px-5 flex-1 max-w-md mx-auto w-full">
-        {step === "loading" ? (
+        {step === "loading" || authLoading || isAlreadyDealer ? (
           <div className="flex-1 flex items-center justify-center py-12">
             <span className="eb-spinner" />
           </div>
@@ -134,6 +167,18 @@ export default function InvitePage() {
                   </div>
                   <p className="text-eb-micro text-eb-muted mt-1">
                     This is the number your admin added for you.
+                  </p>
+                </div>
+              ) : user?.phone ? (
+                <div>
+                  <label className="text-eb-micro text-eb-muted uppercase tracking-widest block mb-1">
+                    Phone Number
+                  </label>
+                  <div className="eb-input flex items-center bg-eb-border/30 text-eb-text cursor-not-allowed select-none">
+                    {formatPhone(user.phone)}
+                  </div>
+                  <p className="text-eb-micro text-eb-muted mt-1">
+                    The phone on your Early Bird account.
                   </p>
                 </div>
               ) : (
