@@ -1,255 +1,60 @@
-"use client";
+import { redirect } from "next/navigation";
+import db from "@/lib/db";
+import { getInitialUser } from "@/lib/auth";
+import InviteFormView from "./invite-form-view";
 
-import { useState, useCallback, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { NotFoundScreen } from "@/components/not-found-screen";
-import { formatPhone } from "@/lib/format";
-import { useAuth } from "@/lib/auth-context";
+/**
+ * Server shell for the invite page. Three branches resolved before
+ * the page renders:
+ *
+ *   - Already a dealer? Server-side redirect to /sell. No flash of the
+ *     signup form, no client-side auth wait.
+ *   - Invalid / used-up code? Render the NotFoundScreen variant.
+ *   - Anyone else (anon or signed-in buyer)? Render the form. We pass
+ *     the resolved session down so the form can pre-fill phone + name
+ *     without any client-side fetch.
+ */
+export default async function InvitePage({
+  params,
+}: {
+  params: Promise<{ code: string }>;
+}) {
+  const { code } = await params;
+  const me = await getInitialUser();
 
-type Step = "loading" | "form" | "invalid";
+  // Already a dealer — they don't need to redeem an invite. Send them
+  // straight to /sell.
+  if (me?.is_dealer === 1) {
+    redirect("/sell");
+  }
 
-export default function InvitePage() {
-  const params = useParams();
-  const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
-  const code = params.code as string;
+  // Validate code: must exist, and either be multi-use or unused.
+  const inviteRes = await db.execute({
+    sql: `SELECT id, phone, multi_use FROM dealer_invites
+          WHERE code = ?
+            AND (multi_use = true OR used_at IS NULL)`,
+    args: [code],
+  });
 
-  const isAlreadyDealer = !authLoading && user?.is_dealer === 1;
+  if (inviteRes.rows.length === 0) {
+    return <InviteFormView code={code} invalid={true} />;
+  }
 
-  const [step, setStep] = useState<Step>("loading");
-  // invitePhone is set when the admin bound a phone to the invite
-  // (single-use admin-bound case). When present, shown read-only.
-  const [invitePhone, setInvitePhone] = useState<string | null>(null);
-  const [phone, setPhone] = useState("");
-  const [name, setName] = useState("");
-  const [biz, setBiz] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // Already a dealer? Skip the invite form entirely. They probably
-  // tapped a shared universal link without realizing they're already
-  // in. Send them straight to /sell.
-  useEffect(() => {
-    if (isAlreadyDealer) {
-      router.replace("/sell");
-    }
-  }, [isAlreadyDealer, router]);
-
-  // Pre-fill name from session for signed-in non-dealers becoming
-  // dealers via the link. They can still edit it before submitting.
-  useEffect(() => {
-    if (authLoading || !user || user.is_dealer === 1) return;
-    if (user.display_name && !name) {
-      setName(user.display_name);
-    }
-  }, [authLoading, user, name]);
-
-  // Validate invite code + fetch prefilled phone on load. Skip if
-  // the user is already a dealer (we're redirecting them away).
-  useEffect(() => {
-    if (isAlreadyDealer) return;
-    async function check() {
-      try {
-        const res = await fetch(`/api/invite/check?code=${encodeURIComponent(code)}`);
-        if (!res.ok) {
-          setStep("invalid");
-          return;
-        }
-        const data = await res.json();
-        setInvitePhone(data.phone || null);
-        setStep("form");
-      } catch {
-        setStep("invalid");
-      }
-    }
-    check();
-  }, [code, isAlreadyDealer]);
-
-  const submit = useCallback(async () => {
-    // Phone resolution priority:
-    //   1. Admin-bound invite phone (server uses invite.phone)
-    //   2. Signed-in session phone (already verified)
-    //   3. User-entered phone (anon flow)
-    let phoneToSend: string | undefined;
-    if (invitePhone) {
-      phoneToSend = undefined; // server uses invite.phone
-    } else if (user?.phone) {
-      phoneToSend = user.phone;
-    } else {
-      const digits = phone.replace(/\D/g, "");
-      if (digits.length < 10) {
-        setError("Enter a valid phone number");
-        return;
-      }
-      phoneToSend = phone.trim();
-    }
-    if (!name.trim()) {
-      setError("Name is required");
-      return;
-    }
-    if (!biz.trim()) {
-      setError("Enter your business name (or your own name if you sell as yourself)");
-      return;
-    }
-
-    setSubmitting(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/invite/redeem", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          code,
-          phone: phoneToSend,
-          name: name.trim(),
-          business_name: biz.trim(),
-        }),
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Something went wrong");
-      }
-      // Redeem sets the session cookie on response. Use a full-page
-      // navigation (not router.push) so AuthProvider remounts and
-      // refreshUser() picks up the new cookie — otherwise /sell's
-      // useRequireAuth sees the old (logged-out) context and bounces
-      // us back to the landing page.
-      window.location.href = "/sell";
-    } catch (err) {
-      if (err instanceof Error && (err.message.includes("expired") || err.message.includes("used"))) {
-        setStep("invalid");
-      } else {
-        setError(err instanceof Error ? err.message : "Something went wrong");
-      }
-    } finally {
-      setSubmitting(false);
-    }
-  }, [code, phone, invitePhone, name, biz, user]);
+  const invite = inviteRes.rows[0] as Record<string, unknown>;
 
   return (
-    <div className="min-h-screen bg-eb-bg flex flex-col">
-      <header className="py-6 text-center">
-        <div className="text-eb-title tracking-widest text-eb-black">
-          EARLY BIRD
-        </div>
-      </header>
-
-      <main className="px-5 flex-1 max-w-md mx-auto w-full">
-        {step === "loading" || authLoading || isAlreadyDealer ? (
-          <div className="flex-1 flex items-center justify-center py-12">
-            <span className="eb-spinner" />
-          </div>
-        ) : step === "invalid" ? (
-          <NotFoundScreen
-            title="Invite not found"
-            message="This invite link has expired, already been used, or doesn\u2019t exist. Contact the person who sent it to get a new one."
-            action={{ label: "Go to Early Bird", href: "/" }}
-          />
-        ) : (
-          <>
-            <h1 className="text-eb-body font-bold text-eb-black uppercase tracking-wider mb-1">
-              You&apos;re Invited
-            </h1>
-            <p className="text-eb-meta text-eb-muted leading-relaxed mb-6">
-              Set up your seller account on Early Bird — the marketplace
-              for LA flea market dealers.
-            </p>
-
-            <div className="space-y-4">
-              {invitePhone ? (
-                <div>
-                  <label className="text-eb-micro text-eb-muted uppercase tracking-widest block mb-1">
-                    Phone Number
-                  </label>
-                  <div className="eb-input flex items-center bg-eb-border/30 text-eb-text cursor-not-allowed select-none">
-                    {formatPhone(invitePhone || "")}
-                  </div>
-                  <p className="text-eb-micro text-eb-muted mt-1">
-                    This is the number your admin added for you.
-                  </p>
-                </div>
-              ) : user?.phone ? (
-                <div>
-                  <label className="text-eb-micro text-eb-muted uppercase tracking-widest block mb-1">
-                    Phone Number
-                  </label>
-                  <div className="eb-input flex items-center bg-eb-border/30 text-eb-text cursor-not-allowed select-none">
-                    {formatPhone(user.phone)}
-                  </div>
-                  <p className="text-eb-micro text-eb-muted mt-1">
-                    The phone on your Early Bird account.
-                  </p>
-                </div>
-              ) : (
-                <div>
-                  <label className="text-eb-micro text-eb-muted uppercase tracking-widest block mb-1">
-                    Phone Number
-                  </label>
-                  <input
-                    type="tel"
-                    inputMode="tel"
-                    className="eb-input"
-                    value={phone}
-                    onChange={(e) =>
-                      setPhone(e.target.value.replace(/[^\d()\-\s+.]/g, "").slice(0, 32))
-                    }
-                    placeholder="(555) 123-4567"
-                    autoFocus
-                  />
-                </div>
-              )}
-
-              <div>
-                <label className="text-eb-micro text-eb-muted uppercase tracking-widest block mb-1">
-                  Your Name
-                </label>
-                <input
-                  type="text"
-                  className="eb-input"
-                  value={name}
-                  onChange={(e) => setName(e.target.value.slice(0, 60))}
-                  placeholder="Jane Doe"
-                  autoFocus={!!invitePhone}
-                />
-              </div>
-
-              <div>
-                <label className="text-eb-micro text-eb-muted uppercase tracking-widest block mb-1">
-                  Business or Your Name
-                </label>
-                <input
-                  type="text"
-                  className="eb-input"
-                  value={biz}
-                  onChange={(e) => setBiz(e.target.value.slice(0, 60))}
-                  placeholder="Vintage Finds LA, or Jane Doe"
-                />
-              </div>
-
-              {/* Show picker — tappable tiles, multi-select, required */}
-              {/* (Show picker retired \u2014 the weekly /sell prompt is the
-                  truth-of-the-day for which markets a dealer is at.
-                  Asking up front + throwing the answer away made no
-                  sense.) */}
-
-              {error && <p className="text-eb-meta text-eb-red">{error}</p>}
-
-              <button
-                onClick={submit}
-                disabled={submitting}
-                className="eb-btn w-full"
-              >
-                {submitting ? "Setting up\u2026" : "Get Started"}
-              </button>
-
-              <p className="text-eb-micro font-readable text-eb-muted text-center leading-relaxed">
-                You&apos;ll land on your booth for the next show.
-              </p>
-            </div>
-          </>
-        )}
-      </main>
-    </div>
+    <InviteFormView
+      code={code}
+      invalid={false}
+      invitePhone={(invite.phone as string) || null}
+      initialUser={
+        me
+          ? {
+              phone: me.phone,
+              displayName: me.display_name || null,
+            }
+          : null
+      }
+    />
   );
 }
