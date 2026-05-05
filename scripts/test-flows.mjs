@@ -236,9 +236,14 @@ async function main() {
   const anonHome = await fetchAs(null, "/");
   await check("GET / returns 200", () => expect(anonHome.status, "status").toBe(200));
   const anonHomeText = await anonHome.text();
-  await check("GET / has promo grid eyebrow", () =>
-    expect(anonHomeText, "/ HTML").toContain("This week")
-  );
+  await check("GET / has countdown eyebrow", () => {
+    // "IN 5 DAYS" / "TOMORROW" / "TODAY" — pop-orange bold caps above
+    // the market name. Banner-redesign successor to the old "This
+    // week" eyebrow.
+    if (!/IN \d+ DAYS|TODAY|TOMORROW/.test(anonHomeText)) {
+      throw new Error("no countdown eyebrow in HTML");
+    }
+  });
   await check("GET / renders a feed grid (multiple /item/ links)", () => {
     const matches = anonHomeText.match(/\/item\/[a-zA-Z0-9_-]+/g) || [];
     const unique = new Set(matches);
@@ -270,15 +275,17 @@ async function main() {
   });
   // React inserts <!-- --> markers between {expr} and static text in
   // server-rendered output, so substring matching on raw HTML misses
-  // "22 dealers" or "74 items live". Strip tags before matching.
+  // "22 Dealers" or "74 Items live". Strip tags before matching;
+  // case-insensitive because the stat tile labels are sentence-case
+  // in JSX but uppercased visually via CSS.
   const anonPlain = anonHomeText.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
-  await check("GET / banner shows platform dealer count", () => {
-    if (!/\d+\s+dealers?/.test(anonPlain)) {
+  await check("GET / stats tile shows platform dealer count", () => {
+    if (!/\d+\s+dealers?/i.test(anonPlain)) {
       throw new Error("no 'N dealers' text in plain HTML");
     }
   });
-  await check("GET / banner shows 'items live' total", () => {
-    if (!/items?\s+live/.test(anonPlain)) {
+  await check("GET / stats tile shows 'items live' total", () => {
+    if (!/items?\s+live/i.test(anonPlain)) {
       throw new Error("no 'items live' text in plain HTML");
     }
   });
