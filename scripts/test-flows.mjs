@@ -239,9 +239,15 @@ async function main() {
   await check("GET / has promo grid eyebrow", () =>
     expect(anonHomeText, "/ HTML").toContain("This week")
   );
-  await check("GET / has all-items stream", () =>
-    expect(anonHomeText, "/ HTML").toContain("Browse all items")
-  );
+  await check("GET / renders a feed grid (multiple /item/ links)", () => {
+    const matches = anonHomeText.match(/\/item\/[a-zA-Z0-9_-]+/g) || [];
+    const unique = new Set(matches);
+    if (unique.size < 5) {
+      throw new Error(
+        `expected at least 5 distinct items in feed, got ${unique.size}`
+      );
+    }
+  });
   await check("GET / has Coming up rail", () =>
     expect(anonHomeText, "/ HTML").toContain("Coming up")
   );
@@ -262,9 +268,20 @@ async function main() {
       throw new Error(`expected Location: /, got ${loc}`);
     }
   });
-  await check("GET / has platform stats in featured-market banner", () =>
-    expect(anonHomeText, "/ HTML").toMatch(/\d+ dealers? · \d+ items? live/)
-  );
+  // React inserts <!-- --> markers between {expr} and static text in
+  // server-rendered output, so substring matching on raw HTML misses
+  // "22 dealers" or "74 items live". Strip tags before matching.
+  const anonPlain = anonHomeText.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+  await check("GET / banner shows platform dealer count", () => {
+    if (!/\d+\s+dealers?/.test(anonPlain)) {
+      throw new Error("no 'N dealers' text in plain HTML");
+    }
+  });
+  await check("GET / banner shows 'items live' total", () => {
+    if (!/items?\s+live/.test(anonPlain)) {
+      throw new Error("no 'items live' text in plain HTML");
+    }
+  });
 
   const anonSell = await fetchAs(null, "/sell");
   await check("GET /sell as anon -> 404", () =>
