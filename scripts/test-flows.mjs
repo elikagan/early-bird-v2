@@ -248,8 +248,8 @@ async function main() {
       );
     }
   });
-  await check("GET / has Coming up rail", () =>
-    expect(anonHomeText, "/ HTML").toContain("Coming up")
+  await check("GET / has 'Next:' line for the soonest other market", () =>
+    expect(anonHomeText, "/ HTML").toContain("Next:")
   );
   await check("GET / has Dealer link in masthead (anon only)", () =>
     expect(anonHomeText, "/ HTML").toContain("/dealer")

@@ -7,9 +7,16 @@ import {
   formatPrice,
   formatShortDate,
   getInitials,
+  daysUntil,
   daysUntilShort,
   isItemNew,
 } from "@/lib/format";
+
+// Markets further out than this aren't surfaced in the "Next:" line —
+// editorial value diminishes when a show is months away. Two months
+// covers the typical monthly cadence of Rose Bowl / Long Beach with
+// some buffer.
+const NEXT_MARKET_HORIZON_DAYS = 60;
 import { BottomNav } from "@/components/bottom-nav";
 import { Masthead } from "@/components/masthead";
 import { SignupDrawer } from "@/components/signup-drawer";
@@ -77,9 +84,14 @@ export default function HomeView({
   liveItemCount: number;
 }) {
   const [showSignIn, setShowSignIn] = useState(false);
-  const comingUp = featured
-    ? initialMarkets.filter((m) => m.id !== featured.id)
-    : initialMarkets;
+  // Single "Next:" line shows the soonest non-featured market within
+  // the horizon. Markets months out get hidden — they aren't really
+  // "coming up" yet.
+  const nextSoon = (
+    featured
+      ? initialMarkets.filter((m) => m.id !== featured.id)
+      : initialMarkets
+  ).find((m) => daysUntil(m.starts_at) <= NEXT_MARKET_HORIZON_DAYS);
 
   return (
     <>
@@ -110,27 +122,52 @@ export default function HomeView({
         </div>
       )}
 
-      {/* Featured-market banner. Editorial only — name + date +
-          platform-wide totals (dealers, items live). No CTA, no
-          filtering, no promo grid. */}
+      {/* Featured-market banner — editorial lead. Eyebrow's the
+          countdown (urgency). Title is the show name (focal point).
+          Caption pairs location + date. Stats below as a tile row
+          (matches the /sell pattern). All editorial atmosphere — no
+          filter, no CTA, no promo grid. */}
       {featured ? (
-        <section className="px-5 pt-5 pb-5 border-b border-eb-border">
-          <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-1">
-            This week
+        <>
+          <section className="px-5 pt-7 pb-5 border-b border-eb-border">
+            <div className="text-eb-micro uppercase tracking-widest text-eb-pop font-bold mb-2">
+              {daysUntilShort(featured.starts_at).toUpperCase()}
+            </div>
+            <h1 className="text-eb-display font-bold text-eb-black uppercase tracking-wider leading-tight">
+              {featured.name}
+            </h1>
+            <div className="text-eb-meta text-eb-muted mt-2">
+              {[featured.location, formatShortDate(featured.starts_at)]
+                .filter(Boolean)
+                .join(" · ")}
+            </div>
+          </section>
+
+          <div className="eb-stats border-b border-eb-border">
+            <div className="eb-stat eb-stat-inert">
+              <div className="eb-stat-num">{dealerCount}</div>
+              <div className="eb-stat-label">
+                {dealerCount === 1 ? "Dealer" : "Dealers"}
+              </div>
+            </div>
+            <div className="eb-stat eb-stat-inert">
+              <div className="eb-stat-num">{liveItemCount}</div>
+              <div className="eb-stat-label">
+                {liveItemCount === 1 ? "Item live" : "Items live"}
+              </div>
+            </div>
           </div>
-          <h1 className="text-eb-display font-bold text-eb-black uppercase tracking-wider leading-tight">
-            {featured.name}
-          </h1>
-          <div className="text-eb-meta text-eb-muted mt-2">
-            {formatShortDate(featured.starts_at)}
-            {featured.location ? ` · ${featured.location}` : ""}
-          </div>
-          <div className="text-eb-meta text-eb-muted mt-1">
-            {dealerCount} {dealerCount === 1 ? "dealer" : "dealers"}
-            {" · "}
-            {liveItemCount} {liveItemCount === 1 ? "item" : "items"} live
-          </div>
-        </section>
+
+          {/* Single "Next:" line — only when something's within the
+              60-day horizon. Quiet, factual; not a navigation rail. */}
+          {nextSoon && (
+            <div className="px-5 py-3 border-b border-eb-border text-eb-meta text-eb-muted">
+              Next:{" "}
+              <span className="text-eb-text">{nextSoon.name}</span>{" "}
+              {daysUntilShort(nextSoon.starts_at).toLowerCase()}
+            </div>
+          )}
+        </>
       ) : (
         <section className="px-5 py-12 text-center border-b border-eb-border">
           <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-2">
@@ -142,39 +179,6 @@ export default function HomeView({
           <p className="text-eb-caption text-eb-muted mt-3 leading-relaxed">
             Next market hasn{"’"}t been announced yet. Check back soon.
           </p>
-        </section>
-      )}
-
-      {/* Coming up — informational rail of future shows. Non-tappable
-          on purpose: there's no "filter the feed by this market"
-          destination anymore, the catalog is just one flat feed. */}
-      {comingUp.length > 0 && (
-        <section className="pt-6 pb-2 border-b border-eb-border">
-          <div className="px-5 text-eb-micro uppercase tracking-widest text-eb-muted mb-2">
-            Coming up
-          </div>
-          <div className="divide-y divide-eb-border border-y border-eb-border">
-            {comingUp.map((m) => (
-              <div
-                key={m.id}
-                className="flex items-start justify-between gap-4 px-5 py-4"
-              >
-                <div className="min-w-0">
-                  <div className="text-eb-body font-bold text-eb-black truncate">
-                    {m.name}
-                  </div>
-                  <div className="text-eb-meta text-eb-muted mt-1 tabular-nums">
-                    {formatShortDate(m.starts_at)}
-                  </div>
-                </div>
-                <div className="shrink-0 text-right">
-                  <div className="text-eb-micro uppercase tracking-widest text-eb-muted">
-                    {daysUntilShort(m.starts_at)}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
         </section>
       )}
 
