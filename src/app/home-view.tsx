@@ -8,6 +8,7 @@ import {
   formatShortDate,
   getInitials,
   daysUntilShort,
+  isItemNew,
 } from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
 import { Masthead } from "@/components/masthead";
@@ -15,16 +16,20 @@ import { SignupDrawer } from "@/components/signup-drawer";
 
 /**
  * Single home view for both anon visitors and signed-in users. The
- * featured market + promo grid + Coming Up rail render the same way
- * either way; only the chrome (masthead right slot, banner, footer,
- * BottomNav) differs.
+ * page is a feed of every dealer's live items. The featured-market
+ * banner at the top is editorial atmosphere — name, date, platform-
+ * wide stats — never a filter or gate.
  *
- * Anon: "Dealer →" link in masthead, About/FAQ + footer (sign-in,
- *       legal links, contact) at the bottom, no BottomNav.
+ * Cards in the feed get two pills:
+ *   - NEW (filled) for items < 7 days old
+ *   - RB · 503 (outlined) when the dealer's at the next show, with
+ *     booth number where set
+ *
+ * Anon: "Dealer →" link in masthead, About + FAQ + footer at bottom,
+ *       no BottomNav.
  *
  * Signed in: plain masthead, optional pending-application banner for
- *            non-dealer applicants, no footer/FAQ, BottomNav with
- *            "Buy" tab active.
+ *            non-dealer applicants, no footer/FAQ, BottomNav active.
  */
 
 export interface Market {
@@ -34,30 +39,24 @@ export interface Market {
   starts_at: string;
   status: string;
   archived?: number;
-  dealer_count: number;
 }
 
-export interface PreviewItem {
-  id: string;
-  title: string;
-  price: number;
-  status: string;
-  photo_url: string | null;
-  thumb_url: string | null;
-  dealer_name: string;
-}
-
-// StreamItem is the same shape — kept as a separate type so the home
-// page server fetch + the home view stay aligned without one mutating
-// the promo type accidentally.
 export interface StreamItem {
   id: string;
   title: string;
   price: number;
   status: string;
+  created_at: string;
   photo_url: string | null;
   thumb_url: string | null;
   dealer_name: string;
+  // Decoration data — set on every row by the server query when there
+  // is a featured market. at_market = 1 means the dealer said yes to
+  // the next show; at_market_label is the abbreviation ("RB"); the
+  // booth number is shown alongside if known.
+  at_market: number;
+  at_market_label: string | null;
+  at_market_booth: string | null;
 }
 
 export default function HomeView({
@@ -65,18 +64,19 @@ export default function HomeView({
   pendingApp,
   featured,
   initialMarkets,
-  initialFeaturedItems,
   initialStreamItems,
+  dealerCount,
+  liveItemCount,
 }: {
   signedIn: boolean;
   pendingApp: boolean;
   featured: Market | null;
   initialMarkets: Market[];
-  initialFeaturedItems: PreviewItem[];
   initialStreamItems: StreamItem[];
+  dealerCount: number;
+  liveItemCount: number;
 }) {
   const [showSignIn, setShowSignIn] = useState(false);
-  const featuredItems = initialFeaturedItems;
   const comingUp = featured
     ? initialMarkets.filter((m) => m.id !== featured.id)
     : initialMarkets;
@@ -97,7 +97,6 @@ export default function HomeView({
         }
       />
 
-      {/* Pending dealer-application banner — signed-in non-dealers only */}
       {signedIn && pendingApp && (
         <div className="px-5 py-3 bg-eb-cream border-b-2 border-eb-pop">
           <div className="text-eb-caption font-bold text-eb-black uppercase tracking-wider">
@@ -111,114 +110,29 @@ export default function HomeView({
         </div>
       )}
 
+      {/* Featured-market banner. Editorial only — name + date +
+          platform-wide totals (dealers, items live). No CTA, no
+          filtering, no promo grid. */}
       {featured ? (
-        <>
-          {/* Featured (next upcoming) market */}
-          <section className="px-5 pt-5 pb-5 border-b border-eb-border">
-            <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-1">
-              This week
-            </div>
-            <h1 className="text-eb-display font-bold text-eb-black uppercase tracking-wider leading-tight">
-              {featured.name}
-            </h1>
-            <div className="text-eb-meta text-eb-muted mt-2">
-              {formatShortDate(featured.starts_at)}
-              {featured.dealer_count > 0
-                ? ` · ${featured.dealer_count} dealers selling`
-                : ""}
-            </div>
-          </section>
-
-          {/* Promo grid */}
-          {featuredItems.length > 0 && (
-            <div className="eb-grid">
-              {featuredItems.map((item) => {
-                const isSold = item.status === "sold";
-                const isHeld = item.status === "hold";
-                return (
-                  <Link
-                    key={item.id}
-                    href={`/item/${item.id}`}
-                    className={`eb-grid-card${isSold ? " eb-sold" : ""}`}
-                  >
-                    {item.photo_url ? (
-                      <Image
-                        src={item.thumb_url || item.photo_url}
-                        alt={item.title}
-                        width={400}
-                        height={400}
-                        sizes="(max-width: 430px) 50vw, 215px"
-                        className="eb-photo"
-                      />
-                    ) : (
-                      <div className="eb-photo bg-eb-border" />
-                    )}
-                    <div className="eb-body">
-                      <div className="eb-title">{item.title}</div>
-                      <div className="flex items-center gap-2">
-                        <div className="eb-price">{formatPrice(item.price)}</div>
-                        {isHeld && <span className="eb-tag-hold">HELD</span>}
-                      </div>
-                      <div className="eb-dealer">
-                        <span className="eb-avatar eb-avatar-sm">
-                          {getInitials(item.dealer_name)}
-                        </span>
-                        <span className="eb-dealer-name">
-                          {item.dealer_name}
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          )}
-
-          {/* Browse-all CTA */}
-          <div className="px-5 pt-4 pb-6 border-b border-eb-border">
-            <Link
-              href={`/buy?market=${featured.id}`}
-              className="eb-btn block text-center"
-            >
-              Browse {featured.name} {"→"}
-            </Link>
+        <section className="px-5 pt-5 pb-5 border-b border-eb-border">
+          <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-1">
+            This week
           </div>
-
-          {/* Coming up — editorial rows */}
-          {comingUp.length > 0 && (
-            <section className="pt-6 pb-2 border-b border-eb-border">
-              <div className="px-5 text-eb-micro uppercase tracking-widest text-eb-muted mb-2">
-                Coming up
-              </div>
-              <div className="divide-y divide-eb-border border-y border-eb-border">
-                {comingUp.map((m) => (
-                  <Link
-                    key={m.id}
-                    href={`/buy?market=${m.id}`}
-                    className="flex items-start justify-between gap-4 px-5 py-4 active:bg-eb-border/20"
-                  >
-                    <div className="min-w-0">
-                      <div className="text-eb-body font-bold text-eb-black truncate">
-                        {m.name}
-                      </div>
-                      <div className="text-eb-meta text-eb-muted mt-1 tabular-nums">
-                        {formatShortDate(m.starts_at)}
-                      </div>
-                    </div>
-                    <div className="shrink-0 text-right">
-                      <div className="text-eb-micro uppercase tracking-widest text-eb-muted">
-                        {daysUntilShort(m.starts_at)}
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </section>
-          )}
-        </>
+          <h1 className="text-eb-display font-bold text-eb-black uppercase tracking-wider leading-tight">
+            {featured.name}
+          </h1>
+          <div className="text-eb-meta text-eb-muted mt-2">
+            {formatShortDate(featured.starts_at)}
+            {featured.location ? ` · ${featured.location}` : ""}
+          </div>
+          <div className="text-eb-meta text-eb-muted mt-1">
+            {dealerCount} {dealerCount === 1 ? "dealer" : "dealers"}
+            {" · "}
+            {liveItemCount} {liveItemCount === 1 ? "item" : "items"} live
+          </div>
+        </section>
       ) : (
-        /* No upcoming markets — rare fallback. */
-        <section className="px-5 py-12 text-center">
+        <section className="px-5 py-12 text-center border-b border-eb-border">
           <div className="text-eb-micro uppercase tracking-widest text-eb-muted mb-2">
             Between shows
           </div>
@@ -231,19 +145,51 @@ export default function HomeView({
         </section>
       )}
 
-      {/* Full catalog stream — every dealer's live inventory, no
-          attendance filter. The "FB Marketplace" surface that lives
-          below the editorial promo. Caps at 30 here; "Browse all"
-          links to /buy for unbounded infinite scroll. */}
-      {initialStreamItems.length > 0 && (
-        <section className="pt-6">
-          <div className="px-5 text-eb-micro uppercase tracking-widest text-eb-muted mb-3">
-            Browse all items
+      {/* Coming up — informational rail of future shows. Non-tappable
+          on purpose: there's no "filter the feed by this market"
+          destination anymore, the catalog is just one flat feed. */}
+      {comingUp.length > 0 && (
+        <section className="pt-6 pb-2 border-b border-eb-border">
+          <div className="px-5 text-eb-micro uppercase tracking-widest text-eb-muted mb-2">
+            Coming up
           </div>
+          <div className="divide-y divide-eb-border border-y border-eb-border">
+            {comingUp.map((m) => (
+              <div
+                key={m.id}
+                className="flex items-start justify-between gap-4 px-5 py-4"
+              >
+                <div className="min-w-0">
+                  <div className="text-eb-body font-bold text-eb-black truncate">
+                    {m.name}
+                  </div>
+                  <div className="text-eb-meta text-eb-muted mt-1 tabular-nums">
+                    {formatShortDate(m.starts_at)}
+                  </div>
+                </div>
+                <div className="shrink-0 text-right">
+                  <div className="text-eb-micro uppercase tracking-widest text-eb-muted">
+                    {daysUntilShort(m.starts_at)}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* The feed. Every dealer's live items, newest first. */}
+      {initialStreamItems.length > 0 && (
+        <section className={`pt-6 ${signedIn ? "pb-24" : "pb-6"}`}>
           <div className="eb-grid">
             {initialStreamItems.map((item) => {
               const isSold = item.status === "sold";
               const isHeld = item.status === "hold";
+              const showNew = isItemNew(item.created_at);
+              const showMarket = item.at_market === 1 && !!item.at_market_label;
+              const marketLabel = item.at_market_booth
+                ? `${item.at_market_label} · ${item.at_market_booth}`
+                : item.at_market_label || "";
               return (
                 <Link
                   key={item.id}
@@ -264,9 +210,13 @@ export default function HomeView({
                   )}
                   <div className="eb-body">
                     <div className="eb-title">{item.title}</div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <div className="eb-price">{formatPrice(item.price)}</div>
                       {isHeld && <span className="eb-tag-hold">HELD</span>}
+                      {showNew && <span className="eb-tag-new">New</span>}
+                      {showMarket && (
+                        <span className="eb-tag-market">{marketLabel}</span>
+                      )}
                     </div>
                     <div className="eb-dealer">
                       <span className="eb-avatar eb-avatar-sm">
@@ -281,19 +231,11 @@ export default function HomeView({
               );
             })}
           </div>
-          <div className={`px-5 pt-4 ${signedIn ? "pb-24" : "pb-6"}`}>
-            <Link
-              href="/buy"
-              className="eb-btn block text-center"
-            >
-              Browse all {"→"}
-            </Link>
-          </div>
         </section>
       )}
 
       {/* About + FAQ + Footer — anon only. Signed-in users have the
-          BottomNav + the Account tab as their wayfinding. */}
+          BottomNav + Account tab as their wayfinding. */}
       {!signedIn && (
         <>
           <section className="px-5 pt-8 pb-12">
@@ -397,8 +339,6 @@ export default function HomeView({
         </>
       )}
 
-      {/* BottomNav — signed-in only. Active tab is "buy" since /
-          is the home / browse landing for everyone. */}
       {signedIn && <BottomNav active="buy" />}
     </>
   );

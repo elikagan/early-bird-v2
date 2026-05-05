@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
-import { formatPrice, formatShortDate, getInitials } from "@/lib/format";
+import { formatPrice, formatShortDate, getInitials, isItemNew } from "@/lib/format";
 import {
   getAnonFavorites,
   addAnonFavorite,
@@ -30,10 +30,16 @@ export interface Item {
   title: string;
   price: number;
   status: string;
+  created_at: string;
   photo_url: string | null;
   thumb_url: string | null;
   dealer_ref: string;
   dealer_name: string;
+  // Server-baked attendance pill data (same shape as /api/items, the
+  // home feed, and /watching).
+  at_market: number;
+  at_market_label: string | null;
+  at_market_booth: string | null;
 }
 
 export interface Market {
@@ -156,7 +162,7 @@ export default function DealerView({
           {[
             dealerName && dealerName !== dealer.business_name ? dealerName : null,
             dealer.booth_number ? `Booth ${dealer.booth_number}` : null,
-            `${ownItems.length} ${ownItems.length === 1 ? "item" : "items"} this show`,
+            `${ownItems.length} ${ownItems.length === 1 ? "item" : "items"} live`,
           ]
             .filter(Boolean)
             .join(" \u00b7 ")}
@@ -190,7 +196,7 @@ export default function DealerView({
           <div className="eb-empty">
             <div className="eb-icon">{"\u25cb"}</div>
             <p>
-              Nothing posted to {market?.name || "this show"} yet.
+              Nothing posted yet.
               <br />
               Check back soon.
             </p>
@@ -246,6 +252,12 @@ function ItemGrid({
         const isSold = item.status === "sold";
         const isHeld = item.status === "hold";
         const isFav = user ? favMap.has(item.id) : anonFavs.has(item.id);
+        const showNew = !isSold && isItemNew(item.created_at);
+        const showMarket =
+          !isSold && item.at_market === 1 && !!item.at_market_label;
+        const marketLabel = item.at_market_booth
+          ? `${item.at_market_label} · ${item.at_market_booth}`
+          : item.at_market_label || "";
 
         return (
           <Link
@@ -280,9 +292,13 @@ function ItemGrid({
             )}
             <div className="eb-body">
               <div className="eb-title">{item.title}</div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <div className="eb-price">{formatPrice(item.price)}</div>
                 {isHeld && <span className="eb-tag-hold">HELD</span>}
+                {showNew && <span className="eb-tag-new">New</span>}
+                {showMarket && (
+                  <span className="eb-tag-market">{marketLabel}</span>
+                )}
               </div>
               {showDealerName && (
                 <div className="eb-dealer">

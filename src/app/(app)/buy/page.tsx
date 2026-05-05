@@ -1,120 +1,12 @@
-import db from "@/lib/db";
-import { notFound } from "next/navigation";
-import { headers } from "next/headers";
-import { getInitialUser } from "@/lib/auth";
-import { logPageView } from "@/lib/track";
-import BuyView, { type Market, type Item } from "./buy-view";
-
-const PAGE_SIZE = 30;
+import { redirect } from "next/navigation";
 
 /**
- * Catalog browser. Two modes:
- *
- *   /buy                — full FB-Marketplace-style stream of every
- *                          live item from every dealer. Infinite scroll.
- *   /buy?market=X       — same stream, but attending-dealer items
- *                          surface first. Non-attending items render
- *                          below a "More on Early Bird" divider as
- *                          "ads" (FB-Marketplace local + sponsored
- *                          pattern).
- *
- * Items don't disappear from /buy when no one's confirmed attendance —
- * attendance is a sort hint, not a gate. Every live item is reachable
- * from this page either way.
+ * /buy was the catalog browser before the home merge. The home page
+ * is now the canonical feed for everyone (anon + signed-in), so this
+ * route is just a 308 redirect for legacy bookmarks and any old
+ * external links that still point here. The bottom nav already
+ * targets /, so no internal callers remain.
  */
-export default async function BuyPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ market?: string }>;
-}) {
-  const { market: marketId } = await searchParams;
-  const [me, h] = await Promise.all([getInitialUser(), headers()]);
-  logPageView({
-    path: marketId ? `/buy?market=${marketId}` : "/buy",
-    referer: h.get("referer"),
-    userAgent: h.get("user-agent"),
-    userId: me?.id ?? null,
-  });
-
-  // ── Filtered mode: ?market=X ──
-  if (marketId) {
-    const [marketRes, itemsRes] = await Promise.all([
-      db.execute({
-        sql: `
-          SELECT
-            m.id, m.name, m.location, m.starts_at, m.status, m.archived,
-            (SELECT COUNT(DISTINCT bs.dealer_id) FROM booth_settings bs
-              WHERE bs.market_id = m.id AND bs.declined = false) as dealer_count
-          FROM markets m
-          WHERE m.id = ?
-        `,
-        args: [marketId],
-      }),
-      db.execute({
-        sql: `
-          SELECT
-            i.*,
-            d.business_name as dealer_name,
-            d.instagram_handle as dealer_instagram,
-            d.id as dealer_ref,
-            u.display_name as dealer_display_name,
-            u.avatar_url as dealer_avatar,
-            (SELECT url FROM item_photos p WHERE p.item_id = i.id ORDER BY p.position LIMIT 1) as photo_url,
-            (SELECT thumb_url FROM item_photos p WHERE p.item_id = i.id ORDER BY p.position LIMIT 1) as thumb_url,
-            CASE WHEN EXISTS (
-              SELECT 1 FROM booth_settings bs
-              WHERE bs.dealer_id = i.dealer_id
-                AND bs.market_id = ?
-                AND bs.declined = false
-            ) THEN 1 ELSE 0 END as at_market
-          FROM items i
-          JOIN dealers d ON d.id = i.dealer_id
-          JOIN users u ON u.id = d.user_id
-          WHERE i.status IN ('live', 'hold')
-          ORDER BY at_market DESC, i.created_at DESC
-          LIMIT ${PAGE_SIZE}
-        `,
-        args: [marketId],
-      }),
-    ]);
-
-    if (marketRes.rows.length === 0) notFound();
-    const market = marketRes.rows[0] as Record<string, unknown>;
-    if (Number(market.archived ?? 0) === 1) notFound();
-
-    return (
-      <BuyView
-        initialMarket={market as unknown as Market}
-        initialItems={itemsRes.rows as unknown as Item[]}
-      />
-    );
-  }
-
-  // ── Unfiltered mode: full catalog stream ──
-  const itemsRes = await db.execute({
-    sql: `
-      SELECT
-        i.*,
-        d.business_name as dealer_name,
-        d.instagram_handle as dealer_instagram,
-        d.id as dealer_ref,
-        u.display_name as dealer_display_name,
-        u.avatar_url as dealer_avatar,
-        (SELECT url FROM item_photos p WHERE p.item_id = i.id ORDER BY p.position LIMIT 1) as photo_url,
-        (SELECT thumb_url FROM item_photos p WHERE p.item_id = i.id ORDER BY p.position LIMIT 1) as thumb_url
-      FROM items i
-      JOIN dealers d ON d.id = i.dealer_id
-      JOIN users u ON u.id = d.user_id
-      WHERE i.status IN ('live', 'hold')
-      ORDER BY i.created_at DESC
-      LIMIT ${PAGE_SIZE}
-    `,
-  });
-
-  return (
-    <BuyView
-      initialMarket={null}
-      initialItems={itemsRes.rows as unknown as Item[]}
-    />
-  );
+export default function BuyRedirect() {
+  redirect("/");
 }

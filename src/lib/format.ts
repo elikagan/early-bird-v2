@@ -75,6 +75,36 @@ export function daysUntilShort(iso: string): string {
   return `In ${days} days`;
 }
 
+/**
+ * Two-letter abbreviation for a market name, used on the RB-style
+ * attendance pill on item cards. Takes the first letter of the first
+ * two words: "Rose Bowl Flea Market" → "RB", "Long Beach Antique
+ * Market" → "LB", "Topanga Vintage Market" → "TV", "Palm Springs
+ * Vintage Market" → "PS". Falls back to the first 2 chars of the name
+ * if there's only one word.
+ */
+export function marketAbbr(name: string | null | undefined): string {
+  if (!name) return "";
+  const words = name.trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return "";
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+  return (words[0][0] + words[1][0]).toUpperCase();
+}
+
+/**
+ * Items posted within the last 7 days get the NEW pill in the feed.
+ * Boundary is calendar-day-imprecise (millisecond compare) which is
+ * fine for an editorial signal — a card flipping from NEW to not-NEW
+ * around midnight isn't visible in any meaningful way.
+ */
+export function isItemNew(createdAtIso: string | null | undefined): boolean {
+  if (!createdAtIso) return false;
+  const created = new Date(createdAtIso).getTime();
+  if (!Number.isFinite(created)) return false;
+  const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+  return Date.now() - created < sevenDaysMs;
+}
+
 export function timeAgo(iso: string): string {
   const seconds = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
   if (seconds < 60) return "now";

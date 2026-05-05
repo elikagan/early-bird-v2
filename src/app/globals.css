@@ -314,6 +314,23 @@
     vertical-align: middle;
     margin-left: 3px;
   }
+  /* Market-attendance pill — shows on item cards when the dealer
+     said yes to the next show ("RB · 503"). Quieter than HELD or
+     NEW (outline-only) so it reads as factual context, not an
+     alert. */
+  .eb-tag-market {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 1px 4px;
+    background: #fff;
+    color: var(--eb-black);
+    border: 1.5px solid var(--eb-black);
+    vertical-align: middle;
+    margin-left: 3px;
+  }
   /* Inquiry pill on the sell page grid. Brightest thing on the card
      so a dealer scrolling sees where the action is. Pairs with the
      matching eb-grid-card-inquiry border below. */

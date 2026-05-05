@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { getInitialUser } from "@/lib/auth";
 import { logPageView } from "@/lib/track";
 import { getFeaturedMarket } from "@/lib/markets";
+import { marketAbbr } from "@/lib/format";
 import DealerView, {
   type DealerProfile,
   type Market,
@@ -52,24 +53,50 @@ export default async function DealerPage({
       })
     : Promise.resolve({ rows: [] as Record<string, unknown>[] });
 
-  const itemsBaseSql = `
-    SELECT
-      i.id, i.title, i.price, i.status,
-      d.business_name as dealer_name,
-      d.id as dealer_ref,
-      (SELECT url FROM item_photos p WHERE p.item_id = i.id ORDER BY p.position LIMIT 1) as photo_url,
-      (SELECT thumb_url FROM item_photos p WHERE p.item_id = i.id ORDER BY p.position LIMIT 1) as thumb_url
-    FROM items i
-    JOIN dealers d ON d.id = i.dealer_id
-  `;
-
   // Dealer's full live catalog. Sold/held items show alongside, just
   // visually de-emphasized — same way the dealer's own /sell page
-  // treats them.
-  const ownItemsQ = db.execute({
-    sql: `${itemsBaseSql} WHERE i.dealer_id = ? AND i.status != 'deleted' ORDER BY i.created_at DESC`,
-    args: [dealerId],
-  });
+  // treats them. at_market is set per-row from the same featured-
+  // market booth lookup the header uses, so cards can show the RB
+  // pill consistently with everywhere else.
+  const ownItemsQ = featured
+    ? db.execute({
+        sql: `
+          SELECT
+            i.id, i.title, i.price, i.status, i.created_at,
+            d.business_name as dealer_name,
+            d.id as dealer_ref,
+            (SELECT url FROM item_photos p WHERE p.item_id = i.id ORDER BY p.position LIMIT 1) as photo_url,
+            (SELECT thumb_url FROM item_photos p WHERE p.item_id = i.id ORDER BY p.position LIMIT 1) as thumb_url,
+            (CASE WHEN bs_feat.dealer_id IS NOT NULL THEN 1 ELSE 0 END) as at_market,
+            bs_feat.booth_number as at_market_booth
+          FROM items i
+          JOIN dealers d ON d.id = i.dealer_id
+          LEFT JOIN booth_settings bs_feat
+            ON bs_feat.dealer_id = d.id
+           AND bs_feat.market_id = ?
+           AND bs_feat.declined = false
+          WHERE i.dealer_id = ? AND i.status != 'deleted'
+          ORDER BY i.created_at DESC
+        `,
+        args: [featured.id, dealerId],
+      })
+    : db.execute({
+        sql: `
+          SELECT
+            i.id, i.title, i.price, i.status, i.created_at,
+            d.business_name as dealer_name,
+            d.id as dealer_ref,
+            (SELECT url FROM item_photos p WHERE p.item_id = i.id ORDER BY p.position LIMIT 1) as photo_url,
+            (SELECT thumb_url FROM item_photos p WHERE p.item_id = i.id ORDER BY p.position LIMIT 1) as thumb_url,
+            0 as at_market,
+            NULL::text as at_market_booth
+          FROM items i
+          JOIN dealers d ON d.id = i.dealer_id
+          WHERE i.dealer_id = ? AND i.status != 'deleted'
+          ORDER BY i.created_at DESC
+        `,
+        args: [dealerId],
+      });
 
   const [dealerRes, featuredBoothRes, ownRes] = await Promise.all([
     dealerQ,
@@ -89,8 +116,8 @@ export default async function DealerPage({
     item_count: ownRes.rows.length,
   } as unknown as DealerProfile;
 
-  // The dealer-view component still expects a `market` prop. Pass
-  // featured if the dealer is attending it; otherwise null.
+  // Pass the featured market only when the dealer is attending; the
+  // header eyebrow renders only in that case.
   const market: Market | null =
     featured && featuredBoothRes.rows.length > 0
       ? {
@@ -101,7 +128,17 @@ export default async function DealerPage({
         }
       : null;
 
-  const ownItems = ownRes.rows as unknown as Item[];
+  // Bake the abbreviation onto each row, same shape as the home feed
+  // and the API endpoints.
+  const featuredAbbr = featured ? marketAbbr(featured.name) : null;
+  const ownItems = ownRes.rows.map((r) => {
+    const row = r as Record<string, unknown>;
+    return {
+      ...row,
+      at_market_label:
+        Number(row.at_market) === 1 ? featuredAbbr : null,
+    };
+  }) as unknown as Item[];
 
   return (
     <DealerView

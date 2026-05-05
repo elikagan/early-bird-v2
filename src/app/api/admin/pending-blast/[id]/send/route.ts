@@ -18,8 +18,8 @@ const BLAST_TOKEN_EXPIRY_DAYS = 7;
  * is a no-op.
  *
  * Per-recipient link:
- *   - dealer blasts  → /v/[fresh-token]?to=/sell      (signs into dealer view)
- *   - buyer blasts   → /v/[fresh-token]?to=/buy?market={id}  (signs into market feed)
+ *   - dealer blasts  → /v/[fresh-token]?to=/sell  (signs into dealer view)
+ *   - buyer blasts   → /v/[fresh-token]?to=/      (signs into the home feed)
  *
  * Tokens are 7-day login tokens so a busy dealer can tap the link
  * hours after delivery without hitting the 15-min default expiry.
@@ -70,7 +70,12 @@ export async function POST(
   const errors: { phone: string; error: string }[] = [];
 
   const isDealerKind = kind !== "buyer_thursday";
-  const toPath = isDealerKind ? "/sell" : `/buy?market=${marketId}`;
+  // Buyer blasts land on the home feed (the featured-market banner up
+  // top messages the show — there's no longer a per-market filter
+  // page to point them at). marketId is unused for buyer blasts now;
+  // void it to keep the lint quiet without restructuring the query.
+  void marketId;
+  const toPath = isDealerKind ? "/sell" : "/";
 
   for (let i = 0; i < recipients.length; i += 5) {
     const batch = recipients.slice(i, i + 5);

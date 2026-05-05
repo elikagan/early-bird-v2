@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRequireAuth } from "@/lib/require-auth";
 import { apiFetch } from "@/lib/api-client";
-import { formatPrice } from "@/lib/format";
+import { formatPrice, isItemNew } from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
 import { Masthead } from "@/components/masthead";
 import { MarketAttendancePrompt } from "@/components/market-attendance-prompt";
@@ -16,12 +16,18 @@ interface Item {
   price: number;
   original_price: number | null;
   status: string;
+  created_at: string;
   photo_url: string | null;
   thumb_url: string | null;
   view_count: number;
   watcher_count: number;
   inquiry_count: number;
   sold_to: string | null;
+  // Server-baked attendance pill data (same shape as /api/items, the
+  // home feed, /watching, /d/[id]).
+  at_market: number;
+  at_market_label: string | null;
+  at_market_booth: string | null;
 }
 
 interface SellStats {
@@ -105,6 +111,16 @@ function SellContent() {
     const isHeld = item.status === "hold";
     const isDeleted = item.status === "deleted";
     const hasInquiries = !isSold && item.inquiry_count > 0;
+    const showNew =
+      !isSold && !isDeleted && isItemNew(item.created_at);
+    const showMarket =
+      !isSold &&
+      !isDeleted &&
+      item.at_market === 1 &&
+      !!item.at_market_label;
+    const marketLabel = item.at_market_booth
+      ? `${item.at_market_label} · ${item.at_market_booth}`
+      : item.at_market_label || "";
     return (
       <Link
         key={item.id}
@@ -127,12 +143,19 @@ function SellContent() {
         )}
         <div className="eb-body">
           <div className="eb-title">{item.title}</div>
-          <div className="eb-price">
-            {formatPrice(item.price)}
-            {item.original_price && (
-              <span className="eb-price-was">
-                {formatPrice(item.original_price)}
-              </span>
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="eb-price">
+              {formatPrice(item.price)}
+              {item.original_price && (
+                <span className="eb-price-was">
+                  {formatPrice(item.original_price)}
+                </span>
+              )}
+            </div>
+            {isHeld && <span className="eb-tag-hold">HELD</span>}
+            {showNew && <span className="eb-tag-new">New</span>}
+            {showMarket && (
+              <span className="eb-tag-market">{marketLabel}</span>
             )}
           </div>
           {hasInquiries && (
@@ -150,11 +173,6 @@ function SellContent() {
           )}
           {isSold && (
             <div className="text-eb-meta text-eb-muted mt-2">Sold</div>
-          )}
-          {isHeld && (
-            <div className="mt-2">
-              <span className="eb-tag-hold inline-block">HELD</span>
-            </div>
           )}
           {isDeleted && (
             <div className="text-eb-meta text-eb-muted mt-2">Removed</div>

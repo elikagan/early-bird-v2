@@ -2,56 +2,47 @@ import db from "@/lib/db";
 import { json, error, cachedJson } from "@/lib/api";
 import { getSession } from "@/lib/auth";
 import { newId } from "@/lib/id";
+import { getFeaturedMarket } from "@/lib/markets";
+import { marketAbbr } from "@/lib/format";
 
 /**
  * Catalog read endpoint. Under the persistent-booth model items belong
- * to dealers, not markets — but a buyer can still narrow the catalog
- * to "items by dealers attending market X" by passing ?market_id=X.
+ * to dealers, not markets. The market is editorial atmosphere, never a
+ * filter or gate. Every live item is returned; an `at_market` boolean
+ * + `booth_number` column per row tell the UI when to decorate the
+ * card with the "RB · 503" attendance pill.
  *
  * Query parameters:
- *   ?market_id=X — narrows to dealers attending that market (declined=false)
- *   ?dealer_id=X — narrows to one dealer's items
+ *   ?dealer_id=X — narrows to one dealer's catalog (used by /sell)
  *   ?limit / ?offset — pagination, default 200, cap 200
  *
- * No params → all live items, every dealer. The default the home page
- * uses now.
+ * The legacy ?market_id= param is ignored. The catalog is never
+ * filtered or sorted by attendance.
  */
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  const marketId = url.searchParams.get("market_id");
   const dealerId = url.searchParams.get("dealer_id");
 
-  // If a market filter is requested, validate the market exists + isn't
-  // archived. Saves us serving an empty list while looking like we
-  // searched something legit.
-  if (marketId) {
-    const marketCheck = await db.execute({
-      sql: `SELECT id, archived FROM markets WHERE id = ?`,
-      args: [marketId],
-    });
-    if (marketCheck.rows.length === 0) return error("Market not found", 404);
-    const mkt = marketCheck.rows[0] as Record<string, unknown>;
-    if (Number(mkt.archived ?? 0) === 1) {
-      return error("Market not available", 404);
-    }
+  // Featured-market lookup once per call. Per-row at_market + booth
+  // are computed against this market.
+  const featured = await getFeaturedMarket();
+  const args: (string | null)[] = [];
+
+  let atMarketSelect = `0 as at_market, NULL::text as at_market_booth`;
+  if (featured) {
+    atMarketSelect = `
+      (CASE WHEN bs_feat.dealer_id IS NOT NULL THEN 1 ELSE 0 END) as at_market,
+      bs_feat.booth_number as at_market_booth
+    `;
   }
 
-  // ?market_id=X is a sort hint, not a strict filter. We return every
-  // live item, but flag rows where the dealer said yes to that market
-  // and surface those first. Non-attending items render below as "ads"
-  // (FB-Marketplace style local search + sponsored). The buy view uses
-  // the at_market flag to render a divider between the two groups.
-  const args: (string | null)[] = [];
-  let atMarketSelect = `0 as at_market`;
-  if (marketId) {
-    atMarketSelect = `CASE WHEN EXISTS (
-      SELECT 1 FROM booth_settings bs
-      WHERE bs.dealer_id = i.dealer_id
-        AND bs.market_id = ?
-        AND bs.declined = false
-    ) THEN 1 ELSE 0 END as at_market`;
-    args.push(marketId);
-  }
+  const featuredJoin = featured
+    ? `LEFT JOIN booth_settings bs_feat
+         ON bs_feat.dealer_id = d.id
+        AND bs_feat.market_id = ?
+        AND bs_feat.declined = false`
+    : "";
+  if (featured) args.push(featured.id);
 
   let sql = `
     SELECT
@@ -69,6 +60,7 @@ export async function GET(request: Request) {
     FROM items i
     JOIN dealers d ON d.id = i.dealer_id
     JOIN users u ON u.id = d.user_id
+    ${featuredJoin}
     WHERE 1=1
   `;
 
@@ -90,21 +82,33 @@ export async function GET(request: Request) {
   );
   const offset = Math.max(0, Number(url.searchParams.get("offset")) || 0);
 
-  // When a market hint is set, attending-dealer items come first.
-  // Otherwise pure chronological.
-  sql += marketId
-    ? ` ORDER BY at_market DESC, i.created_at DESC LIMIT ${limit} OFFSET ${offset}`
-    : ` ORDER BY i.created_at DESC LIMIT ${limit} OFFSET ${offset}`;
+  // Always pure chronological. Attendance is a tag on the card, not
+  // a sort key.
+  sql += ` ORDER BY i.created_at DESC LIMIT ${limit} OFFSET ${offset}`;
 
   const result = await db.execute({ sql, args });
+
+  // Bake the badge label onto every at_market=1 row so callers don't
+  // have to know which market is featured. /api/favorites + the home
+  // page server do the same — single source of truth for the pill
+  // text.
+  const featuredAbbr = featured ? marketAbbr(featured.name) : null;
+  const rows = result.rows.map((r) => {
+    const row = r as Record<string, unknown>;
+    return {
+      ...row,
+      at_market_label:
+        Number(row.at_market) === 1 ? featuredAbbr : null,
+    };
+  });
 
   // Dealer-self-view: skip CDN cache so a newly-posted item shows on
   // the next page load instead of being shadowed by a 60s cached
   // response.
   if (dealerId) {
-    return json(result.rows);
+    return json(rows);
   }
-  return cachedJson(result.rows);
+  return cachedJson(rows);
 }
 
 export async function POST(request: Request) {

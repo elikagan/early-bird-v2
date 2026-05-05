@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
-import { getInitials, formatPrice } from "@/lib/format";
+import { getInitials, formatPrice, isItemNew } from "@/lib/format";
 import { BottomNav, adjustNavCount } from "@/components/bottom-nav";
 import { Masthead } from "@/components/masthead";
 import { SignupDrawer } from "@/components/signup-drawer";
@@ -14,6 +14,7 @@ interface FavItem {
   id: string;
   favorite_id: string;
   favorited_at: string;
+  created_at: string;
   title: string;
   price: number;
   original_price: number | null;
@@ -23,6 +24,12 @@ interface FavItem {
   thumb_url: string | null;
   my_inquiry_message: string | null;
   my_inquiry_status: string | null;
+  // Server-baked badge data: at_market = 1 means the dealer's at the
+  // next show; at_market_label is the abbreviation ("RB"); at_market
+  // _booth is their booth number (nullable).
+  at_market: number;
+  at_market_label: string | null;
+  at_market_booth: string | null;
 }
 
 export default function WatchingPage() {
@@ -111,6 +118,16 @@ export default function WatchingPage() {
                 const isSold = item.status === "sold";
                 const isHeld = item.status === "hold";
                 const isDeleted = item.status === "deleted";
+                const showNew =
+                  !isSold && !isDeleted && isItemNew(item.created_at);
+                const showMarket =
+                  !isSold &&
+                  !isDeleted &&
+                  item.at_market === 1 &&
+                  !!item.at_market_label;
+                const marketLabel = item.at_market_booth
+                  ? `${item.at_market_label} · ${item.at_market_booth}`
+                  : item.at_market_label || "";
 
                 return (
                   <Link
@@ -137,14 +154,21 @@ export default function WatchingPage() {
                     )}
                     <div className="eb-body">
                       <div className="eb-title">{item.title}</div>
-                      <div className="eb-price">
-                        {formatPrice(item.price)}
-                        {item.original_price &&
-                          item.original_price > item.price && (
-                            <span className="eb-price-was">
-                              {formatPrice(item.original_price)}
-                            </span>
-                          )}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <div className="eb-price">
+                          {formatPrice(item.price)}
+                          {item.original_price &&
+                            item.original_price > item.price && (
+                              <span className="eb-price-was">
+                                {formatPrice(item.original_price)}
+                              </span>
+                            )}
+                        </div>
+                        {isHeld && <span className="eb-tag-hold">HELD</span>}
+                        {showNew && <span className="eb-tag-new">New</span>}
+                        {showMarket && (
+                          <span className="eb-tag-market">{marketLabel}</span>
+                        )}
                       </div>
                       <div className="eb-dealer">
                         <span className="eb-avatar eb-avatar-sm">

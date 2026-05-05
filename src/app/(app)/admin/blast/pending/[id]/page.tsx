@@ -123,7 +123,7 @@ export default function PendingBlastPage() {
   const sampleRenderedCopy = copy.replace(
     /\{link\}/g,
     blast.kind === "buyer_thursday"
-      ? `https://earlybird.la/v/…?to=/buy?market=${blast.market_id}`
+      ? "https://earlybird.la/v/…?to=/"
       : "https://earlybird.la/v/…?to=/sell"
   );
 
