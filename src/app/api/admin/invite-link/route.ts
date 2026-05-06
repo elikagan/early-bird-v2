@@ -9,6 +9,33 @@ import { sendSMSWithLog } from "@/lib/sms";
 import { composeDealerInvite } from "@/lib/sms-templates";
 import { normalizeUSPhone } from "@/lib/phone";
 
+/**
+ * GET /api/admin/invite-link
+ * Returns the most-recently-created active multi-use ("universal")
+ * invite, or { code: null } if none exists. The /admin Invite tab
+ * uses this to surface the active universal link on load so the
+ * admin doesn't have to remember which code was multi-use.
+ */
+export async function GET(request: Request) {
+  const user = await getSession(request);
+  if (!user) return error("Unauthorized", 401);
+  if (!isAdmin(user.phone)) return error("Forbidden", 403);
+
+  const result = await db.execute(`
+    SELECT code FROM dealer_invites
+    WHERE multi_use = true
+    ORDER BY created_at DESC
+    LIMIT 1
+  `);
+
+  if (result.rows.length === 0) {
+    return json({ code: null, url: null });
+  }
+  const code = (result.rows[0] as Record<string, unknown>).code as string;
+  const url = `${getBaseUrl(request)}/invite/${code}`;
+  return json({ code, url });
+}
+
 export async function POST(request: Request) {
   const user = await getSession(request);
   if (!user) return error("Unauthorized", 401);

@@ -1166,6 +1166,25 @@ function DealersTab() {
   const [inviteIsMultiUse, setInviteIsMultiUse] = useState(false);
   const [inviteMode, setInviteMode] = useState<"single" | "universal">("single");
   const [inviteError, setInviteError] = useState<string | null>(null);
+  // Active universal link, fetched on tab load. Surfaces the existing
+  // multi-use invite at the top of the Invite section so admin can
+  // copy without going hunting. Null = no universal link exists yet.
+  const [activeUniversalUrl, setActiveUniversalUrl] = useState<string | null>(
+    null
+  );
+  const [activeUniversalCopied, setActiveUniversalCopied] = useState(false);
+  useEffect(() => {
+    if (section !== "invite") return;
+    let cancelled = false;
+    apiFetch("/api/admin/invite-link").then(async (res) => {
+      if (cancelled || !res.ok) return;
+      const data = await res.json();
+      setActiveUniversalUrl(data.url || null);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [section]);
 
   const loadUsers = async () => {
     setLoading(true);
@@ -1291,6 +1310,9 @@ function DealersTab() {
       setInviteUrl(url);
       setInvitePhoneSent(!!phoneInput);
       setInviteIsMultiUse(!!multi_use);
+      // Newly-generated universal link is now the active one. Refresh
+      // the top-of-tab card so admin sees it immediately.
+      if (multi_use) setActiveUniversalUrl(url);
     } else {
       const data = await res.json().catch(() => ({}));
       setInviteError(data.error || "Couldn't create invite");
@@ -1620,6 +1642,34 @@ function DealersTab() {
 
       {section === "invite" && (
         <div className="px-5 py-4">
+          {/* Active universal link — surfaced on tab load so the admin
+              never has to hunt for the URL they're sharing. Hidden
+              when no multi-use invite exists yet. */}
+          {activeUniversalUrl && (
+            <div className="mb-5 border-2 border-eb-black p-4">
+              <div className="text-eb-meta uppercase tracking-widest text-eb-pop font-bold mb-1">
+                Active universal link
+              </div>
+              <p className="text-eb-micro text-eb-muted leading-relaxed mb-2">
+                Anyone with this URL can self-onboard as a dealer.
+                Stays valid until you revoke it.
+              </p>
+              <div className="eb-input text-eb-micro break-all mb-2 select-all">
+                {activeUniversalUrl}
+              </div>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(activeUniversalUrl);
+                  setActiveUniversalCopied(true);
+                  setTimeout(() => setActiveUniversalCopied(false), 2000);
+                }}
+                className="py-2 px-4 text-eb-caption font-bold bg-eb-black text-white uppercase tracking-wider"
+              >
+                {activeUniversalCopied ? "Copied!" : "Copy"}
+              </button>
+            </div>
+          )}
+
           <div className="text-eb-meta uppercase tracking-widest text-eb-muted mb-2">
             Invite a Dealer
           </div>
